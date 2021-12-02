@@ -333,25 +333,25 @@ MKLIST	macro	@toets,@routine
 
 ; comment replace " with ' here and we get errors
 ; GEN80 loses quotes on parameter binding
-hfdlusactitab	MKLIST	"A",getdisamadres
-	MKLIST	"B",routnewbreak
-	MKLIST	"C",CALCULATOR
-	MKLIST	"D",diskscherm
-	MKLIST	"E",exectillbp
-	MKLIST	"H",routhere
-	MKLIST	"I",initsp
-	MKLIST	"J",routandback
-	MKLIST	"L",tomonlink1	;tomonlink
-	MKLIST	"M",getmonitoradres
-	MKLIST	"P",getslotindeel
-	MKLIST	"Q",toquit
-	MKLIST	"R",regaanpas
-	MKLIST	"S",routstep
-	MKLIST	"T",routtrace
-	MKLIST	"U",getreturnadres
-	MKLIST	"V",viewbreak
-	MKLIST	"W",routdelbreak
-	MKLIST	"Y",specialtrace
+hfdlusactitab	MKLIST	'A',getdisamadres
+	MKLIST	'B',routnewbreak
+	MKLIST	'C',CALCULATOR
+	MKLIST	'D',diskscherm
+	MKLIST	'E',exectillbp
+	MKLIST	'H',routhere
+	MKLIST	'I',initsp
+	MKLIST	'J',routandback
+	MKLIST	'L',tomonlink1	;tomonlink
+	MKLIST	'M',getmonitoradres
+	MKLIST	'P',getslotindeel
+	MKLIST	'Q',toquit
+	MKLIST	'R',regaanpas
+	MKLIST	'S',routstep
+	MKLIST	'T',routtrace
+	MKLIST	'U',getreturnadres
+	MKLIST	'V',viewbreak
+	MKLIST	'W',routdelbreak
+	MKLIST	'Y',specialtrace
 
 	db	select
 	dw	tomonitor
@@ -896,7 +896,7 @@ routprint	ld	ix,#a8
 	ld	hl,11*80+28
 	ld	bc,txt_nowprt
 	call	PRINTTEKST
-	ld	hL,13*80+31
+	ld	hl,13*80+31
 	ld	bc,txt_press
 	call	PRINTTEKST
 
@@ -3649,7 +3649,7 @@ jradres	CALL	ntobuffer
 	DEC	D
 jradres1	ADD	HL,DE
 	JP	hltobuffer
-txtpijl	DB	" -",">"+128
+txtpijl	DB	" -",'>'+128
 
 jpadres	LD	HL,lenghtcode
 	INC	(HL)
@@ -3742,10 +3742,10 @@ tabelldcpinout	DW	txtld1
 	DW	txtld3
 	DW	txtld4
 
-txtld1	DB	"L","D"+128
-txtld2	DB	"C","P"+128
-txtld3	DB	"I","N"+128
-txtld4	DB	"OU","T"+128
+txtld1	DB	"L",'D'+128
+txtld2	DB	"C",'P'+128
+txtld3	DB	"I",'N'+128
+txtld4	DB	"OU",'T'+128
 
 idirdr	RRA
 	RRA
@@ -3759,10 +3759,10 @@ tabelidirdr	DW	txti1
 	DW	txti3
 	DW	txti4
 
-txti1	DB	"I"+128
-txti2	DB	"D"+128
-txti3	DB	"I","R"+128
-txti4	DB	"D","R"+128
+txti1	DB	'I'+128
+txti2	DB	'D'+128
+txti3	DB	"I",'R'+128
+txti4	DB	"D",'R'+128
 
 rstrout	AND	%00111000
 	PUSH	AF
@@ -3784,7 +3784,7 @@ rstrout2	POP	AF
 rstrout3	LD	HL,rstroutDBtxt
 	CALL	codtxttobuf
 	JP	ntobuffer
-rstroutDBtxt	DB	" DB"," "+128
+rstroutDBtxt	DB	" DB",' '+128
 
 uitzondering	CALL	leescodebyte
 	LD	E,A
@@ -3885,14 +3885,14 @@ tabeladdaen	DW	txtaddaen0
 	DW	txtaddaen6
 	DW	txtaddaen7
 
-txtaddaen0	DB	"ADD A",","+128
-txtaddaen1	DB	"ADC A",","+128
-txtaddaen2	DB	"SUB"," "+128
-txtaddaen3	DB	"SBC A",","+128
-txtaddaen4	DB	"AND"," "+128
-txtaddaen5	DB	"XOR"," "+128
-txtaddaen6	DB	"OR"," "+128
-txtaddaen7	DB	"CP"," "+128
+txtaddaen0	DB	"ADD A",','+128
+txtaddaen1	DB	"ADC A",','+128
+txtaddaen2	DB	"SUB",' '+128
+txtaddaen3	DB	"SBC A",','+128
+txtaddaen4	DB	"AND",' '+128
+txtaddaen5	DB	"XOR",' '+128
+txtaddaen6	DB	"OR",' '+128
+txtaddaen7	DB	"CP",' '+128
 
 tabel7060	DW	tnotexist
 	DW	txttabel0001
@@ -3952,7 +3952,7 @@ txttabel0004	DB	"INC ",2+128
 txttabel0005	DB	"DEC ",2+128
 txttabel0006	DB	"LD ",2,",",6+128
 txttabel0009	DB	"ADD ",15,",",4+128
-txttabel000A	DB	"LD ",14,",","(",13,")"+128
+txttabel000A	DB	"LD ",14,",","(",13,')'+128
 txttabel000B	DB	"DEC ",4+128
 
 txttabel1100	DB	"RET ",16+128
@@ -3964,12 +3964,12 @@ txttabel1106	DB	17,6+128
 txttabel1107	DB	"RST ",21+128
 txttabel110D	DB	"CALL ",8+128
 
-txttabel0100	DB	"IN ",2,",(C",")"+128
+txttabel0100	DB	"IN ",2,",(C",')'+128
 txttabel0101	DB	"OUT (C),",2+128
 txttabel0102	DB	"SBC HL,",4+128
 txttabel0103	DB	"LD (",8,"),",4+128
 txttabel010A	DB	"ADC HL,",4+128
-txttabel010B	DB	"LD ",4,",(",8,")"+128
+txttabel010B	DB	"LD ",4,",(",8,')'+128
 
 txtuitz7061	DB	#76
 	DW	txthalt
@@ -3982,11 +3982,11 @@ txtuitz7061	DB	#76
 	DB	#75
 	DW	txtldhll
 	DB	#DD
-txthalt	DB	"HAL","T"+128
+txthalt	DB	"HAL",'T'+128
 txtldhhl	DB	"LD H,",1+128
 txtldlhl	DB	"LD L,",1+128
-txtldhlh	DB	"LD ",2,",","H"+128
-txtldhll	DB	"LD ",2,",","L"+128
+txtldhlh	DB	"LD ",2,",",'H'+128
+txtldhll	DB	"LD ",2,",",'L'+128
 
 
 txtuitz7060	DB	#00
@@ -4022,22 +4022,22 @@ txtuitz7060	DB	#00
 	DB	#3F
 	DW	txtccf
 	DB	#DD
-txtnop	DB	"NO","P"+128
-txtrlca	DB	"RLC","A"+128
+txtnop	DB	"NO",'P'+128
+txtrlca	DB	"RLC",'A'+128
 txtexafaf	DB	"EX AF,AF",39+128
-txtrrca	DB	"RRC","A"+128
+txtrrca	DB	"RRC",'A'+128
 txtdjnz	DB	"DJNZ"," ",7+128
-txtrla	DB	"RL","A"+128
+txtrla	DB	"RL",'A'+128
 txtjr	DB	"JR ",7+128
-txtrra	DB	"RR","A"+128
+txtrra	DB	"RR",'A'+128
 txtjrnz	DB	"JR NZ,",7+128
-txtdaa	DB	"DA","A"+128
+txtdaa	DB	"DA",'A'+128
 txtjrz	DB	"JR Z,",7+128
-txtcpl	DB	"CP","L"+128
+txtcpl	DB	"CP",'L'+128
 txtjrnc	DB	"JR NC,",7+128
-txtscf	DB	"SC","F"+128
+txtscf	DB	"SC",'F'+128
 txtjrc	DB	"JR C,",7+128
-txtccf	DB	"CC","F"+128
+txtccf	DB	"CC",'F'+128
 
 txtuitz7161	DB	#C3
 	DW	txtjp
@@ -4064,16 +4064,16 @@ txtuitz7161	DB	#C3
 	DB	#DD
 
 txtjp	DB	"JP ",8+128
-txtret	DB	"RE","T"+128
-txtout	DB	"OUT (",6,"),","A"+128
-txtexx	DB	"EX","X"+128
-txtina	DB	"IN A,(",6,")"+128
+txtret	DB	"RE",'T'+128
+txtout	DB	"OUT (",6,"),",'A'+128
+txtexx	DB	"EX",'X'+128
+txtina	DB	"IN A,(",6,')'+128
 txtexsphl	DB	"EX (SP),",4+128
-txtjphl	DB	"JP (",4,")"+128
+txtjphl	DB	"JP (",4,')'+128
 txtexdehl	DB	"EX DE,",4+128
-txtdi	DB	"D","I"+128
+txtdi	DB	"D",'I'+128
 txtldsphl	DB	"LD SP,",18+128
-txtei	DB	"E","I"+128
+txtei	DB	"E",'I'+128
 
 txtuitzED	DB	#4C
 	DW	tnotexist
@@ -4174,31 +4174,31 @@ txtuitzED	DB	#4C
 	DB	#DD
 
 tnotexist	DB	#12+128
-TINFC	DB	"IN F,(C",")"+128
-TSBCHLSP	DB	"SBC HL,S","P"+128
-TLDNNSP	DB	"LD (",8,"),S","P"+128
-TADCHLSP	DB	"ADC HL,S","P"+128
-TLDSPNN	DB	"LD S","P,(",8,")"+128
-TLDIA	DB	"LD I,","A"+128
-TLDRA	DB	"LD R,","A"+128
-TLDAI	DB	"LD A,","I"+128
-TLDAR	DB	"LD A,","R"+128
-TRRD	DB	"RR","D"+128
-TRLD	DB	"RL","D"+128
-TNEG	DB	"NE","G"+128
-TRETN	DB	"RET","N"+128
-TIM0	DB	"IM ","0"+128
-TRETI	DB	"RET","I"+128
-TIM1	DB	"IM ","1"+128
-TIM2	DB	"IM ","2"+128
-TMULAB	DB	"MULUB A,","B"+128
-TMULAC	DB	"MULUB A,","C"+128
-TMULAD	DB	"MULUB A,","D"+128
-TMULAE	DB	"MULUB A,","E"+128
-TMULHLBC	DB	"MULUW HL,B","C"+128
-TMULHLSP	DB	"MULUW HL,S","P"+128
-TOTIR	DB	"OTI","R"+128
-TOTDR	DB	"OTD","R"+128
+TINFC	DB	"IN F,(C",')'+128
+TSBCHLSP	DB	"SBC HL,S",'P'+128
+TLDNNSP	DB	"LD (",8,"),S",'P'+128
+TADCHLSP	DB	"ADC HL,S",'P'+128
+TLDSPNN	DB	"LD S","P,(",8,')'+128
+TLDIA	DB	"LD I,",'A'+128
+TLDRA	DB	"LD R,",'A'+128
+TLDAI	DB	"LD A,",'I'+128
+TLDAR	DB	"LD A,",'R'+128
+TRRD	DB	"RR",'D'+128
+TRLD	DB	"RL",'D'+128
+TNEG	DB	"NE",'G'+128
+TRETN	DB	"RET",'N'+128
+TIM0	DB	"IM ",'0'+128
+TRETI	DB	"RET",'I'+128
+TIM1	DB	"IM ",'1'+128
+TIM2	DB	"IM ",'2'+128
+TMULAB	DB	"MULUB A,",'B'+128
+TMULAC	DB	"MULUB A,",'C'+128
+TMULAD	DB	"MULUB A,",'D'+128
+TMULAE	DB	"MULUB A,",'E'+128
+TMULHLBC	DB	"MULUW HL,B",'C'+128
+TMULHLSP	DB	"MULUW HL,S",'P'+128
+TOTIR	DB	"OTI",'R'+128
+TOTDR	DB	"OTD",'R'+128
 
 orgwaarbuf	DW	0
 reedsixydebc	DB	0
@@ -4295,11 +4295,11 @@ _tracehalt	cp	#76
 	jp	regpcen1
 
 dihalttxt	db	5,20,0
-	db	' ',24,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,25,'  '
-	db	' ',22,'  CRASH ALERT  ',22,'  '
-	db	' ',26,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,27,'  '
-	db	'  HALT during DI    '
-	db	'                    '
+	db	" ",24,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,25,"  "
+	db	" ",22,"  CRASH ALERT  ",22,"  "
+	db	" ",26,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,27,"  "
+	db	"  HALT during DI    "
+	db	"                    "
 
 _tracenog	cp	#DB
 	jp	z,traceinan

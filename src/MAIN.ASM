@@ -3629,7 +3629,7 @@ _haalget_cnt	cp	"+"
 	jr	nc,soortfound
 	call	testdec
 	jr	nc,soortfound
-	call	test$
+	call	test_
 	jr	nc,soortfound
 	call	testkarakter
 	jr	nc,soortfound
@@ -4123,7 +4123,7 @@ testdec_back	pop	hl
 	scf
 	ret
 ;----- is $ ?
-test$	ld	a,(hl)
+test_	ld	a,(hl)
 	cp	"$"
 	scf
 	ret	nz

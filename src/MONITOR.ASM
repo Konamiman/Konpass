@@ -209,25 +209,25 @@ _menu1_1	ld	a,(Menu1optie)
 	jr	nz,menu1
 	ld	hl,Menu1opties
 	jp	menuoptie
-Menu1opties	dw	!asm,!deb,!disk,!mem,!calc,!slot,!shell,!quit
+Menu1opties	dw	__asm,__deb,__disk,__mem,__calc,__slot,__shell,__quit
 
-!asm	ld	a,1
+__asm	ld	a,1
 	jp	back
-!deb	ld	a,2
+__deb	ld	a,2
 	jp	back
-!disk	ld	b,0
+__disk	ld	b,0
 	ld	a,3
 	call	godiskdrive
 	jp	monitortek
-!mem	call	memory
+__mem	call	memory
 	jp	monitortek
-!calc	call	calculator
+__calc	call	calculator
 	jp	monitor
-!slot	call	memview
+__slot	call	memview
 	jp	monitortek
-!shell	ld	a,4
+__shell	ld	a,4
 	jp	back
-!quit	ld	hl,80*12+(80-26)/2
+__quit	ld	hl,80*12+(80-26)/2
 	ld	bc,Quit
 	call	txttocomm
 	ld	hl,12*80+(80-26)/2+6
@@ -299,7 +299,7 @@ _menu2_1	ld	ix,Menu2
 	jr	nz,_menu2_1
 	ld	hl,Menu2opties
 	jp	menuoptie
-Menu2opties	dw	!address,!cpu,!chaining,!maininstall
+Menu2opties	dw	__address,__cpu,__chaining,__maininstall
 to_mon	call	wisoudmenu
 	ld	a,(chaining)
 	or	a
@@ -309,7 +309,7 @@ to_mon	call	wisoudmenu
 	call	nz,newchaining
 	jp	monitor
 
-!address	ld	hl,Menu2plaats
+__address	ld	hl,Menu2plaats
 	ld	ix,Menu2
 	call	wisoudmenu
 _addressstrt	ld	hl,11*80+20
@@ -343,7 +343,7 @@ H2	db	1,22,40,0,1,22,0
 H3	db	1,26,40,23,1,27,0
 Addresstxt	db	"Address:",0
 
-!cpu	ld	a,(Turbor)
+__cpu	ld	a,(Turbor)
 	or	a
 	jp	z,_menu2_1
 	ld	ix,#183
@@ -358,11 +358,11 @@ _cpu1	or	#80
 	call	printr800
 	jp	_menu2_1
 
-!chaining	call	changechain
+__chaining	call	changechain
 	call	printchaining
 	jp	_menu2_1
 
-!changechain	call	changechain
+__changechain	call	changechain
 	call	nz,newchaining
 	jp	monitor
 changechain	ld	a,(chaining)
@@ -378,7 +378,7 @@ newchaining	call	GOdebsetgetad
 	ld	d,b
 	jp	zetadres
 
-!maininstall	ld	hl,Menu2plaats
+__maininstall	ld	hl,Menu2plaats
 	ld	ix,Menu2
 	call	wisoudmenu
 	call	maininstall
@@ -469,13 +469,13 @@ _menu3_2	ld	ix,Menu3
 	jr	nz,menu3
 	ld	hl,Menu3opties
 	jp	menuoptie
-Menu3opties	dw	!search,!searchnext,!fill,!copy,!compare
-	dw	!poke,!peek,!print
+Menu3opties	dw	__search,__searchnext,__fill,__copy,__compare
+	dw	__poke,__peek,__print
 
 zethoksearch	ld	hl,9*80+20
 	ld	de,Hoksearch
 	jp	printblokkle
-!search	call	zethoksearch
+__search	call	zethoksearch
 	ld	hl,Searchtext
 	call	texttoblok
 	ld	hl,12*80+32
@@ -620,14 +620,14 @@ Searchtext1	dw	12*80+24
 	db	"End:",0
 	dw	0
 
-!searchnext	ld	a,(Searchnext)
+__searchnext	ld	a,(Searchnext)
 	or	a
 	jp	nz,_searchnext
 	call	beep
 	jp	monitor
 Searchnext	db	0	;possible ? => 0=no, 1=yes
 
-!fill	ld	hl,9*80+20
+__fill	ld	hl,9*80+20
 	ld	de,Hokfill
 	call	printblokkle
 	ld	hl,Filltext
@@ -767,7 +767,7 @@ Filltext	dw	10*80+38
 	db	"Type:",0
 	dw	0
 
-!copy	call	zethoksearch
+__copy	call	zethoksearch
 	ld	hl,Copytext
 	call	texttoblok
 	ld	hl,Searchtext1
@@ -819,7 +819,7 @@ Copytext	defw	10*80+38
 	defb	"To:",0
 	defw	0
 
-!compare	call	zethoksearch
+__compare	call	zethoksearch
 	ld	hl,Comptext
 	call	texttoblok
 	ld	hl,Searchtext1
@@ -911,7 +911,7 @@ Comptext	defw	10*80+37
 	defb	"With:",0
 	defw	0
 
-!poke	call	zethoksearch
+__poke	call	zethoksearch
 	ld	hl,Poketxt
 	call	texttoblok
 _pokenext	ld	hl,12*80+33
@@ -945,7 +945,7 @@ _poke16bit	ld	bc,2
 _poke16bit_1	ld	de,(Pokeadres)
 	call	puttoram
 	call	printmon
-	jp	!poke
+	jp	__poke
 Pokeadres	dw	0
 Poketxt	defw	10*80+38
 	defb	"Poke",0
@@ -957,7 +957,7 @@ Poketxt	defw	10*80+38
 	defb	"Address:",0
 	defw	0
 
-!peek	ld	hl,9*80+20
+__peek	ld	hl,9*80+20
 	ld	de,Hokfill
 	call	printblokkle
 	ld	hl,Peektxt
@@ -991,7 +991,7 @@ Peektxt	defw	10*80+38
 	defb	"16-bits:",0
 	defw	0
 
-!print	call	zethoksearch
+__print	call	zethoksearch
 	ld	hl,Printtext
 	call	texttoblok
 	ld	hl,Searchtext1
@@ -1307,7 +1307,7 @@ montestctrl	ld	hl,Metctrl
 shifttoets	LD	A,(Matrix+7)
 	AND	#04
 	JR	NZ,_shift
-	JP	!shell
+	JP	__shell
 mon_down	ld	hl,Mon_y
 	ld	a,(hl)
 	cp	15
@@ -1368,9 +1368,9 @@ Zonderctrl	db	Up
 	db	Tab
 	dw	mon_tab
 	db	Select
-	dw	!deb
+	dw	__deb
 	db	250	;=[STOP]
-	dw	!deb
+	dw	__deb
 	db	1
 	dw	lastmenu
 	db	0
@@ -1380,29 +1380,29 @@ Metctrl	db	Up
 	db	Down
 	dw	mon_down_f
 	db	Ctrl_d
-	dw	!disk
+	dw	__disk
 	db	Ctrl_a
 	dw	_addressstrt
 	db	Ctrl_z
-	dw	!search
+	dw	__search
 	db	Ctrl_n
-	dw	!searchnext
+	dw	__searchnext
 	db	Ctrl_f
-	dw	!fill
+	dw	__fill
 	db	Ctrl_k
-	dw	!copy
+	dw	__copy
 	db	Ctrl_o
-	dw	!poke
+	dw	__poke
 	db	Ctrl_e
-	dw	!peek
+	dw	__peek
 	db	Ctrl_c
-	dw	!calc
+	dw	__calc
 	db	Ctrl_p
-	dw	!print
+	dw	__print
 	db	Ctrl_x
-	dw	!changechain
+	dw	__changechain
 	db	Ctrl_q
-	dw	!quit
+	dw	__quit
 	db	0
 
 testtoets	ld	a,(hl)

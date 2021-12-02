@@ -380,20 +380,20 @@ _menu1_space:
 	ld	hl,Menu1opties
 	jp	menuoptie
 
-Menu1opties:	defw	!mon,!deb,!disk,!mem,!calc,!slot,!shell,!quit
+Menu1opties:	defw	__mon,__deb,__disk,__mem,__calc,__slot,__shell,__quit
 
 ;##### Monitor
-!mon:
+__mon:
 	ld	a,3
 	jr	backtohoofd
 
 ;##### Debugger
-!deb:
+__deb:
 	ld	a,2
 	jr	backtohoofd
 
 ;##### Disk
-!disk:
+__disk:
 	ld	b,0
 	ld	ix,Pointerdisk
 	call	gotodisk
@@ -407,7 +407,7 @@ Pointerdisk:
 	defw	loadblock,saveblock	;block file
 
 ;##### Memory
-!mem:
+__mem:
 	call	memory
 	ld	de,Textbuffer1	;in page1
 	ld	bc,(33+13)*4
@@ -427,20 +427,20 @@ editscreen:	;LEAVE IT !
 	jp	editor_cont
 
 ;##### Calculator
-!calc:
+__calc:
 	call	calculator
 	jp	editor_cont
 
 ;##### Slot view
-!slot:
+__slot:
 	call	memview
 	jr	_mem1
 
-!shell	ld	a,4
+__shell	ld	a,4
 	jr	backtohoofd
 
 ;##### Quit
-!quit:
+__quit:
 	ld	hl,80*Commline+(80-26)/2
 	ld	bc,Quit
 	call	txttocomm
@@ -528,14 +528,14 @@ _menu2_space:
 	dec	a
 	jr	z,_m2_upper
 	dec	a
-	jr	z,!maininstall
+	jr	z,__maininstall
 	jr	_menu2_1
 
 to_editor:
 	call	wisoudmenu
 	jp	editor_cont
 
-!maininstall:
+__maininstall:
 	call	maininstall
 	ld	de,Idhex
 	ld	bc,6
@@ -731,11 +731,11 @@ _menu3_space:
 	ld	hl,Menu3opties
 	jp	menuoptie
 
-Menu3opties:	defw	!errors,!labels
-	defw	!search,!searchnext,!jmpline,!delsource
+Menu3opties:	defw	__errors,__labels
+	defw	__search,__searchnext,__jmpline,__delsource
 
 ;##### Search
-!search:
+__search:
 	ld	hl,9*80+20
 	ld	de,Searchhok
 	call	printblokkle
@@ -914,7 +914,7 @@ Searchtext:	defs	26
 Replacetext:	defs	26
 
 ;##### Search next
-!searchnext:
+__searchnext:
 	ld	a,(Searchnext)
 	or	a
 	jp	nz,_searchcont
@@ -924,9 +924,9 @@ Replacetext:	defs	26
 Searchnext:	defb	0
 
 ;##### Jump to line
-!jmpline_err:
+__jmpline_err:
 	call	beep
-!jmpline:
+__jmpline:
 	ld	hl,11*80+20
 	ld	de,Gohok
 	call	printblokkle
@@ -941,32 +941,32 @@ Searchnext:	defb	0
 	jp	c,editor_cont	;escape
 	ld	hl,kbuf
 	call	berekengetal
-	jr	c,!jmpline_err
+	jr	c,__jmpline_err
 	ld	h,d
 	ld	l,e
 	ld	a,h
 	or	l
-	jr	z,!jmpline_err
+	jr	z,__jmpline_err
 	dec	hl
 	ld	bc,(Laatsteregel)
 	or	a
 	sbc	hl,bc
-	jr	c,!jmpline_1
+	jr	c,__jmpline_1
 	ld	d,b
 	ld	e,c
-!jmpline_1:	ld	(Regelnr),de
+__jmpline_1:	ld	(Regelnr),de
 	jp	_home_cont
 Jumptoline:	defb	"Line:",0
 
 ;##### Delete source
-!delsource:
+__delsource:
 	ld	hl,80*Commline+(80-35)/2
 	ld	bc,Deletesource
 	call	txttocomm
 	call	areyousure
-	jr	c,!delsource_1
+	jr	c,__delsource_1
 	call	delsource1
-!delsource_1:
+__delsource_1:
 	call	wiscommline
 	jp	editor_cont
 Deletesource:	defb	"Delete source: ",0
@@ -1035,17 +1035,17 @@ _menu4_space:
 	ld	hl,Menu4opties
 	jp	menuoptie
 
-Menu4opties:	defw	!assemble,!assdisk,!asstsr,!assrel,!reg,!go
+Menu4opties:	defw	__assemble,__assdisk,__asstsr,__assrel,__reg,__go
 
 ;##### Assemble
-!assemble:
+__assemble:
 	call	iniasm
 	call	inishowlab
 	call	GOassemblere
 	jp	editor_cont
 
 ;#####         Assemble                 to disk
-!assdisk:
+__assdisk:
 	call	iniasm
 	call	inishowlab
 	ld	ix,Pointerasm
@@ -1065,7 +1065,7 @@ inishowlab1:
 Pointerasm:	defw	GOassembledi,GOasstsr,GOrelocatabl
 
 ;##### Assemble TSR
-!asstsr:
+__asstsr:
 	call	iniasm
 	call	inishowlab
 	ld	ix,Pointerasm
@@ -1074,7 +1074,7 @@ Pointerasm:	defw	GOassembledi,GOasstsr,GOrelocatabl
 	jp	editor_cont
 
 ;##### Assemble relocatable
-!assrel:
+__assrel:
 	call	iniasm
 	call	inishowlab
 	ld	ix,Pointerasm
@@ -1086,7 +1086,7 @@ Pointerasm:	defw	GOassembledi,GOasstsr,GOrelocatabl
 
 Regoptie:	db	1,1
 
-!reg:
+__reg:
 	call	getregisters
 	ld	de,Registers
 	ld	bc,Endreg-Registers
@@ -1457,9 +1457,9 @@ Regtxt:
 
 
 ;##### Go
-!go_error:
+__go_error:
 	call	beep
-!go:
+__go:
 	xor	a
 	ld	(Aantalerrors),a
 	ld	(Showlabels),a
@@ -1482,7 +1482,7 @@ Regtxt:
 	ldir		;AMOUNT MUST BE IN PAGE 0 !!!
 	pop	hl
 	call	berekengetal
-	jr	c,!go_error
+	jr	c,__go_error
 	ld	h,d
 	ld	l,e	;start address
 	ld	(Startadres),hl
@@ -2011,7 +2011,7 @@ Fkeyregels:	defs	5*3
 editor_shift:
 	LD	A,(Matrix+7)
 	AND	#04
-	JP	Z,!shell
+	JP	Z,__shell
 	ld	a,(Matrix+6)
 	ld	d,1
 	rlca
@@ -2050,7 +2050,7 @@ Normcommando:
 Normadressen:
 	defw	editor_left,editor_right,editor_down,editor_up
 	defw	editor_ins,editor_tab,edit_ret,edit_bs,edit_del
-	defw	edit_home,!mon
+	defw	edit_home,__mon
 
 Ctrl_no_ret:
 	defb	Right,Left,Ctrl_l,0
@@ -2064,10 +2064,10 @@ Ctrl_met_ret:
 Ctrladresret:
 	defw	edit_fastdow,edit_fastup,zetstartblok,zeteindeblok
 	defw	wisstarteind
-	defw	edit_insline,edit_delline,!assemble,toprinter
-	defw	delblock,copyblock,moveblock,!jmpline,!go,!quit
-	defw	!search,!searchnext
-	defw	!disk,!calc
+	defw	edit_insline,edit_delline,__assemble,toprinter
+	defw	delblock,copyblock,moveblock,__jmpline,__go,__quit
+	defw	__search,__searchnext
+	defw	__disk,__calc
 
 
 ;----- Test whether B=function key, if so: C=menu no (1-5) and [NC]
@@ -5633,7 +5633,7 @@ Test:	equ	kbuf+125	;**************************
 Oudtest:	equ	kbuf+150	;**************************
 Showlabels:	defb	0	;0=off, 1=on (off after GO)
 
-!labels:
+__labels:
 showlabels:
 	ld	hl,3*80+18
 	ld	de,Errorhok
@@ -6088,7 +6088,7 @@ GOgeeflabdat:
 
 printerrors1:
 	call	edit_ret1	;for ctrl-r call
-!errors:
+__errors:
 printerrors:
 	ld	hl,3*80+18
 	ld	de,Errorhok
