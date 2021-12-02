@@ -1,6 +1,18 @@
 How to build Compass 1.2.09
 ---------------------------
 
+
+* With sjasm:
+
+You need sjasm 0.39i or newer (do NOT use sjasm 0.42), you can get it from https://github.com/Konamiman/Sjasm/releases
+
+Simply run the following and you'll get the COMPASS.COM and COMPASS.DAT files ready to use:
+
+sjasm -c compass.asm
+
+
+* With Compass itself (or another compatible assembler):
+
 COMfile:
 compile MAKECOM.ASM into MAKECOM.COM
 compile COMFILE.ASM into COMPASS.COM
