@@ -2,18 +2,18 @@ How to build Compass 1.2.09
 ---------------------------
 
 COMfile:
-compile MAKECOM.ASC into MAKECOM.COM
-compile C12COM9.ASC into COMPASS.COM
+compile MAKECOM.ASM into MAKECOM.COM
+compile COMFILE.ASM into COMPASS.COM
 Make sure you have the files PALET.BIN and CTNG.COP in the same directory
 run MAKECOM.COM
 This will strip off some headers from PALET.BIN and CTNG.COP and add it to the COMPASS.COM file.
 
 DATfile:
-compile MAIN129.ASC  into MAIN.DAT
-compile EDIT126.ASC  into EDITOR.DAT
-compile ASS129.ASC   into ASMROUT.DAT
-compile MON12.ASC    into MONITOR.DAT
-compile DEBUG127.ASC into DEBUGGER.DAT
-compile MAKEDAT.ASC  into MAKEDAT.COM
+compile MAIN.ASM  into MAIN.DAT
+compile EDITOR.ASM  into EDITOR.DAT
+compile ASMROUT.ASM   into ASMROUT.DAT
+compile MONITOR.ASM    into MONITOR.DAT
+compile DEBUGGER.ASM into DEBUGGER.DAT
+compile MAKEDAT.ASM  into MAKEDAT.COM
 run MAKEDAT 09
 This will add all DAT file together with a 128 byte header into COMPASS.DAT
