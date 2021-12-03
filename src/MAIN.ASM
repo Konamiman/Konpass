@@ -26,7 +26,7 @@ SETDEBPARS	equ	#400c	;in debugger segment
 	JR	shellentry
 	JP	#8000+set_slot_p0
 	db	1,2	;version code (Spain:2,2)
-	dw	codename	;codename
+	dw	0	;was codename
 	JP	#8000+startcompass
 shellentry	DI
 	LD	(sp_back_2_dos),SP
@@ -6256,8 +6256,6 @@ bios	JP	SETVRAMWRITE	;080
 	JP	GETKEY2
 endbios
 
-codename	ds	88*2,0	;88 bytes*2lines
-
 startcompass	di
 	ld	(#8000+si_place1),hl
 	ld	(#8000+si_place2),hl
@@ -6339,10 +6337,6 @@ _startcompass	or	(hl)	;create special byte for debugger
 	dec	hl
 	djnz	_startcompass
 	ld	(debuggerreg),a
-	LD	HL,codename
-	LD	DE,#0A00
-	LD	BC,11*8*2	;for two lines
-	CALL	RAMTOVRAM
 	LD	A,(#FCC1)	;set default working memory setting
 	LD	(page0),A
 	LD	A,(#F344)
