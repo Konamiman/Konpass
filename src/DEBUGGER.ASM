@@ -5300,8 +5300,8 @@ Main_y:	equ	7
 Mainoptie:	defb	1
 
 maininstall	ld	(Coloradres),de
-	ld	de,M_Idhex
-	ld	bc,25
+	ld	de,M_config
+	ld	bc,M_configend-M_config
 	ldir
 	ld	hl,3*80
 	ld	bc,23*80
@@ -5399,13 +5399,8 @@ _mainsp4_1:
 	jp	_main_hoofd1
 _mainsp5:
 	dec	a
-	jr	nz,_mainsp6
-	ld	hl,M_Knipper
-	jr	_mainsp4_1
-_mainsp6:
-	dec	a
 	jr	nz,_mainsp7
-	ld	hl,M_Startlogo
+	ld	hl,M_Knipper
 	jr	_mainsp4_1
 _mainsp7:
 	cp	11-6
@@ -5426,7 +5421,7 @@ _mainsp7_1:
 	ld	iy,(Coloradres)
 	add	iy,de	;IY = address colors (#RB, #0G)
 	ld	a,b
-	add	a,Main_y+9
+	add	a,Main_y+8
 	ld	l,a
 	ld	h,43
 	ld	(CURSORY_X),hl
@@ -5491,9 +5486,9 @@ _mainsp7_7:
 _mainsp11:
 	ld	a,1
 	ld	(CURSORONOFF),a
-	ld	hl,M_Idhex
+	ld	hl,M_config
 	ld	de,kbuf+211
-	ld	bc,25
+	ld	bc,M_configend-M_config
 	ldir
 	call	saveinstall	;already put debuggerpars in kbuf
 	call	SAVEINSTALL
@@ -5528,25 +5523,22 @@ printmain:
 	ld	hl,(Main_y+7)*80+45
 	ld	a,(M_Knipper)
 	call	printonoff
-	ld	hl,(Main_y+8)*80+44
-	ld	a,(M_Startlogo)
-	call	printonoff
 _printmain1:
 	ld	ix,(Coloradres)
-	ld	hl,(Main_y+9)*80+42
+	ld	hl,(Main_y+8)*80+42
 	call	printcolor	;color 1 = color num 0
 	ld	de,15*2
 	add	ix,de
-	ld	hl,(Main_y+10)*80+42
+	ld	hl,(Main_y+9)*80+42
 	call	printcolor	;color 2 = color num 15
 	ld	ix,(Coloradres)
 	ld	de,3*2
 	add	ix,de
-	ld	hl,(Main_y+11)*80+42
+	ld	hl,(Main_y+10)*80+42
 	call	printcolor	;color 3 = color num 3
 	dec	ix
 	dec	ix
-	ld	hl,(Main_y+12)*80+42
+	ld	hl,(Main_y+11)*80+42
 	jp	printcolor	;color 4 = color num 2
 printmainid:
 	ld	b,d
@@ -5699,12 +5691,13 @@ Newidhex:	defb	"  FF  ",0
 Newidbin:	defb	"  11  ",0
 Coloradres:	defw	0
 
+M_config:
 M_Idhex:	defs	3
 M_Idbin:	defs	3
 M_Printerlin:	defs	16
 M_Mouse:	defb	0
 M_Knipper:	defb	0
-M_Startlogo:	defb	0
+M_configend:
 
 Maintxt:
 	defw	(Main_y+1)*80+34
@@ -5720,21 +5713,19 @@ Maintxt:
 	defw	(Main_y+7)*80+31
 	defb	"Cursor blink:",0
 	defw	(Main_y+8)*80+33
-	defb	"Startlogo:",0
-	defw	(Main_y+9)*80+33
 	defb	"Color 1:",0
-	defw	(Main_y+10)*80+33
+	defw	(Main_y+9)*80+33
 	defb	"Color 2:",0
-	defw	(Main_y+11)*80+33
+	defw	(Main_y+10)*80+33
 	defb	"Color 3:",0
-	defw	(Main_y+12)*80+33
+	defw	(Main_y+11)*80+33
 	defb	"Color 4:",0
-	defw	(Main_y+13)*80+31
+	defw	(Main_y+12)*80+31
 	defb	"Save installations",0
 	defw	0
 
 Mainhok:	defw	Mh1,Mh2,Mh3,Mh2,Mh2,Mh2,Mh2,Mh2
-	defw	Mh2,Mh2,Mh2,Mh2,Mh2,Mh2,Mh4,0
+	defw	Mh2,Mh2,Mh2,Mh2,Mh2,Mh4,0
 Mh1:	defb	1,24,30,23,1,25,0	;--------
 Mh2:	defb	1,22,30,0,1,22,0	;|      |
 Mh3:	defb	1,20,30,23,1,19,0	;|------|

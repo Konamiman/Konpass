@@ -8,8 +8,6 @@
 
     module comfile
     include "COMFILE.ASM"
-    incbin "PALET.BIN",7,32
-    incbin "CTNG.COP",4,12019
 
     output "COMPASS.DAT"
 

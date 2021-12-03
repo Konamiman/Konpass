@@ -57,13 +57,6 @@ noshift	LD	A,(#FCC1)
 	JP	Z,bdos
 	ld	hl,ctngcode
 	res	0,(hl)
-	LD	A,(i_new)	;show logo?
-	OR	A
-	JR	Z,J0142	;yes, program is new
-	LD	A,(i_logo)
-	OR	A
-	JR	Z,J0145	;or logo is on
-J0142	call	logoprog
 
 J0145:	DI
 	XOR	A
@@ -1364,13 +1357,12 @@ m_priortab	db	4,1,1,5,255,1,2,1,6,4,1,1,5,1
 	db	8,3,4,1,8,0
 
 inst	db	0	;0=another virginal program
-	                        ;-->then show boot logo+src_mem
+	                        ;-->then show src_mem
 	db	0	;don't skip src_mem
 i_new	equ	inst+#00	;brand new compass 0=yes
 i_skipsrcmem	equ	inst+#01	;should the searchmem be skipped w?0=no
 i_mem_sbuf	equ	inst+#02	;sbuf,datbuf,labelbuf config
 i_cblocks	equ	inst+#c3	;compass blocks
-i_logo	equ	inst+#eb	;show logo 1=yes
 i_limit	equ	inst+#11b	;max.number of blocks to be allocated (5-96)
 	ds	(i_limit)-$,0	;area for all kinds of settings
 	db	9	;max blocks to install in limit mode
@@ -1379,126 +1371,3 @@ inst_end
 tempbuffer	ds	4,0
 buffer	;buffer: overwrites logoprog
 
-logoprog	di
-	XOR	A
-	LD	(#F3E9),A
-	LD	(#F3EA),A
-	LD	(#F3EB),A
-
-	ld	a,5
-	ld	ix,#005f
-	ld	iy,(#fcc0)
-	call	#001c
-
-	ld	a,(#f3e0)	;screen off
-	and	#bf
-	out	(#99),a
-	ld	a,128+1
-	out	(#99),a
-
-	LD	A,(#ffe7)
-	or	32
-	out	(#99),a
-	ld	a,128+8
-	out	(#99),a
-
-	ld	a,36
-	out	(#99),a
-	ld	a,128+17
-	out	(#99),a
-
-	ld	a,2
-	out	(#99),a
-	ld	a,128+15
-	out	(#99),a
-
-	ld	hl,vdphmmc
-	ld	bc,#0b9b
-	otir
-	ld	hl,figdata+1
-	ld	a,44+128
-	out	(#99),a
-	ld	a,128+17
-	out	(#99),a
-
-transfig	in	a,(#99)
-	rrca
-	jr	nc,_transend
-	bit	6,a
-	jr	z,transfig
-	ld	a,(hl)
-	out	(#9b),a
-	INC	HL
-	jr	transfig
-_transend
-	xor	a
-	out	(#99),a
-	ld	a,128+16
-	out	(#99),a
-
-	ld	hl,paletfig
-	ld	bc,#209a
-	otir
-
-
-	ld	a,(#f3e0)	;screen on
-	or	#40
-	out	(#99),a
-	ld	a,128+1
-	out	(#99),a
-
-	xor	a
-	out	(#99),a
-	ld	a,15+128
-	out	(#99),a
-	nop
-	nop
-	nop
-	ei
-	ld	b,0
-wachtenmaar	halt
-	djnz	wachtenmaar
-	di
-
-	ld	a,36
-	out	(#99),a
-	ld	a,128+17
-	out	(#99),a
-	ld	a,2
-	out	(#99),a
-	ld	a,128+15
-	out	(#99),a
-WVDP	NOP
-	NOP
-	IN	A,(#99)
-	RRCA
-	JR	C,WVDP
-
-	ld	hl,vdpclean
-	ld	bc,#0b9b
-	otir
-WVDP2	NOP
-	NOP
-	IN	A,(#99)
-	RRCA
-	JR	C,WVDP2
-
-	ld	a,0
-	out	(#99),a
-	ld	a,128+15
-	out	(#99),a
-
-	LD	A,(#ffe7)
-	out	(#99),a
-	ld	a,128+8
-	out	(#99),a
-
-	ret
-
-vdphmmc	db	10,0,45,0,238,0,101,0
-	db	0,0,#f0	;first2pixels zero!!
-vdpclean	db	0,0,0,0,0,1,212,0,#00,0,#c0
-
-paletfig
-
-figdata	equ	paletfig+32

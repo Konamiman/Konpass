@@ -5017,7 +5017,7 @@ MAININSTALL	LD	BC,(slotsubroutin)
 	LD	DE,color
 	call	MAININSTPROG
 	ld	de,tab_inst
-	ld	bc,25
+	ld	bc,tab_inst_end-tab_inst
 	ldir
 oldslotsub	LD	BC,#0000
 	LD	(slotsubroutin),BC
@@ -5030,7 +5030,7 @@ idbin	db	"%",0,0
 printerline	ds	16,0
 mouse	db	0	;1=on, turn off by default
 knipper	db	1	;1=on
-startlogo	db	1	;1=on
+tab_inst_end
 
 SAVEINSTALL	LD	A,(Backuponoff)	;backup status
 	LD	(kbuf+#0104),A
@@ -6185,9 +6185,9 @@ work_default	LD	HL,(kbuf+#ec)	;palettebytes color 0,(0)
 	LD	HL,(kbuf+#f2)	;palettebytes color 3,(2)
 	LD	(color+4),HL
 	CALL	setcolors
-	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper,logo
+	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper
 	LD	DE,tab_inst
-	LD	BC,#19
+	LD	BC,tab_inst_end-tab_inst
 	LDIR
 	LD	BC,(slotdebugger)
 	CALL	zetslot
