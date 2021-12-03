@@ -1,0 +1,264 @@
+File: COMPASSV.TXT - 12/04/2000
+Subject: Compass version history
+By: Compjoetania The Next Generation
+
+Compassreleases:
+1995:
+#1.0 :first version, some bugs, no shell, very good
+#1.1beta: betarelease of the second version of Compass, better than #1.0
+          Contains some VERY NASTY BUGS:
+          *does not run under DOS1
+          *no correct PUSHing in the debugger
+#1.1 :some minor bugs were removed, but the above mentioned bugs were still
+      there...
+
+1996: the 'old' Compjoetania members stopped programming for the 
+MSX-system. Except David Heremans; he gathered some other MSX-minded 
+people to start a new group: Compjoetania The Next Generation.
+The old members promised to give us the Compass sources so that we could 
+continue the development. 
+Some phonecalls later...
+June 1997: nothing received yet...
+July 1997: Compjoetania TNG starts from scratch all over. We disassembled
+           Compass #1.1 with... Compass #1.1!!!
+August/September 1997: Now we really know how big 16kB is!......
+                       Ready to release Compass #1.2beta.00!
+
+This betaversion was only available on the 'MCCM-CD' and on 'Wicherts CD'.
+This was a FULLY FUNCTIONAL promoversion.
+
+November, 1997: Compass #1.2beta.01 :only for CTNG members
+December, 1997: Compass #1.2beta.02 :only for CTNG members
+March,    1998: Compass #1.2beta.03 :only for CTNG members
+March,    1998: Compass #1.2beta.04 :only for CTNG members
+April 13, 1998: Compass #1.2beta.05 :only for CTNG members
+April 14, 1998: Compass #1.2beta.06 :only for CTNG members
+
+April 25, 1998: Compass #1.2.00 :for YOU, released at the fair in Tilburg
+May,      1998: Compass #1.2.01
+July 9,   1998: Compass #1.2.02
+July 11,  1998: Compass #1.2.03 
+September 1998: Compass #1.2.04
+September 1998: Compass #1.2.05
+October   1998: Compass #1.2.06
+April 11, 1999: Compass #1.2.07
+April 12, 1999: Compass #1.2.08
+September 1999: Compass #1.2.09
+
+September 1999: Compass #2.0beta.00 :sent by email to all users
+April 12, 2000: Compass #2.0beta.01 :released at the fair in Tilburg
+
+As soon as it is finished: Compass #2.0.00 :FREE update for #1.2 users
+
+All bug reports and suggestions for Compass #2.0 are welcome at:
+jon@msx.ch
+
+In the meanwhile, enjoy your MSX and have Fun!
+
+Compjoetania The Next Generation
+
+
+Bugfixes in #2.0beta.01
+-----------------------
+*CALL in debugger works now
+*some minor screenissues concerning returning from Userscreen fixed
+*REGfile loading in DOS1 works fine now
+
+Release of #2.0beta.00
+----------------------
+
+Bugfixes in #1.2.09
+-------------------
+*assembly of a macrodefinition with more than one parameter did lock up when it was preceded by a line with a long argument. Fixed.
+*INCLUDE problems when assembling to disk fixed
+*better INCLUDE errorlist handling
+
+Bugs still present in #1.2.09:
+------------------------------
+*Sometimes the labelbuffer isn't cleared properly. The computer may crash 
+ when displaying the labellist.
+*Compass crashes when you call the memorymenu when working with MemMan
+ in DOS1 environment. Probably a MemMan bug.
+*Incompatibilities with Gen80: Compass uses @sym (Gen80: @$ym) Compass may
+ crash if you use @$ym. The DEFL instructions in both programs are different.
+
+Bugfix in #1.2.08
+-----------------
+*assembly of IF with strings like IF "Compass">"GPS" screwed up the kernel
+
+Changes in #1.2.07
+------------------
+*Bugfix diskmenu: errorlist was damaged after using the diskmenu
+*Enhancement debugger: better adjustment of subslot register values
+
+Changes in #1.2.06
+------------------
+*ROM detection enhancements
+*Bugfix editor: 'ret insert' problems fixed
+*Bugfix editor: ASCII file loading problems fixed; no more duplication of
+ lines preceding empty ASCII lines (e.g. #20,#20,#0d,#0a)
+
+Changes in #1.2.05
+------------------
+*ROM detection enhancements
+
+Changes in #1.2.04
+------------------
+*Bugfix debugger: after 'Execute till BP' the P-shortcut didn't work fine.
+*Code optimization assemblymodule (somewhat faster)
+*No more crashing when returning from BASIC shell in DOS1 !!!
+
+Changes in #1.2.03
+------------------
+*Bugfix debugger: if the last instruction you traced was a PUSH or a POP and
+ you exited the debugger, then the SP had again its old value when you
+ re-entered the debugger.
+*Chaining to debuggercursor works fine now
+*New handy feature in debugger: shortcut I sets SP back to initial value
+
+Changes in #1.2.02
+------------------
+Changes to the debugger:
+*Code optimization, faster screenoutput (=faster scrolling)
+*Realtime updated minimonitor and stackviewer
+*IN r,(C) checks for port #A8 and mapperports now
+*Bugfix: breakpoints are removed correctly with specialtracefeature
+*Bugfix: correct secondaryslot-emulation when writing to port #A8
+*Bugfix: correct secondaryslot-emulation when writing to address #FFFF
+*Better emulation of #FFFF registers
+Changes to the monitor:
+*New feature built in: possibility to chain monitoraddress to
+ debuggeraddresses
+
+Bugfix of the UNOFFICIAL command LOOP in #1.2.01
+------------------------------------------------
+
+Release of #1.2.00
+------------------
+
+Debuggerbugs removed in #1.2beta.06:
+------------------------------------
+*tracing IN A,(#A8) is correct now
+*tracing LD (HL),n is correct now
+*IN A,(#FC/FD/FE/FF) is really emulated now:
+ example: IN A,(#FF) gives now #F0 on a 128kB mappersystem,
+          in former versions this gave #00
+
+Assembly bugs removed in #1.2beta.05:
+-------------------------------------
+*JR/DJNZ offsets are correct now. They were wrong when you used JR/DJNZ in an
+ IF-block that was not compiled.
+*No more problems with long DB/DEFB/DW/DEFW/DC/DEFC statements
+*Enhancements to DB/DC compiling: numerical operations on the last character
+ of a string is allowed now. For example: DB "TNI"-2 is compiled as "TNG"
+
+Bug removed in #1.2beta.04:
+---------------------------
+*The editorparameters of all 4 sourcebuffers are properly loaded now
+
+Bug/Changes in #1.2beta.03:
+---------------------------
+*The editorparameters (e.g. labellenght,...) are properly loaded now
+*Backgroundcolor is set to black at startup. In the previous versions, it was
+ impossible to see the startupmessages when backgroundcolor was white.
+*When the installing of saved memory is not successful, the workmemory is set
+ to the TPAsegments. Except page 0, ROMbios is set here.
+*MemMan is allowed under DOS1. This DOES NOT mean that it will work. So do not
+ use MemMan under DOS1 conditions. Perhaps this will be fixed in future.
+
+Bug removed in #1.2beta.02:
+---------------------------
+*Correct assembly of lines like: defb 't'+1
+ This bug is important enough to release a new version for!
+
+Bugs removed in #1.2beta.01:
+----------------------------
+*F2 monitorbug fixed
+*PO/PE indicator in debugger fixed
+
+The differences between #1.1 and #1.2beta
+-----------------------------------------
+following bugs were removed:
+*working under MSX-DOS1
+*Crashing when the main ramslot(=TPAslot) was not the same as when you 
+ performed a 'Save Installations'. (e.g. when you placed an extra 
+ memorymapper in the computer.)
+*PUSHing in the debugger works fine now. The error was situated in the 
+ Main Install routines.
+*When Compass was started with a successful 'Installing saved memory:Ok'
+ under DOS2 (without MemMan), all available memory (with a limit of
+ 384*16kB) was not freed. This resulted in a 'Not enough memory' in the 
+ shell and you couldn't use unused segments in the Memorymenu. This did 
+ not happen under MemMan because of the automatic uncrashing of MemMan.
+ Fixed.
+*Formatting under DOS1 was a disaster for people with several diskdrives. 
+ This was no problem because Compass v1.1 did not work under DOS1. 
+ Problems fixed.
+*Checking ROM/RAM routine is incredibly enhanced. No more crashing on 
+ 7MHz computers. No more wrong detection of ROMsegments because of 
+ undefined databus state on some MSX computers. Compass detects now also 
+ 'fixed' rammodules less than 64kB. (only in page 0,1 or 2)
+*When you entered no characters when asked for (e.g. Searchfunction and 
+ you typed nothing at the 'Replace'line) then the Compassprogram poked 
+ some zerobytes in the program! fixed.
+*A lot of other errors which occurred in special cases like the fact that 
+ segments weren't freed at startup when a compass-loaderror was encountered.
+
+Bugs not removed in #1.2beta.00:
+--------------------------------
+*When you press repeatedly F2 in the monitorprogram and press left and 
+ right, the background will be screwed up.
+*Editorparameters (labellenght, etc.) are not installed at startup
+*Sometimes a line you just edited in the assembler disappears when you
+ press Return. This is the case when you used a new label in this line
+ that you just declared in another sourcebuffer.
+*Sometimes the labelbuffer isn't cleared properly. The computer may crash 
+ when asking to show the labels.
+*The PO/PE indicator in the debugger is not correct
+*Incorrect assembly of lines like: db 't'+1
+*incorrect calculation of offsets for JR and DJNZ when using IF/ENDIF
+ constructions that were not compiled and contain JR/DJNZ.
+*Compass crashes when trying to go back from the BASIC shell under DOS1
+*Incompatibilities with Gen80: Compass uses @sym (Gen80: @$ym) Compass may
+ crash if you use @$ym. The DEFL instructions in both programs are different
+*Incorrect assembly of lines with db/dw and lots of arguments behind it.
+*Memorymanagement of debugger is not perfect yet: wrong IN A,(#A8) etc.
+
+Important differences between Compass #1.1 and #1.2(beta):
+----------------------------------------------------------
+Mainroutines have been totally rewritten! The original memoryroutines at 
+startup were shit! (Lots of bugs, rather slow when using large memorymappers)
+The routines for setting the automatic configuration (when doing a search 
+memory) are a lot better now. Compass will try to use ramsegments in 
+non-tpaslots first. Exception is made for the second Compassprogramblock 
+and the first Labelbuffersegment. These two segments must be in the tpaslot.
+
+Compass can run under 4 memorymanagement conditions:
+*no memorymanagement (DOS1), Compass will use its own routines
+ TPAsegmentnumbers: 3,2,1 and 0
+*DOS2 mapper support: without MemMan
+ TPAsegmentnumbers: reading #F2C7/8/9/A at startup
+*MemMan: in DOS2 environment with MemMan active
+ TPAsegmentnumbers: special GETTPA function of MemMan
+ This function is available since MemMan version 2.40. When running an older
+ version of MemMan, numbers 3,2,1 and 0 will be used.
+*MemMan: in DOS1 environment: TPAsegentnumbers: same as above
+         WE RECOMMEND NOT TO WORK WITH MEMMAN UNDER DOS1
+         Perhaps this will be fixed in future versions.
+
+Other changes
+-------------
+*The cursor in the diskmenu starts now at 'Dir'. (People who have erased
+ a file by mistake because of pressing Return when the cursor started at
+ 'Save' know why this is done)
+*The initial StackPointer in the debugger has been changed from #DE00 to
+ the REAL stackpointer (when entering Compass) minus 512 bytes.
+*Get the complete Compass version number by typing TYPE COMPASS.DAT or
+ COMPASS.COM at the MSX-DOS prompt. 
+*A 'hidden' feature! When you start Compass when pressing the [SHIFT]
+ key, Compass will allocate a maximum of nine ramsegments. In future
+ versions this number will be changeable.
+*Before Compass is launched at startup, you can pause the program by
+ pressing [STOP] to read the startupmessages if they disappear too
+ early. Press this key again to continue and launch Compass.
+
