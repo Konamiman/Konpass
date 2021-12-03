@@ -1,5 +1,4 @@
-;Compass v1.2.06 editor
-;JDS 24/10/98
+;Compass #1.2 - Editor
 
 ;compile with 'assemble to disk' (due to doubleusepage)
 

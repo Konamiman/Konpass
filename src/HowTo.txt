@@ -1,5 +1,5 @@
-How to build Compass 1.2.09
----------------------------
+How to build Compass 1.2
+------------------------
 
 
 * With sjasm:

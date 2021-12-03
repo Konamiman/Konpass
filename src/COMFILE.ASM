@@ -1,4 +1,4 @@
-	;Compass #1.2.09 - COMfile
+	;Compass #1.2 - COM file
 	;the logo routine can be improved
 	;based on v1.1, but completely rewritten and reworked
 	;25-10-98 JDS
@@ -21,10 +21,10 @@ ctngcode	equ	#ff79
 	ORG	#0100
 
 	jp	skipid
-	db	29,29,"   ",13,10
-	db	"Compass #1.2.09 COMfile",13,10
-	db	"(C)1998 Compjoetania The Next Generation",13,10,10
-	db	"DO NOT DISTRIBUTE!",13,10,26
+	db	13,"Compass #1.2.10 COMfile",13,10
+    db  "2022 by Konamiman",13,10
+    db 10
+    db  "Based on Compass #1.2.09 by Compjoetania TNG",13,10,26
 	ds	#0100+headlncom-2-$,0	;reserve bytes
 	db	#09,#12	;IDbyte subnr (bit7=beta),mainnr
 skipid	LD	HL,queuebc+4
@@ -1307,8 +1307,8 @@ startpalet	db	#00,#00,#00,#00,#77,#07,#04,#00
 	db	#17,#01,#27,#03,#51,#01,#27,#06
 	db	#71,#01,#73,#03,#61,#06,#63,#06
 	db	#11,#04,#65,#02,#55,#05,#77,#07
-txt_intro	db	"Compass #1.2.09 (C)1998 Compjoetania The Next Generation"
-	db	13,10,10,"$"
+txt_intro	db	"Compass #1.2.10, 2022 by Konamiman",13,10
+	db  "Based on Compass #1.2.09, (C)1998 by Compjoetania TNG",13,10,10,"$"
 txt_old	db	7,"Notice: You are using a version of Memman older "
 	db	"than version 2.40 .",13,10
 	db	"TPA segments will be assumed to have numbers 3,2,1 "

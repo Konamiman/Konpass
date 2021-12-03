@@ -1,6 +1,4 @@
-;MAIN PROGRAM COMPASS #1.2.09
-;JDS 08/09/99
-;ctng-protection built in
+;MAIN PROGRAM COMPASS #1.2
 ;#1.2.09: DOINCLUDE SEPARATE FCB
 
 	.label	13
@@ -331,8 +329,8 @@ setcolors	DI
 	RET
 txt_bovenaan	dw	1	;vramaddress
 	db	"Compass #1.2",0
-	dw	55
-	db	"1998 by Compjoetania TNG",0
+	dw	62
+	db	"2022 by Konamiman",0
 	dw	0
 txt_menu	dw	2*80+4
 	db	" SYSTEM ",0

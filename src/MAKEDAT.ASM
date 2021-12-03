@@ -174,9 +174,11 @@ txt_writing	db	" writing...",13,10,"$"
 txt_info	db	"Program to link all Compassblocks together.",13,10,"$"
 txt_uitleg	db	"Usage: makedat xx with xx two characters (subversion#)"
 	db	13,10,10,"$"
-header	db	13,10,"Compass #1.2."
+header	db	13,"Compass #1.2."
 versie	db	"xx"
-	db	" DATfile",13,10
-	db	"(C)1998 Compjoetania The Next Generation",13,10,10
-	db	"DO NOT DISTRIBUTE!",13,10,10,26
+    db    "2022 by Konamiman",13,10
+    db 10
+    db    "Based on Compass #1.2.09, (C)1998 by Compjoetania TNG",13,10
+    db 10
+    db    "http://www.github.com/Konamiman/Compass",13,10,10,26
 	ds	headln,0

@@ -1,5 +1,4 @@
-;Assembly module #1.2.09
-;JDS 7/9/1999
+;Compass #1.2 - Assembly module
 
 ;if the msx crashes while assembling it is the ds #7000-$,0
 ;at the end of the source (the source is then too big)

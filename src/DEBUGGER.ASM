@@ -1,4 +1,4 @@
-;Compass Debugger #1.2.07 12/04/1999
+;Compass #1.2 - Debugger
 
 	.label	15
 

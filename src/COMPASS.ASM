@@ -14,9 +14,10 @@
     output "COMPASS.DAT"
 
 header:
-    db    13,10,"Compass #1.2.09 DATfile",13,10
-    db    "(C)1998 Compjoetania The Next Generation",13,10,10
-    db    "DO NOT DISTRIBUTE!",13,10,10,26
+    db    13,"Compass #1.2.10 DATfile",13,10
+    db    "2022 by Konamiman",13,10
+    db 10
+    db    "Based on Compass #1.2.09, (C)1998 by Compjoetania TNG",13,10,26
 header_end:
 
     ds 128-(header_end-header)

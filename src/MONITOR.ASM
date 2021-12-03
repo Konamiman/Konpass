@@ -1,4 +1,4 @@
-;Compass v1.2.02 Monitor 08/07/1998
+;Compass #1.2 - Monitor
 
 kbuf:	equ	#f41f	;318 byte buffer
 
