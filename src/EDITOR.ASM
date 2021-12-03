@@ -78,6 +78,7 @@ maininstall:	equ	#116
 ;getpages:     equ     #119
 doinclude:	equ	#11c
 ;saveinstall:  equ     #11f
+about: equ #137
 
 Cursoronoff:	equ	#fca9
 Cursorpositi:	equ	#f3dc
@@ -378,7 +379,7 @@ _menu1_space:
 	ld	hl,Menu1opties
 	jp	menuoptie
 
-Menu1opties:	defw	__mon,__deb,__disk,__mem,__calc,__slot,__shell,__quit
+Menu1opties:	defw	__mon,__deb,__disk,__mem,__calc,__slot,__shell,__quit,__about
 
 ;##### Monitor
 __mon:
@@ -460,8 +461,15 @@ backtohoofd:
 
 Quit:	defb	"Quit: ",0
 
+;##### About
+
+__about:
+	call about
+	call	tekenscherm
+	jp	editor_cont
+
 Menu1:
-	defb	8,13,0	;height, width text, place background
+	defb	9,13,0	;height, width text, place background
 	defb	"Monitor      "
 	defb	"Debugger     "
 	defb	"Disk       ^D"
@@ -470,6 +478,7 @@ Menu1:
 	defb	"Slot view    "
 	db	"Shell        "
 	defb	"Quit       ^Q"
+	defb    "About        "
 
 ;************************ MENU 2
 

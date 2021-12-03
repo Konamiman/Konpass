@@ -20,6 +20,8 @@ Dskerrline	equ	14
 Testlabeladr	equ	#400c	;in ass/monitor segment
 MAININSTPROG	equ	#4009	;in debugger segment
 SETDEBPARS	equ	#400c	;in debugger segment
+ABOUTPROG equ #4015 	;in debugger segment
+
 ;--------------------------------------------
 	ORG	#0140
 
@@ -6254,6 +6256,7 @@ bios	JP	SETVRAMWRITE	;080
 	JP	GETPAGE2_DOS2
 	JP	SETPAGE2_DOS2
 	JP	GETKEY2
+	JP  ABOUT ;137
 endbios
 
 startcompass	di
@@ -6358,5 +6361,16 @@ _startcompass	or	(hl)	;create special byte for debugger
 	ld	(page3deb+1),a
 	ld	(page3+1),a
 	jp	shellentry
+
+ABOUT	LD	BC,(slotsubroutin)
+	LD	(oldslotsub2+1),BC
+	LD	BC,(slotdebugger)
+	LD	(slotsubroutin),BC
+	CALL	zetslot
+	call	ABOUTPROG
+oldslotsub2	LD	BC,#0000
+	LD	(slotsubroutin),BC
+	CALL	zetslot
+	RET
 
 	ds	#4000-$,0	;(fill with padding just to be sure)

@@ -64,6 +64,7 @@ MAININSTPROG	jp	maininstall
 SETDEBPARS	jp	loadinstall
 SETGETPATH	jp	filenames
 SETGETADRES	jp	setgetadres
+ABOUTPROG jp doabout
 
 wisbreak	ld	hl,breakbuf
 	ld	(breakbufpoint),hl
@@ -455,6 +456,12 @@ _puldown13	and	255-32
 	jp	z,tomemview
 	dec	c
 	jr	z,shiftesc
+	dec c
+	jr z,toquit
+
+toabout
+	call doabout
+	jp scherminit
 
 toquit	call	zetkader
 	ld	bc,txt_quit
@@ -1240,7 +1247,7 @@ _puldown54	and	255-32
 	jp	z,viewbreak
 	jp	specialtrace
 
-puldown1menu	db	8,13,0
+puldown1menu	db	9,13,0
 	db	"Assembler    "
 	db	"Monitor      "
 	db	"Disk       ^D"
@@ -1249,6 +1256,7 @@ puldown1menu	db	8,13,0
 	db	"Slotview     "
 	db	"Shell        "
 	db	"Quit       ^Q"
+	db  "About        "
 
 puldown2menu	db	4,18,0
 	db	"CPU: Z80          "	; off,rom,dram in order
@@ -5730,5 +5738,46 @@ Mh1:	defb	1,24,30,23,1,25,0	;--------
 Mh2:	defb	1,22,30,0,1,22,0	;|      |
 Mh3:	defb	1,20,30,23,1,19,0	;|------|
 Mh4:	defb	1,26,30,23,1,27,0	;--------
+
+doabout:
+	ld	hl,3*80
+	ld	bc,23*80
+	xor	a
+	call	FILLVRAM
+	ld	hl,3*10+#1800
+	ld	bc,24*10	;LEAVE IT !
+	xor	a
+	call	FILLVRAM
+
+	ld	hl,Main_y*80+18
+	ld	de,aboutlines
+	call	PRINTBLOKKLE
+	ld	hl,abouttxt
+	call	TEXTTOBLOK
+
+	call GETKEY
+	jp maininstback
+
+abouttxt:
+	defw	(Main_y+1)*80+33
+	defb	"About Compass",0
+	defw	(Main_y+4)*80+32
+	defb	"Compass #1.2.10",0
+	defw	(Main_y+6)*80+31
+	defb	"2022 by Konamiman",0
+	defw	(Main_y+8)*80+28
+	defb	"Based on Compass #1.2.09",0
+	defw	(Main_y+9)*80+26
+	defb	"(C) 1998 by Compjoetania TNG",0
+	defw	(Main_y+11)*80+22
+	defb	"https://github.com/Konamiman/Compass",0
+	defw	0
+
+aboutlines:	defw	Ah1,Ah2,Ah3,Ah2,Ah2,Ah2,Ah2,Ah2
+	defw	Ah2,Ah2,Ah2,Ah2,Ah2,Ah4,0
+Ah1:	defb	1,24,42,23,1,25,0	;--------
+Ah2:	defb	1,22,42,0,1,22,0	;|      |
+Ah3:	defb	1,20,42,23,1,19,0	;|------|
+Ah4:	defb	1,26,42,23,1,27,0	;--------
 
 	ds	#8000-$,0
