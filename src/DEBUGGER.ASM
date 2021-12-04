@@ -5306,6 +5306,7 @@ noadjust	djnz	adjustsubslot
 
 Main_y:	equ	7
 Mainoptie:	defb	1
+ConfigLinesCount: equ 10
 
 mainconfig	ld	(Coloradres),de
 	ld	de,M_config
@@ -5359,14 +5360,14 @@ maininstback:
 _main_up:
 	dec	(iy)
 	jr	nz,_main_up1
-	ld	(iy),11
+	ld	(iy),ConfigLinesCount
 _main_up1:
 	ld	b,30
 	call	WISBALK
 	jr	_main_hoofd
 _main_down:
 	ld	a,(iy)
-	cp	11
+	cp	ConfigLinesCount
 	jr	c,_main_down1
 	ld	(iy),0
 _main_down1:
