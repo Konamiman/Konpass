@@ -5010,7 +5010,7 @@ _retrysend	CALL	gobios
 	djnz	_retrysend
 	JR	_printini0	;try the following characters
 
-MAININSTALL	LD	BC,(slotsubroutin)
+MAINCONFIG	LD	BC,(slotsubroutin)
 	LD	(oldslotsub+1),BC
 	LD	BC,(slotdebugger)
 	LD	(slotsubroutin),BC
@@ -5034,7 +5034,7 @@ mouse	db	0	;1=on, turn off by default
 knipper	db	1	;1=on
 tab_inst_end
 
-SAVEINSTALL	LD	A,(Backuponoff)	;backup status
+SAVECONFIG	LD	A,(Backuponoff)	;backup status
 	LD	(kbuf+#0104),A
 	LD	HL,#0101	;notnew+notsrcem
 	LD	(kbuf),HL
@@ -6169,7 +6169,7 @@ hook_end
 fill_inst	LD	A,(kbuf)	;virgin version?
 	OR	A
 	RET	Z
-	LD	A,(kbuf+#104)	;no, get installations
+	LD	A,(kbuf+#104)	;no, get configuration
 	LD	(Backuponoff),A	;save backup status
 	ld	a,(kbuf+1)	;was there a search mem done in the COM?
 	or	a
@@ -6232,7 +6232,7 @@ bios	JP	SETVRAMWRITE	;080
 	JP	OLDSCREEN	;0e6
 	JP	SCREENCOMPASS	;0e9
 	JP	MOVEPROG	;0ec
-	JP	MAININSTALL	;0ef       newbinid
+	JP	MAINCONFIG	;0ef       newbinid
 	JP	GOTOEDITOR	;0f2
 	JP	GOTOASS	;0f5
 	JP	SLOT	;0f8
@@ -6245,10 +6245,10 @@ bios	JP	SETVRAMWRITE	;080
 	JP	LINETOASSEMB	;10d
 	JP	GETREGISTERS	;110
 	JP	GOTODEBUGGER	;113
-	JP	MAININSTALL	;116
+	JP	MAINCONFIG	;116
 	JP	GETPAGES	;119
 	JP	DOINCLUDE	;11c
-	JP	SAVEINSTALL	;11f
+	JP	SAVECONFIG	;11f
 	JP	GETPAGE0_DOS2
 	JP	SETPAGE0_DOS2
 	JP	GETPAGE1_DOS2

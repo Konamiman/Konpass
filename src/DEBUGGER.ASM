@@ -37,7 +37,7 @@ GODISKDRIVE	EQU	#B6
 INPUTTEXT	equ	#bf
 PRINTMENU	equ	#c5
 WISOUDMENU	equ	#cb
-MAININSTALL	equ	#116
+MAINCONFIG	equ	#116
 GETPAGES	equ	#119
 BEREKENGETAL	equ	#D1
 PRINTHEXADEC	equ	#9E
@@ -45,7 +45,7 @@ STARTPROGRAM	equ	#E0
 PRINTINI	equ	#107
 GETREGISTERS	equ	#110
 LINETOASSEMB	equ	#10D
-SAVEINSTALL	equ	#11f
+SAVECONFIG	equ	#11f
 PRINTBLOKKLE	equ	#dd
 TEXTTOBLOK	equ	#bc
 SETPAGE2	equ	#131
@@ -60,8 +60,8 @@ WAITFORKEY	equ	#10a
 STARTDEBUGGER	jp	init
 WISBREAK	jp	wisbreak
 INSERTBREAK	jp	insertbreak
-MAININSTPROG	jp	maininstall
-SETDEBPARS	jp	loadinstall
+MAININSTPROG	jp	mainconfig
+SETDEBPARS	jp	loadconfig
 SETGETPATH	jp	filenames
 SETGETADRES	jp	setgetadres
 ABOUTPROG jp doabout
@@ -70,7 +70,7 @@ wisbreak	ld	hl,breakbuf
 	ld	(breakbufpoint),hl
 	ret
 
-saveinstall:
+saveconfig:
 	ld	a,(msxrst)
 	ld	(kbuf+261),a
 	ld	a,(rstonscreen)
@@ -82,7 +82,7 @@ saveinstall:
 	ld	bc,maxvbouts+1
 	ldir
 	ret
-loadinstall:
+loadconfig:
 	ld	a,(kbuf+261)
 	ld	(msxrst),a
 	ld	a,(kbuf+282)
@@ -252,7 +252,7 @@ scherminit1	out	(#98),a
 	jp	setpcbalk
 
 hoofdbalk	db	23,23,23,23,23," SYSTEM ",23,23,23,23
-	db	23," INSTALLATIONS ",23,23
+	db	23," CONFIGURATION ",23,23
 	db	23,23," OPTIONS ",23
 	db	23,23," I/O-LIST ",23,23
 	db	23,23," BREAKPOINTS ",23,23,23,23,0
@@ -570,7 +570,7 @@ adjustpulmen22	add	hl,de
 	ld	hl,80*5+28
 	call	PRINTTEKST
 
-	ld	bc,installtekst
+	ld	bc,configtekst
 	ld	hl,80*7+19
 	call	PRINTTEKST
 
@@ -613,7 +613,7 @@ _puldown24	and	255-32
 	jr	z,tomonlink
 
 	call	pulldwn2exit
-	call	MAININSTALL
+	call	MAINCONFIG
 	jp	scherminit
 
 tomonlink	call	tomonlink2
@@ -1264,7 +1264,7 @@ puldown2menu	db	4,18,0
 linktekst	db	"Linking off     ^L",0
 	db	"Linked: cursor  ^L",0
 	db	"Linked: PC reg. ^L",0
-installtekst	db	"Main install      ",0
+configtekst	db	"Main config       ",0
 
 turbor	db	0
 monlinkyesno	db	0
@@ -5307,7 +5307,7 @@ noadjust	djnz	adjustsubslot
 Main_y:	equ	7
 Mainoptie:	defb	1
 
-maininstall	ld	(Coloradres),de
+mainconfig	ld	(Coloradres),de
 	ld	de,M_config
 	ld	bc,M_configend-M_config
 	ldir
@@ -5498,8 +5498,8 @@ _mainsp11:
 	ld	de,kbuf+211
 	ld	bc,M_configend-M_config
 	ldir
-	call	saveinstall	;already put debuggerpars in kbuf
-	call	SAVEINSTALL
+	call	saveconfig	;already put debuggerpars in kbuf
+	call	SAVECONFIG
 	jp	_main_hoofd
 mainberbalk:
 	ld	a,(iy)
@@ -5708,8 +5708,8 @@ M_Knipper:	defb	0
 M_configend:
 
 Maintxt:
-	defw	(Main_y+1)*80+34
-	defb	"Main install",0
+	defw	(Main_y+1)*80+31
+	defb	"Main configuration",0
 	defw	(Main_y+3)*80+33
 	defb	"Hex id:",0
 	defw	(Main_y+4)*80+33
@@ -5729,7 +5729,7 @@ Maintxt:
 	defw	(Main_y+11)*80+33
 	defb	"Color 4:",0
 	defw	(Main_y+12)*80+31
-	defb	"Save installations",0
+	defb	"Save configuration",0
 	defw	0
 
 Mainhok:	defw	Mh1,Mh2,Mh3,Mh2,Mh2,Mh2,Mh2,Mh2

@@ -28,7 +28,7 @@ wiskeybuffer:	equ	#101
 printini:	equ	#107
 waitforkey:	equ	#10a
 gotodebugger	equ	#113
-maininstall:	equ	#116
+mainconfig:	equ	#116
 about: equ #137
 
 msxtype:	equ	#2d	;self posted !
@@ -301,7 +301,7 @@ _menu2_1	ld	ix,Menu2
 	jr	nz,_menu2_1
 	ld	hl,Menu2opties
 	jp	menuoptie
-Menu2opties	dw	__address,__cpu,__chaining,__maininstall
+Menu2opties	dw	__address,__cpu,__chaining,__mainconfig
 to_mon	call	wisoudmenu
 	ld	a,(chaining)
 	or	a
@@ -380,10 +380,10 @@ newchaining	call	GOdebsetgetad
 	ld	d,b
 	jp	zetadres
 
-__maininstall	ld	hl,Menu2plaats
+__mainconfig	ld	hl,Menu2plaats
 	ld	ix,Menu2
 	call	wisoudmenu
-	call	maininstall
+	call	mainconfig
 	jp	monitortek
 
 __about
@@ -429,7 +429,7 @@ Menu2	db	4,18,0
 	db	"Address         ^A"
 	db	"CPU:              "
 	db	"Chain           ^X"
-	db	"Main install      "
+	db	"Main config       "
 
 ;***************** MENU 3
 Menu3optie	db	1
@@ -1254,7 +1254,7 @@ Teksten	dw	32
 	db	"Address:",0
 	dw	2*80
 	db	23,23,23,23," SYSTEM ",23,23,23,23,23
-	db	" INSTALLATIONS ",23,23,23,23,23," OPTIONS ",23,23,23,23
+	db	" CONFIGURATION ",23,23,23,23,23," OPTIONS ",23,23,23,23
 	db	23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,0

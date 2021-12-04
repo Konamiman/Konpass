@@ -181,8 +181,8 @@ the memoryallocation of Compass by pressing the SHIFT key when you start
 Compass. Currently this limitation is set to 9 segments. In future versions 
 of Compass this number will be changeable.
 
-If you have performed a 'Main install' (see chapter 10) Compass will try to 
-reinstall your saved memoryconfiguration. If all used segments in this 
+If you have performed a 'Main config' (see chapter 10) Compass will try to 
+reinstall your saved memory configuration. If all used segments in this 
 memoryconfiguration are not free, or when the Primary Mapper slot has changed 
 (for example: when you've placed an extra memorymapper into your MSX), 
 Compass will try to allocate segments described as above.
@@ -259,7 +259,7 @@ programpart.
 
 For your convenience a standard order is used throughout all parts of Compass. 
 The functionkey [F1] will always activate the SYSTEM menu (see chapter 2.3) 
-and the second menu (use [F2]) will always be the INSTALLATIONS menu. The 
+and the second menu (use [F2]) will always be the CONFIGURATION menu. The 
 contents of these menus will of course be slightly altered depending on the 
 active part when the menu was summoned. The menus hidden under [F3] up to [F5] 
 are different for each part and may even be absent.
@@ -376,7 +376,7 @@ colons then this label is declared public (see chapter 14).
 3.1 Assembler screen and controls
 The assembler screen is made up of a statusbar, a menubar, the desktop and a 
 function bar. The menubar has five different menus, respectively the SYSTEM 
-menu, the INSTALLATIONS menu, the OPTIONS menu, the ASSEMBLE menu and finally 
+menu, the CONFIGURATION menu, the OPTIONS menu, the ASSEMBLE menu and finally 
 the BLOCK menu. The desktop can be found below the menubar, which is an text 
 editor containing the sources. The functionbar can be found at the bottom of 
 the screen, displaying the linenumbers, INSert on/off, buffer used by BLOCK 
@@ -404,14 +404,14 @@ useful to edit/load normal textdocuments.
 3.2 The assembler menus
 The menubar of the assembler consists of five menus
         System:        see chapter 2.3
-        Installations: see chapter 3.2.1
+        Configuration: see chapter 3.2.1
         Options:       see chapter 3.2.2
         Assemble:      see chapter 3.2.3
         Block:         see chapter 3.2.4
 
 Most of these options can be reached by using the shortcuts, see Apendix A
 
-3.2.1 Installations menu
+3.2.1 Configuration menu
 Some assembler settings can be modified in this menu, which you can reach by 
 pressing [F2].
 
@@ -759,7 +759,7 @@ the end of your TSR) More info: see chapter 13.
         Syntax: .LABEL length
 
 You can tell the assembler how long the used labels can be in your source. So 
-you won't need to change this setting in the INSTALLATIONS menu when you work 
+you won't need to change this setting in the CONFIGURATION menu when you work 
 with several labellenghts. Of course this directive has to be placed at the 
 beginning of your source.
 
@@ -768,7 +768,7 @@ beginning of your source.
 
 You can tell the assembler whether all text should be uppercased or not before 
 assembling starts. So you won't need to change this setting in the 
-INSTALLATIONS menu when you work with several types of casing. Remark: your 
+CONFIGURATION menu when you work with several types of casing. Remark: your 
 source itself will not change to uppercased characters.
 
         BREAKP
@@ -815,7 +815,7 @@ does or why a certain error occurs in your program.
 4.1 Monitor screen and controls
 The monitor screens is made up by a statusbar, a menubar and the desktop. The 
 menu bar has three different menus, respectively the SYSTEM menu, the 
-INSTALLATIONS menu and finally the OPTIONS menu. Below the menubar the desktop 
+CONFIGURATION menu and finally the OPTIONS menu. Below the menubar the desktop 
 can be found, which consist of, on the left side a hexadecimal dump and on the 
 right side, an ASCII dump.
 
@@ -850,10 +850,10 @@ a look at appendix A.
 4.2 The monitor menus
 The menublak in the monitor contains 3 different menus:
         System :        see chapter 2.3
-        Installations : see chapter 4.2.1
+        Configuration : see chapter 4.2.1
         Options :       see chapter 4.2.2
 
-4.2.1 Installations menu
+4.2.1 Configuration menu
 A number of settings which are applicable to the monitor can be set in this 
 menu, which you can reach by pressing [F2].
 
@@ -963,7 +963,7 @@ understanding of a program.
 5.1 Debugger screen and controls
 The monitor screens is made up by a statusbar, a menubar and the desktop. The 
 menu bar has four different menus, respectively the SYSTEM menu, the 
-INSTALLATIONS menu, the OPTIONS menu and finally the STEP/TRACE menu.
+CONFIGURATION menu, the OPTIONS menu and finally the STEP/TRACE menu.
 Below the menubar the desktop can be found, which consists of the debugger 
 accompanied by a window displaying the CPU registers, a minimonitor with 
 hexadecimal and ASCII dump and a stack viewer.
@@ -1054,12 +1054,12 @@ memory blocks for easy debugging.
 The debugger menus
 The menubar of the debugger consists of five menus
         System:        see chapter 2.3
-        Installations: see chapter 5.2.1
+        Configuration: see chapter 5.2.1
         Options:       see chapter 5.2.2
         IO-list:       see chapter 5.2.3
         Step/trace:    see chapter 5.2.4
 
-5.2.1 Installations menu
+5.2.1 Configuration menu
 Reachable by pressing [F2]
 
 CPU:
@@ -1410,7 +1410,7 @@ other programs.
 
 If Compass is launched for the first time, Compass will automatically 
 configure your memory.
-Changes you may want to make can be saved by performing a SAVE INSTALLATIONS. 
+Changes you may want to make can be saved by performing a SAVE CONFIGURATION. 
 (See chapter 10)
 
 Each block is identified by its location in the computer.
@@ -1500,8 +1500,8 @@ You can leave Slot view by pressing [ESC]
 
 Remark: possible ROM pages or fixed RAM pages in page 3 are not shown.
 
-10. Main install
-----------------
+10. Main config
+---------------
 
 This menu is used to change and save the current settings of Compass.
 Use [SPACE] to select the desired parameter.
@@ -1549,7 +1549,7 @@ COLOR 1-4:
 You can change Compass' colours with this option. This is done by changing 
 the Red, Green and Blue values of the palette.
 
-SAVE INSTALLATIONS:
+SAVE CONFIGURATION:
 VERY USEFUL OPTION!
 This option will save your current Compass configuration:
 * Mouse, printerline, ...
@@ -2043,7 +2043,7 @@ point during assembling.
 
         Label too long
 You have used a labelname which exceeds the length of the maximum labellength 
-which is set using the INSTALLATIONS menu or the assembler directive .LABEL.
+which is set using the CONFIGURATION menu or the assembler directive .LABEL.
 
         Labelbuffer too small.
 During assembling the labelbuffer encountered an overflow. You can change the 
