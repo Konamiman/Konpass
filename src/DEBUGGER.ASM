@@ -1,4 +1,4 @@
-;Compass Debugger #1.2.07 12/04/1999
+;Compass #1.2 - Debugger
 
 	.label	15
 
@@ -64,6 +64,7 @@ MAININSTPROG	jp	maininstall
 SETDEBPARS	jp	loadinstall
 SETGETPATH	jp	filenames
 SETGETADRES	jp	setgetadres
+ABOUTPROG jp doabout
 
 wisbreak	ld	hl,breakbuf
 	ld	(breakbufpoint),hl
@@ -455,6 +456,12 @@ _puldown13	and	255-32
 	jp	z,tomemview
 	dec	c
 	jr	z,shiftesc
+	dec c
+	jr z,toquit
+
+toabout
+	call doabout
+	jp scherminit
 
 toquit	call	zetkader
 	ld	bc,txt_quit
@@ -1240,7 +1247,7 @@ _puldown54	and	255-32
 	jp	z,viewbreak
 	jp	specialtrace
 
-puldown1menu	db	8,13,0
+puldown1menu	db	9,13,0
 	db	"Assembler    "
 	db	"Monitor      "
 	db	"Disk       ^D"
@@ -1249,6 +1256,7 @@ puldown1menu	db	8,13,0
 	db	"Slotview     "
 	db	"Shell        "
 	db	"Quit       ^Q"
+	db  "About        "
 
 puldown2menu	db	4,18,0
 	db	"CPU: Z80          "	; off,rom,dram in order
@@ -5300,8 +5308,8 @@ Main_y:	equ	7
 Mainoptie:	defb	1
 
 maininstall	ld	(Coloradres),de
-	ld	de,M_Idhex
-	ld	bc,25
+	ld	de,M_config
+	ld	bc,M_configend-M_config
 	ldir
 	ld	hl,3*80
 	ld	bc,23*80
@@ -5399,13 +5407,8 @@ _mainsp4_1:
 	jp	_main_hoofd1
 _mainsp5:
 	dec	a
-	jr	nz,_mainsp6
-	ld	hl,M_Knipper
-	jr	_mainsp4_1
-_mainsp6:
-	dec	a
 	jr	nz,_mainsp7
-	ld	hl,M_Startlogo
+	ld	hl,M_Knipper
 	jr	_mainsp4_1
 _mainsp7:
 	cp	11-6
@@ -5426,7 +5429,7 @@ _mainsp7_1:
 	ld	iy,(Coloradres)
 	add	iy,de	;IY = address colors (#RB, #0G)
 	ld	a,b
-	add	a,Main_y+9
+	add	a,Main_y+8
 	ld	l,a
 	ld	h,43
 	ld	(CURSORY_X),hl
@@ -5491,9 +5494,9 @@ _mainsp7_7:
 _mainsp11:
 	ld	a,1
 	ld	(CURSORONOFF),a
-	ld	hl,M_Idhex
+	ld	hl,M_config
 	ld	de,kbuf+211
-	ld	bc,25
+	ld	bc,M_configend-M_config
 	ldir
 	call	saveinstall	;already put debuggerpars in kbuf
 	call	SAVEINSTALL
@@ -5528,25 +5531,22 @@ printmain:
 	ld	hl,(Main_y+7)*80+45
 	ld	a,(M_Knipper)
 	call	printonoff
-	ld	hl,(Main_y+8)*80+44
-	ld	a,(M_Startlogo)
-	call	printonoff
 _printmain1:
 	ld	ix,(Coloradres)
-	ld	hl,(Main_y+9)*80+42
+	ld	hl,(Main_y+8)*80+42
 	call	printcolor	;color 1 = color num 0
 	ld	de,15*2
 	add	ix,de
-	ld	hl,(Main_y+10)*80+42
+	ld	hl,(Main_y+9)*80+42
 	call	printcolor	;color 2 = color num 15
 	ld	ix,(Coloradres)
 	ld	de,3*2
 	add	ix,de
-	ld	hl,(Main_y+11)*80+42
+	ld	hl,(Main_y+10)*80+42
 	call	printcolor	;color 3 = color num 3
 	dec	ix
 	dec	ix
-	ld	hl,(Main_y+12)*80+42
+	ld	hl,(Main_y+11)*80+42
 	jp	printcolor	;color 4 = color num 2
 printmainid:
 	ld	b,d
@@ -5699,12 +5699,13 @@ Newidhex:	defb	"  FF  ",0
 Newidbin:	defb	"  11  ",0
 Coloradres:	defw	0
 
+M_config:
 M_Idhex:	defs	3
 M_Idbin:	defs	3
 M_Printerlin:	defs	16
 M_Mouse:	defb	0
 M_Knipper:	defb	0
-M_Startlogo:	defb	0
+M_configend:
 
 Maintxt:
 	defw	(Main_y+1)*80+34
@@ -5720,24 +5721,63 @@ Maintxt:
 	defw	(Main_y+7)*80+31
 	defb	"Cursor blink:",0
 	defw	(Main_y+8)*80+33
-	defb	"Startlogo:",0
-	defw	(Main_y+9)*80+33
 	defb	"Color 1:",0
-	defw	(Main_y+10)*80+33
+	defw	(Main_y+9)*80+33
 	defb	"Color 2:",0
-	defw	(Main_y+11)*80+33
+	defw	(Main_y+10)*80+33
 	defb	"Color 3:",0
-	defw	(Main_y+12)*80+33
+	defw	(Main_y+11)*80+33
 	defb	"Color 4:",0
-	defw	(Main_y+13)*80+31
+	defw	(Main_y+12)*80+31
 	defb	"Save installations",0
 	defw	0
 
 Mainhok:	defw	Mh1,Mh2,Mh3,Mh2,Mh2,Mh2,Mh2,Mh2
-	defw	Mh2,Mh2,Mh2,Mh2,Mh2,Mh2,Mh4,0
+	defw	Mh2,Mh2,Mh2,Mh2,Mh2,Mh4,0
 Mh1:	defb	1,24,30,23,1,25,0	;--------
 Mh2:	defb	1,22,30,0,1,22,0	;|      |
 Mh3:	defb	1,20,30,23,1,19,0	;|------|
 Mh4:	defb	1,26,30,23,1,27,0	;--------
+
+doabout:
+	ld	hl,3*80
+	ld	bc,23*80
+	xor	a
+	call	FILLVRAM
+	ld	hl,3*10+#1800
+	ld	bc,24*10	;LEAVE IT !
+	xor	a
+	call	FILLVRAM
+
+	ld	hl,Main_y*80+18
+	ld	de,aboutlines
+	call	PRINTBLOKKLE
+	ld	hl,abouttxt
+	call	TEXTTOBLOK
+
+	call GETKEY
+	jp maininstback
+
+abouttxt:
+	defw	(Main_y+1)*80+33
+	defb	"About Compass",0
+	defw	(Main_y+4)*80+32
+	defb	"Compass #1.2.10",0
+	defw	(Main_y+6)*80+31
+	defb	"2022 by Konamiman",0
+	defw	(Main_y+8)*80+28
+	defb	"Based on Compass #1.2.09",0
+	defw	(Main_y+9)*80+26
+	defb	"(C) 1998 by Compjoetania TNG",0
+	defw	(Main_y+11)*80+22
+	defb	"https://github.com/Konamiman/Compass",0
+	defw	0
+
+aboutlines:	defw	Ah1,Ah2,Ah3,Ah2,Ah2,Ah2,Ah2,Ah2
+	defw	Ah2,Ah2,Ah2,Ah2,Ah2,Ah4,0
+Ah1:	defb	1,24,42,23,1,25,0	;--------
+Ah2:	defb	1,22,42,0,1,22,0	;|      |
+Ah3:	defb	1,20,42,23,1,19,0	;|------|
+Ah4:	defb	1,26,42,23,1,27,0	;--------
 
 	ds	#8000-$,0

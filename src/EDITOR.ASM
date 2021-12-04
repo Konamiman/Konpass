@@ -1,5 +1,4 @@
-;Compass v1.2.06 editor
-;JDS 24/10/98
+;Compass #1.2 - Editor
 
 ;compile with 'assemble to disk' (due to doubleusepage)
 
@@ -79,6 +78,7 @@ maininstall:	equ	#116
 ;getpages:     equ     #119
 doinclude:	equ	#11c
 ;saveinstall:  equ     #11f
+about: equ #137
 
 Cursoronoff:	equ	#fca9
 Cursorpositi:	equ	#f3dc
@@ -178,7 +178,6 @@ _niet1ekeer1:
 	ld	a,(Keer)
 	or	a
 	jr	nz,_niet1ekeer
-	call	prtcodename
 	call	ini_variabel	;no need anymore??? (already in
 _niet1ekeer:	call	tekenscherm	;delsource1)************************
 	ld	a,1
@@ -380,7 +379,7 @@ _menu1_space:
 	ld	hl,Menu1opties
 	jp	menuoptie
 
-Menu1opties:	defw	__mon,__deb,__disk,__mem,__calc,__slot,__shell,__quit
+Menu1opties:	defw	__mon,__deb,__disk,__mem,__calc,__slot,__shell,__quit,__about
 
 ;##### Monitor
 __mon:
@@ -462,8 +461,15 @@ backtohoofd:
 
 Quit:	defb	"Quit: ",0
 
+;##### About
+
+__about:
+	call about
+	call	tekenscherm
+	jp	editor_cont
+
 Menu1:
-	defb	8,13,0	;height, width text, place background
+	defb	9,13,0	;height, width text, place background
 	defb	"Monitor      "
 	defb	"Debugger     "
 	defb	"Disk       ^D"
@@ -472,6 +478,7 @@ Menu1:
 	defb	"Slot view    "
 	db	"Shell        "
 	defb	"Quit       ^Q"
+	defb    "About        "
 
 ;************************ MENU 2
 
@@ -7883,62 +7890,7 @@ Labelbuffer:
 	ds	170,0
 
 Zin:
-prtcodename:
-	ld	hl,#a00
-	ld	de,(Bufferpage0)
-	ld	bc,88*2
-	call	vramtoram
-	ld	hl,12*80+30
-	call	setvramwrite
-	ld	hl,(Bufferpage0)
-	ld	de,88
-	add	hl,de
-	ld	(tweedeadres),hl
-screwup	ld	hl,(Bufferpage0)
-_decode2:
-	ld	b,20
-	ld	d,0
-_decode1:
-	ld	c,(hl)
-	ld	a,c
-	and	3
-	inc	a
-	ld	e,a
-	add	hl,de
-	ld	a,c
-	rlca
-	add	a,#42
-	ld	c,a
-	xor	(hl)
-	out	(#98),a
-	djnz	_decode1
-	inc	hl
-	ld	a,(hl)
-	cp	c
-	jr	nz,screwup
-	ld	b,60
-vul0	ld	a,0
-	out	(#98),a
-	djnz	vul0
-	db	#21	;ld hl,
-tweedeadres	dw	0
-	ld	a,(tweedelijn)
-	xor	1
-	ld	(tweedelijn),a
-	jr	nz,_decode2
-
-	ld	b,90
-	ei
-	ld	a,#70
-	or	#06
-	ld	(_wait),a
-_wait:
-	db	#ff
-	djnz	_wait
-	ret
-tweedelijn	db	0
-
-	defs	(256+64+10)-($-Zin),0
+	defs	(256+64+10),0
 Label:	equ	Zin+161	;30 characters + 0 ;*******okay
 Commando:	equ	Label+31	;10  characters + 0   ;?
 Register1:	equ	Commando+11	;146 characters + 0   ;?used nowhere!***

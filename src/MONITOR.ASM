@@ -1,4 +1,4 @@
-;Compass v1.2.02 Monitor 08/07/1998
+;Compass #1.2 - Monitor
 
 kbuf:	equ	#f41f	;318 byte buffer
 
@@ -29,6 +29,7 @@ printini:	equ	#107
 waitforkey:	equ	#10a
 gotodebugger	equ	#113
 maininstall:	equ	#116
+about: equ #137
 
 msxtype:	equ	#2d	;self posted !
 Cursoronoff:	equ	#fca9
@@ -209,7 +210,7 @@ _menu1_1	ld	a,(Menu1optie)
 	jr	nz,menu1
 	ld	hl,Menu1opties
 	jp	menuoptie
-Menu1opties	dw	__asm,__deb,__disk,__mem,__calc,__slot,__shell,__quit
+Menu1opties	dw	__asm,__deb,__disk,__mem,__calc,__slot,__shell,__quit,__about
 
 __asm	ld	a,1
 	jp	back
@@ -250,7 +251,7 @@ areyousure	ld	bc,Areyousure
 	ret
 Areyousure:	db	"Are you sure ? (y/n)",0
 
-Menu1	db	8,13,0	;height, width text, place background
+Menu1	db	9,13,0	;height, width text, place background
 	db	"Assembler    "
 	db	"Debugger     "
 	db	"Disk       ^D"
@@ -259,6 +260,7 @@ Menu1	db	8,13,0	;height, width text, place background
 	db	"Slot view    "
 	db	"Shell        "
 	db	"Quit       ^Q"
+	db  "About        "
 
 ;************************ MENU 2
 Menu2optie	defb	1
@@ -382,6 +384,10 @@ __maininstall	ld	hl,Menu2plaats
 	ld	ix,Menu2
 	call	wisoudmenu
 	call	maininstall
+	jp	monitortek
+
+__about
+	call	about
 	jp	monitortek
 
 printr800	ld	a,(Turbor)

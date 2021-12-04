@@ -1,6 +1,4 @@
-;MAIN PROGRAM COMPASS #1.2.09
-;JDS 08/09/99
-;ctng-protection built in
+;MAIN PROGRAM COMPASS #1.2
 ;#1.2.09: DOINCLUDE SEPARATE FCB
 
 	.label	13
@@ -22,13 +20,15 @@ Dskerrline	equ	14
 Testlabeladr	equ	#400c	;in ass/monitor segment
 MAININSTPROG	equ	#4009	;in debugger segment
 SETDEBPARS	equ	#400c	;in debugger segment
+ABOUTPROG equ #4015 	;in debugger segment
+
 ;--------------------------------------------
 	ORG	#0140
 
 	JR	shellentry
 	JP	#8000+set_slot_p0
 	db	1,2	;version code (Spain:2,2)
-	dw	codename	;codename
+	dw	0	;was codename
 	JP	#8000+startcompass
 shellentry	DI
 	LD	(sp_back_2_dos),SP
@@ -331,8 +331,8 @@ setcolors	DI
 	RET
 txt_bovenaan	dw	1	;vramaddress
 	db	"Compass #1.2",0
-	dw	55
-	db	"1998 by Compjoetania TNG",0
+	dw	62
+	db	"2022 by Konamiman",0
 	dw	0
 txt_menu	dw	2*80+4
 	db	" SYSTEM ",0
@@ -5019,7 +5019,7 @@ MAININSTALL	LD	BC,(slotsubroutin)
 	LD	DE,color
 	call	MAININSTPROG
 	ld	de,tab_inst
-	ld	bc,25
+	ld	bc,tab_inst_end-tab_inst
 	ldir
 oldslotsub	LD	BC,#0000
 	LD	(slotsubroutin),BC
@@ -5032,7 +5032,7 @@ idbin	db	"%",0,0
 printerline	ds	16,0
 mouse	db	0	;1=on, turn off by default
 knipper	db	1	;1=on
-startlogo	db	1	;1=on
+tab_inst_end
 
 SAVEINSTALL	LD	A,(Backuponoff)	;backup status
 	LD	(kbuf+#0104),A
@@ -6187,9 +6187,9 @@ work_default	LD	HL,(kbuf+#ec)	;palettebytes color 0,(0)
 	LD	HL,(kbuf+#f2)	;palettebytes color 3,(2)
 	LD	(color+4),HL
 	CALL	setcolors
-	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper,logo
+	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper
 	LD	DE,tab_inst
-	LD	BC,#19
+	LD	BC,tab_inst_end-tab_inst
 	LDIR
 	LD	BC,(slotdebugger)
 	CALL	zetslot
@@ -6256,9 +6256,8 @@ bios	JP	SETVRAMWRITE	;080
 	JP	GETPAGE2_DOS2
 	JP	SETPAGE2_DOS2
 	JP	GETKEY2
+	JP  ABOUT ;137
 endbios
-
-codename	ds	88*2,0	;88 bytes*2lines
 
 startcompass	di
 	ld	(#8000+si_place1),hl
@@ -6341,10 +6340,6 @@ _startcompass	or	(hl)	;create special byte for debugger
 	dec	hl
 	djnz	_startcompass
 	ld	(debuggerreg),a
-	LD	HL,codename
-	LD	DE,#0A00
-	LD	BC,11*8*2	;for two lines
-	CALL	RAMTOVRAM
 	LD	A,(#FCC1)	;set default working memory setting
 	LD	(page0),A
 	LD	A,(#F344)
@@ -6366,5 +6361,16 @@ _startcompass	or	(hl)	;create special byte for debugger
 	ld	(page3deb+1),a
 	ld	(page3+1),a
 	jp	shellentry
+
+ABOUT	LD	BC,(slotsubroutin)
+	LD	(oldslotsub2+1),BC
+	LD	BC,(slotdebugger)
+	LD	(slotsubroutin),BC
+	CALL	zetslot
+	call	ABOUTPROG
+oldslotsub2	LD	BC,#0000
+	LD	(slotsubroutin),BC
+	CALL	zetslot
+	RET
 
 	ds	#4000-$,0	;(fill with padding just to be sure)
