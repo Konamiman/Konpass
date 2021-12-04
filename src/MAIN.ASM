@@ -21,6 +21,7 @@ Testlabeladr	equ	#400c	;in ass/monitor segment
 MAININSTPROG	equ	#4009	;in debugger segment
 SETDEBPARS	equ	#400c	;in debugger segment
 ABOUTPROG equ #4015 	;in debugger segment
+REDEFCHARS equ #4018 	;in debugger segment
 
 ;--------------------------------------------
 	ORG	#0140
@@ -316,10 +317,7 @@ SCREENCOMPASS	LD	A,80	;width 80
 	CALL	FILLVRAM
 	LD	HL,txt_bovenaan
 	CALL	TEXTTOBLOK
-	LD	HL,vormen	;change character 17-29
-	LD	DE,#1000+17*8
-	LD	BC,13*8
-	JP	RAMTOVRAM
+	call redefchars
 setcolors	DI
 	XOR	A
 	OUT	(#99),A
@@ -5032,6 +5030,7 @@ idbin	db	"%",0,0
 printerline	ds	16,0
 mouse	db	0	;1=on, turn off by default
 knipper	db	1	;1=on
+roundcorners db 0 ;0=rounded, 1=square
 tab_inst_end
 
 SAVECONFIG	LD	A,(Backuponoff)	;backup status
@@ -6026,20 +6025,6 @@ zetspeed	DI
 	OUT	(#99),A
 	JP	WISKEYBUFFER
 
-vormen	db	#10,#10,#6c,#80,#00,#00,#00,#00	;17
-	db	#00,#00,#00,#80,#6c,#10,#10,#10	;18
-	db	#10,#10,#60,#80,#60,#10,#10,#10	;19
-	db	#10,#10,#0c,#00,#0c,#10,#10,#10	;20
-	db	#10,#28,#44,#80,#44,#28,#10,#10	;21
-	db	#10,#10,#10,#10,#10,#10,#10,#10	;22
-	db	#00,#00,#00,#fc,#00,#00,#00,#00	;23
-	db	#00,#00,#00,#00,#0c,#10,#10,#10	;24
-	db	#00,#00,#00,#80,#60,#10,#10,#10	;25
-	db	#10,#10,#0c,#00,#00,#00,#00,#00	;26
-	db	#10,#10,#60,#80,#00,#00,#00,#00	;27
-	db	#00,#0f,#1f,#1f,#1f,#1f,#0f,#00	;28
-	db	#00,#c0,#e0,#e0,#e0,#e0,#c0,#00	;29
-
 tab_memtabel
 textbuffer1	ds	33,0
 databuffer1	ds	13,0
@@ -6187,7 +6172,7 @@ work_default	LD	HL,(kbuf+#ec)	;palettebytes color 0,(0)
 	LD	HL,(kbuf+#f2)	;palettebytes color 3,(2)
 	LD	(color+4),HL
 	CALL	setcolors
-	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper
+	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper,roundcorners
 	LD	DE,tab_inst
 	LD	BC,tab_inst_end-tab_inst
 	LDIR
@@ -6362,13 +6347,24 @@ _startcompass	or	(hl)	;create special byte for debugger
 	ld	(page3+1),a
 	jp	shellentry
 
-ABOUT	LD	BC,(slotsubroutin)
+ABOUT	
+	ld bc,ABOUTPROG
+	jr call_in_debugger
+
+redefchars:
+	ld bc,REDEFCHARS
+
+call_in_debugger:
+	ld (call_in_debugger_address+1),bc
+	LD	BC,(slotsubroutin)
 	LD	(oldslotsub2+1),BC
 	LD	BC,(slotdebugger)
 	LD	(slotsubroutin),BC
 	CALL	zetslot
-	call	ABOUTPROG
-oldslotsub2	LD	BC,#0000
+call_in_debugger_address:
+	call	#0000
+oldslotsub2:
+	LD	BC,#0000
 	LD	(slotsubroutin),BC
 	CALL	zetslot
 	RET

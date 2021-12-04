@@ -65,6 +65,7 @@ SETDEBPARS	jp	loadconfig
 SETGETPATH	jp	filenames
 SETGETADRES	jp	setgetadres
 ABOUTPROG jp doabout
+REDEFCHARS jp doredefchars
 
 wisbreak	ld	hl,breakbuf
 	ld	(breakbufpoint),hl
@@ -5306,7 +5307,7 @@ noadjust	djnz	adjustsubslot
 
 Main_y:	equ	7
 Mainoptie:	defb	1
-ConfigLinesCount: equ 10
+ConfigLinesCount: equ 11
 
 mainconfig	ld	(Coloradres),de
 	ld	de,M_config
@@ -5408,9 +5409,19 @@ _mainsp4_1:
 	jp	_main_hoofd1
 _mainsp5:
 	dec	a
-	jr	nz,_mainsp7
+	jr	nz,_mainsp6
 	ld	hl,M_Knipper
 	jr	_mainsp4_1
+_mainsp6:
+	dec	a
+	jr	nz,_mainsp7
+	ld	hl,M_Roundcorners
+	ld	a,(hl)
+	xor	1
+	ld	(hl),a
+	ld (kbuf+#d3+M_Roundcorners-M_config),a
+	call doredefchars
+	jp	_main_hoofd1
 _mainsp7:
 	cp	11-6
 	jp	z,_mainsp11
@@ -5430,7 +5441,7 @@ _mainsp7_1:
 	ld	iy,(Coloradres)
 	add	iy,de	;IY = address colors (#RB, #0G)
 	ld	a,b
-	add	a,Main_y+8
+	add	a,Main_y+9
 	ld	l,a
 	ld	h,43
 	ld	(CURSORY_X),hl
@@ -5532,22 +5543,26 @@ printmain:
 	ld	hl,(Main_y+7)*80+45
 	ld	a,(M_Knipper)
 	call	printonoff
+	ld	hl,(Main_y+8)*80+47
+	ld	a,(M_Roundcorners)
+	xor 1
+	call	printonoff
 _printmain1:
 	ld	ix,(Coloradres)
-	ld	hl,(Main_y+8)*80+42
+	ld	hl,(Main_y+9)*80+42
 	call	printcolor	;color 1 = color num 0
 	ld	de,15*2
 	add	ix,de
-	ld	hl,(Main_y+9)*80+42
+	ld	hl,(Main_y+10)*80+42
 	call	printcolor	;color 2 = color num 15
 	ld	ix,(Coloradres)
 	ld	de,3*2
 	add	ix,de
-	ld	hl,(Main_y+10)*80+42
+	ld	hl,(Main_y+11)*80+42
 	call	printcolor	;color 3 = color num 3
 	dec	ix
 	dec	ix
-	ld	hl,(Main_y+11)*80+42
+	ld	hl,(Main_y+12)*80+42
 	jp	printcolor	;color 4 = color num 2
 printmainid:
 	ld	b,d
@@ -5706,6 +5721,7 @@ M_Idbin:	defs	3
 M_Printerlin:	defs	16
 M_Mouse:	defb	0
 M_Knipper:	defb	0
+M_Roundcorners: db 0 ;0=rounded, 1=square
 M_configend:
 
 Maintxt:
@@ -5721,20 +5737,22 @@ Maintxt:
 	defb	"Mouse:",0
 	defw	(Main_y+7)*80+31
 	defb	"Cursor blink:",0
-	defw	(Main_y+8)*80+33
-	defb	"Color 1:",0
+	defw	(Main_y+8)*80+30
+	defb	"Rounded corners:",0
 	defw	(Main_y+9)*80+33
-	defb	"Color 2:",0
+	defb	"Color 1:",0
 	defw	(Main_y+10)*80+33
-	defb	"Color 3:",0
+	defb	"Color 2:",0
 	defw	(Main_y+11)*80+33
+	defb	"Color 3:",0
+	defw	(Main_y+12)*80+33
 	defb	"Color 4:",0
-	defw	(Main_y+12)*80+31
+	defw	(Main_y+13)*80+31
 	defb	"Save configuration",0
 	defw	0
 
 Mainhok:	defw	Mh1,Mh2,Mh3,Mh2,Mh2,Mh2,Mh2,Mh2
-	defw	Mh2,Mh2,Mh2,Mh2,Mh2,Mh4,0
+	defw	Mh2,Mh2,Mh2,Mh2,Mh2,Mh2,Mh4,0
 Mh1:	defb	1,24,30,23,1,25,0	;--------
 Mh2:	defb	1,22,30,0,1,22,0	;|      |
 Mh3:	defb	1,20,30,23,1,19,0	;|------|
@@ -5780,5 +5798,44 @@ Ah1:	defb	1,24,42,23,1,25,0	;--------
 Ah2:	defb	1,22,42,0,1,22,0	;|      |
 Ah3:	defb	1,20,42,23,1,19,0	;|------|
 Ah4:	defb	1,26,42,23,1,27,0	;--------
+
+doredefchars:
+	ld a,(kbuf+#d3+M_Roundcorners-M_config)
+	or a
+	ld hl,vormen
+	jr z,redefchars2
+	LD	HL,vormen_sq	;change character 17-29
+redefchars2:
+	LD	DE,#1000+17*8
+	LD	BC,13*8
+	JP	RAMTOVRAM
+
+vormen	db	#10,#10,#6c,#80,#00,#00,#00,#00	;17
+	db	#00,#00,#00,#80,#6c,#10,#10,#10	;18
+	db	#10,#10,#60,#80,#60,#10,#10,#10	;19
+	db	#10,#10,#0c,#00,#0c,#10,#10,#10	;20
+	db	#10,#28,#44,#80,#44,#28,#10,#10	;21
+	db	#10,#10,#10,#10,#10,#10,#10,#10	;22
+	db	#00,#00,#00,#fc,#00,#00,#00,#00	;23
+	db	#00,#00,#00,#00,#0c,#10,#10,#10	;24
+	db	#00,#00,#00,#80,#60,#10,#10,#10	;25
+	db	#10,#10,#0c,#00,#00,#00,#00,#00	;26
+	db	#10,#10,#60,#80,#00,#00,#00,#00	;27
+	db	#00,#0f,#1f,#1f,#1f,#1f,#0f,#00	;28
+	db	#00,#c0,#e0,#e0,#e0,#e0,#c0,#00	;29
+
+vormen_sq	db	#10,#10,#10,#ff,#00,#00,#00,#00	;17
+	db	#00,#00,#00,#ff,#10,#10,#10,#10	;18
+	db	#10,#10,#10,#f0,#10,#10,#10,#10	;19
+	db	#10,#10,#10,#1f,#10,#10,#10,#10	;20
+	db	#10,#10,#10,#ff,#10,#10,#10,#10	;21
+	db	#10,#10,#10,#10,#10,#10,#10,#10	;22
+	db	#00,#00,#00,#ff,#00,#00,#00,#00	;23
+	db	#00,#00,#00,#1f,#10,#10,#10,#10	;24
+	db	#00,#00,#00,#f0,#10,#10,#10,#10	;25
+	db	#10,#10,#10,#1f,#00,#00,#00,#00	;26
+	db	#10,#10,#10,#f0,#00,#00,#00,#00	;27
+	db	#00,#0f,#1f,#1f,#1f,#1f,#0f,#00	;28
+	db	#00,#c0,#e0,#e0,#e0,#e0,#c0,#00	;29
 
 	ds	#8000-$,0
