@@ -74,10 +74,10 @@ printini:	equ	#107
 ;linetoassemb: equ     #10d
 getregisters:	equ	#110
 ;gotodebugger: equ     #113
-maininstall:	equ	#116
+mainconfig:	equ	#116
 ;getpages:     equ     #119
 doinclude:	equ	#11c
-;saveinstall:  equ     #11f
+;saveconfig:  equ     #11f
 about: equ #137
 
 Cursoronoff:	equ	#fca9
@@ -535,15 +535,15 @@ _menu2_space:
 	dec	a
 	jr	z,_m2_upper
 	dec	a
-	jr	z,__maininstall
+	jr	z,__mainconfig
 	jr	_menu2_1
 
 to_editor:
 	call	wisoudmenu
 	jp	editor_cont
 
-__maininstall:
-	call	maininstall
+__mainconfig:
+	call	mainconfig
 	ld	de,Idhex
 	ld	bc,6
 	ldir
@@ -692,7 +692,7 @@ Menu2:
 	defb	"Ret insert:     "
 	defb	"Auto align:     "
 	defb	"Upper case:     "
-	defb	"Main install    "
+	defb	"Main config     "
 ;************************ MENU 3
 
 Menu3optie:	defb	1
@@ -1847,7 +1847,7 @@ Teksten:
 	defb	"Sourcebuffer:",0
 	defw	2*80
 	defb	23,23,23,23," SYSTEM ",23,23,23,23,23
-	defb	" INSTALLATIONS ",23,23,23,23,23," OPTIONS ",23,23,23,23
+	defb	" CONFIGURATION ",23,23,23,23,23," OPTIONS ",23,23,23,23
 	defb	23," ASSEMBLE ",23,23,23,23,23," BLOCK "
 	defb	23,23,23,23,23,23,23,0
 	defw	0
