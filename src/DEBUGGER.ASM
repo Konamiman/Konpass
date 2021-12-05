@@ -354,6 +354,8 @@ hfdlusactitab	MKLIST	'A',getdisamadres
 	MKLIST	'V',viewbreak
 	MKLIST	'W',routdelbreak
 	MKLIST	'Y',specialtrace
+	MKLIST	'G',routgo
+	MKLIST	'O',getcalladres
 
 	db	select
 	dw	tomonitor
@@ -1248,16 +1250,16 @@ _puldown54	and	255-32
 	jp	z,viewbreak
 	jp	specialtrace
 
-puldown1menu	db	9,13,0
-	db	"Assembler    "
-	db	"Monitor      "
-	db	"Disk       ^D"
-	db	"Memory       "
-	db	"Calculator ^C"
-	db	"Slotview     "
-	db	"Shell        "
-	db	"Quit       ^Q"
-	db  "About        "
+puldown1menu	db	9,15,0
+	db	"Assembler    ST"
+	db	"Monitor      SL"
+	db	"Disk         ^D"
+	db	"Memory         "
+	db	"Calculator   ^C"
+	db	"Slot view      "
+	db	"Shell    SH+ESC"
+	db	"Quit         ^Q"
+	db  "About          "
 
 puldown2menu	db	4,18,0
 	db	"CPU: Z80          "	; off,rom,dram in order
@@ -1277,9 +1279,9 @@ txtr800	db	"Z80      ",0
 puldown3menu	db	8,19,0
 puldown3menu4	db	"Debugger address ^A"
 puldown3menu3	db	"Monitor address  ^M"
-puldown3menu1	db	"Go                 "	; see also: goadres
+puldown3menu1	db	"Go               ^G"	; see also: goadres
 	db	"Registers        ^R"
-puldown3menu2	db	"Temporary          "
+puldown3menu2	db	"Temporary        ^O"
 	db	"Return           ^U"
 	db	"Print              "
 	db	"Dis > source       "

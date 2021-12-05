@@ -52,6 +52,7 @@ Ctrl_n:	equ	1+"N"-"A"
 Ctrl_o:	equ	1+"O"-"A"
 Ctrl_p:	equ	1+"P"-"A"
 Ctrl_q:	equ	1+"Q"-"A"
+Ctrl_r:	equ	1+"R"-"A"
 Ctrl_x	equ	1+"X"-"A"
 Ctrl_z:	equ	1+"Z"-"A"
 
@@ -251,16 +252,16 @@ areyousure	ld	bc,Areyousure
 	ret
 Areyousure:	db	"Are you sure ? (y/n)",0
 
-Menu1	db	9,13,0	;height, width text, place background
-	db	"Assembler    "
-	db	"Debugger     "
-	db	"Disk       ^D"
-	db	"Memory       "
-	db	"Calculator ^C"
-	db	"Slot view    "
-	db	"Shell        "
-	db	"Quit       ^Q"
-	db  "About        "
+Menu1	db	9,16,0	;height, width text, place background
+	db	"Assembler  ST,ST"
+	db	"Debugger   ST/SL"
+	db	"Disk          ^D"
+	db	"Memory          "
+	db	"Calculator    ^C"
+	db	"Slot view       "
+	db	"Shell     SH+ESC"
+	db	"Quit          ^Q"
+	db  "About           "
 
 ;************************ MENU 2
 Menu2optie	defb	1
@@ -1197,7 +1198,7 @@ Menu3	db	8,14,0	;height, width text, place background
 	db	"Search next ^N"
 	db	"Fill        ^F"
 	db	"Copy        ^K"
-	db	"Compare       "
+	db	"Compare     ^R"
 	db	"Poke        ^O"
 	db	"Peek        ^E"
 	db	"Print       ^P"
@@ -1409,6 +1410,8 @@ Metctrl	db	Up
 	dw	__changechain
 	db	Ctrl_q
 	dw	__quit
+	db	Ctrl_r
+	dw	__compare
 	db	0
 
 testtoets	ld	a,(hl)
