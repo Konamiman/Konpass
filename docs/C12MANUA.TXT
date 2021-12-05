@@ -1,10 +1,7 @@
-File: C12MANUA.TXT - 24/04/1999
-Subject: Compass #1.2.08 manual
+Compass #1.2.10
+By Konamiman, 2022
+Based on Compass 1.2.09
 (c)1998 Compjoetania The Next Generation
-Note: do not distribute this document, it is copyrighted
-
-Because Compass #2.0 is on its way, we've decided not to print a new manual 
-for Compass #1.2.
 
 MSX, MSX-DOS and R800 are trademarks of ASCII Corp.
 Z80 is a trademark of ZILOG Corp.
@@ -139,16 +136,10 @@ When you have started MSX-DOS just type :
 
         A>COMPASS [RETURN]
 
-Now that you have started Compass you will see a nice graphical logo appear 
-on your screen. This logo is made in screen 5 causing the first page of 
-screen 5 to be erased. Launching Compass will take longer if you leave this 
-logo enabled. In the main install menu there is an option which allows you to 
-disable this logo!
-
-After the logo, Compass will perform some hardware checks on your computer. 
+Compass will first perform some hardware checks on your computer. 
 If your computer crashes here, then there is something wrong with your 
-hardware. (for example: random memory errors when working on a 7MHz MSX2. 
-These hardwareproblems are very difficult to trace.)
+hardware. (For example: random memory errors when working on a 7MHz MSX2. 
+These hardware problems are very difficult to trace.)
 If everything went fine, you'll see the amount of mapped memory Compass has
 detected. Also what kind of memorymanagement that will be used. Compass can 
 run in four memorymanagement conditions:
@@ -1537,13 +1528,10 @@ Use this option to switch mousecontrol on or off. If no mouse is connected to
 the computer, we recommend to disable mousecontrol. Mousecontrol is disabled 
 by default.
 
-CURSOR BLINK:
-Use this option do dis/enable the blinking of the cursor. Useful for people 
-who dislike blinking cursors...
-
-START LOGO:
-Use this option to dis/enable the startuplogo of Compass. This logo 
-overwrites some VRAM. Booting Compass is also much faster without the logo.
+ROUNDED CORNERS:
+Use this option to choose whether user interface boxes should display
+rounded corners or square corners. Just try both options and stick to the one 
+that you find more visually pleasant.
 
 COLOR 1-4:
 You can change Compass' colours with this option. This is done by changing 
