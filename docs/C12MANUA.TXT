@@ -1988,11 +1988,38 @@ SELECT          Go to the Monitor
 SHIFT + up      Jumps back aprox. 200 bytes
 SHIFT + down    Jumps forward aprox. 200 bytes
 
-
 Please note that:
 
 - STOP cycles between assembler, monitor and debugger.
 - SELECT toggles between monitor and debugger (and switches from assembler to debugger).
+
+
+Registers editor shortcuts
+--------------------------
+
+While the registers editor is open in the assembler, the following shortcuts are available:
+
+A        Edit AF
+B        Edit BC
+D        Edit DE
+H        Edit HL
+X        Edit IX
+Y        Edit IY
+S        Edit SP
+I        Toggle DI/EI
+Z        Toggle Z/NZ
+C        Toggle C/NC
+N        Toggle N:1/N:0
+O        Toggle PE/PO
+G        Toggle H:0/H:1
+M        Toggle P/M
+
+Also:
+
+SHIFT + A    Edit AF'
+SHIFT + B    Edit BC'
+SHIFT + D    Edit DE'
+SHIFT + H    Edit HL'
 
 
 Appendix B:

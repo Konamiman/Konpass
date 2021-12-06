@@ -1113,6 +1113,9 @@ reg_hoofd:
 	push	iy
 	call	getkey
 	pop	iy
+	ld c,a
+	call CheckRegSortcut	;Does not return if suitable shortcut found
+	ld a,c
 	cp	Right
 	jr	z,reg_right
 	cp	Left
@@ -1398,6 +1401,70 @@ _berregbalk2:
 	ld	h,a
 	ld	b,3
 	ret
+
+
+;Check if the key passed in A corresponds to a register/flag shortcut,
+;if so select the register/flag and edit/toggle it without returning,
+;otherwise just return.
+
+CheckRegSortcut:
+	or 32
+	ld b,a
+	ld a,(Matrix+6)
+	rra
+	jr c,CheckRegSortcut_NoShift
+	set 7,b
+CheckRegSortcut_NoShift:
+	ld hl,RegShortcuts
+CheckRegSortcutLoop:
+	ld a,(hl)
+	or a
+	ret z
+	inc hl
+	cp b
+	jr z,RegShortcutFound
+	inc hl
+	inc hl
+	jr CheckRegSortcutLoop
+RegShortcutFound:
+	push hl
+	ld	iy,Regoptie
+	call	wisregbalk
+	pop hl
+	ld a,(hl)
+	ld (iy),a
+	inc hl
+	ld a,(hl)
+	ld (iy+1),a
+	pop hl	;Remove return address from stack
+	ld a,c
+	call printreg
+	call	zetregbalk
+	jp reg_space
+
+;Register keyboard shortcuts table
+;Format: key (+128 for +Shift),X coord,Y coord
+
+RegShortcuts:
+	db 'a',1,1
+	db 'b',2,1
+	db 'd',3,1
+	db 'h',4,1
+	db 'x',1,3
+	db 'y',2,3
+	db 's',3,3
+	db 'i',1,4
+	db 'z',2,4
+	db 'c',3,4
+	db 'n',4,4
+	db 'o',5,4
+	db 'g',6,4
+	db 'm',7,4
+	db 'a'+128,1,2
+	db 'b'+128,2,2
+	db 'd'+128,3,2
+	db 'h'+128,4,2
+	db 0
 
 Registers:
 Reg_sp:	defw	0
