@@ -1997,7 +1997,8 @@ Please note that:
 Registers editor shortcuts
 --------------------------
 
-While the registers editor is open in the assembler, the following shortcuts are available:
+While the registers editor is open in the assembler or in the debugger,
+the following shortcuts are available:
 
 A        Edit AF
 B        Edit BC
@@ -2006,6 +2007,8 @@ H        Edit HL
 X        Edit IX
 Y        Edit IY
 S        Edit SP
+P        Edit PC (in debugger only)
+R        Edit IR (in debugger only)
 I        Toggle DI/EI
 Z        Toggle Z/NZ
 C        Toggle C/NC
