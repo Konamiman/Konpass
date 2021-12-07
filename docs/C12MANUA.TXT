@@ -1860,6 +1860,7 @@ If you are a frequent Compass user you will certainly appreciate the
 shortcuts, these are thousands times faster than going through the regular 
 select-menu-select-option method.
 
+
 General shortcuts
 -----------------
 
@@ -1870,12 +1871,15 @@ CTRL + D        To disk menu
 CTRL + Q        Quit the program
 SHIFT + ESC     Exit to shell / resume Compass
 
+
 Assembler shortcuts
 -------------------
 
 CTRL + A        Assemble source to memory
+CTRL + B        Show labels
 CTRL + E        End of block
 CTRL + G        Go to memory location (Run program)
+CTRL + I        Show registers
 CTRL + J        Jump to line in current sourcebuffer
 CTRL + K        Copy block to current line and buffer
 CTRL + L        Copy the definition label from the block to current position
@@ -1886,6 +1890,7 @@ CTRL + S        Set the beginning of the block
 CTRL + T        Reset block
 CTRL + V        Move block to current line and buffer
 CTRL + W        Delete block
+CTRL + Y        Assemble to disk
 CTRL + Z        Search/replace text
 
 CTRL + 1        Select sourcebuffer 1
@@ -1925,6 +1930,7 @@ SHIFT + right   To the right of the last character of the line
 SHIFT + left    To the first position of the line
 
 STOP            Go to the Monitor
+SELECT          Go to the Debugger
 
 
 Monitor shortcuts
@@ -1937,14 +1943,15 @@ CTRL + K        Copy memory block
 CTRL + N        Continue the search
 CTRL + O        'POKE' a value into an address
 CTRL + P        Print a block of memory
+CTRL + R        Compare memory blocks
 CTRL + X        Toggle Chaining mode
 CTRL + Z        Search
 
 CTRL + up       Scroll up one screen
 CTRL + down     Scroll down one screen
 
-STOP            Go to the debugger
-SELECT          Toggle between debugger and monitor
+STOP            Go to the Debugger
+SELECT          Go to the Debugger
 
 
 Debugger shortcuts
@@ -1960,24 +1967,62 @@ key, just the key will do.
 CTRL + A        Set address
 CTRL + B        Set breakpoint
 CTRL + E        Execute until breakpoint
+CTRL + G        Go (execute at given address)
 CTRL + H        Puts the program counter onto the current cursor address
 CTRL + I        Sets the SP register back to its initial value
 CTRL + J        Puts the cursor address onto the current program counter
 CTRL + L        Toggle Linking mode of the minimonitor
+CTRL + O        Store current address and go to another one TEMPORARYly
 CTRL + P        Change current slotselection
 CTRL + R        Change Registers
 CTRL + S        Step
 CTRL + T        Trace
-CTRL + U        Address, stored with TEMPORARY gets 'popped'
+CTRL + U        Address stored with TEMPORARY gets 'popped'
 CTRL + V        View breakpoints
 CTRL + W        Erase breakpoint
 CTRL + Y        Special trace
 
 STOP            Go to the Assembler
-SELECT          Toggle between debugger and monitor
+SELECT          Go to the Monitor
 
 SHIFT + up      Jumps back aprox. 200 bytes
 SHIFT + down    Jumps forward aprox. 200 bytes
+
+Please note that:
+
+- STOP cycles between assembler, monitor and debugger.
+- SELECT toggles between monitor and debugger (and switches from assembler to debugger).
+
+
+Registers editor shortcuts
+--------------------------
+
+While the registers editor is open in the assembler or in the debugger,
+the following shortcuts are available:
+
+A        Edit AF
+B        Edit BC
+D        Edit DE
+H        Edit HL
+X        Edit IX
+Y        Edit IY
+S        Edit SP
+P        Edit PC (in debugger only)
+R        Edit IR (in debugger only)
+I        Toggle DI/EI
+Z        Toggle Z/NZ
+C        Toggle C/NC
+N        Toggle N:1/N:0
+O        Toggle PE/PO
+G        Toggle H:0/H:1
+M        Toggle P/M
+
+Also:
+
+SHIFT + A    Edit AF'
+SHIFT + B    Edit BC'
+SHIFT + D    Edit DE'
+SHIFT + H    Edit HL'
 
 
 Appendix B:
@@ -2189,5 +2234,3 @@ DEFB/DB ENDM    PHASE
 DEFC/DC EQU     PUBLIC
 DEFM/DM EXTRN   TSRHOOKS
 DEFL    IF      UPPER
-
-

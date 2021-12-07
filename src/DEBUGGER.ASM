@@ -354,6 +354,8 @@ hfdlusactitab	MKLIST	'A',getdisamadres
 	MKLIST	'V',viewbreak
 	MKLIST	'W',routdelbreak
 	MKLIST	'Y',specialtrace
+	MKLIST	'G',routgo
+	MKLIST	'O',getcalladres
 
 	db	select
 	dw	tomonitor
@@ -1248,16 +1250,16 @@ _puldown54	and	255-32
 	jp	z,viewbreak
 	jp	specialtrace
 
-puldown1menu	db	9,13,0
-	db	"Assembler    "
-	db	"Monitor      "
-	db	"Disk       ^D"
-	db	"Memory       "
-	db	"Calculator ^C"
-	db	"Slotview     "
-	db	"Shell        "
-	db	"Quit       ^Q"
-	db  "About        "
+puldown1menu	db	9,15,0
+	db	"Assembler    ST"
+	db	"Monitor      SL"
+	db	"Disk         ^D"
+	db	"Memory         "
+	db	"Calculator   ^C"
+	db	"Slot view      "
+	db	"Shell    SH+ESC"
+	db	"Quit         ^Q"
+	db  "About          "
 
 puldown2menu	db	4,18,0
 	db	"CPU: Z80          "	; off,rom,dram in order
@@ -1277,9 +1279,9 @@ txtr800	db	"Z80      ",0
 puldown3menu	db	8,19,0
 puldown3menu4	db	"Debugger address ^A"
 puldown3menu3	db	"Monitor address  ^M"
-puldown3menu1	db	"Go                 "	; see also: goadres
+puldown3menu1	db	"Go               ^G"	; see also: goadres
 	db	"Registers        ^R"
-puldown3menu2	db	"Temporary          "
+puldown3menu2	db	"Temporary        ^O"
 	db	"Return           ^U"
 	db	"Print              "
 	db	"Dis > source       "
@@ -2343,10 +2345,87 @@ regend	db	23,23,23,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23,0
 
+
+;Check if the key passed in A corresponds to a register/flag shortcut,
+;if so select the register/flag and edit/toggle it without returning,
+;otherwise just return.
+
+CheckRegSortcut:
+	or 32
+	ld b,a
+	ld a,(matrix+6)
+	rra
+	jr c,CheckRegSortcut_NoShift
+	set 7,b
+CheckRegSortcut_NoShift:
+	ld hl,RegShortcuts
+	ld c,0
+CheckRegSortcutLoop:
+	ld a,(hl)
+	or a
+	ret z
+	cp b
+	jr z,RegShortcutFound
+	inc hl
+	inc c
+	jr CheckRegSortcutLoop
+RegShortcutFound:
+	pop hl	;Remove return address from stack
+	ld a,c
+	cp 14
+	jr nc,RegShortcutIsForFlag
+
+RegShortcutIsForReg:
+	ld a,0C9h	;RET, so that the "call regaanpas5" actually returns
+	ld (regaanpas0),a
+	call regaanpas5
+	ld a,0CDh	;CALL, to restore the "call	CHRGET"
+	ld (regaanpas0),a
+	jp regaanpas_space
+
+RegShortcutIsForFlag:
+	sub 14
+	ld c,a	;Flag indexes start again at 0
+	ld a,0C9h	;RET, so that the "call flagaanpas5" actually returns
+	ld (flagaanpas0),a
+	call flagaanpas5
+	ld a,0CDh	;CALL, to restore the "call	CHRGET"
+	ld (flagaanpas0),a
+	jp flagaanpas8
+
+RegShortcuts:
+	db 'a'
+	db 'b'
+	db 'd'
+	db 'a'+128
+	db 'b'+128
+	db 'd'+128
+	db 'h'
+	db 'x'
+	db 'y'
+	db 'h'+128
+	db 'p'
+	db 's'
+	db 'r'
+	db 'i'
+	db 'z'
+	db 'c'
+	db 'n'
+	db 'o'
+	db 'g'
+	db 'm'
+	db 0
+
+
 regaanpas	ld	c,1	; c=pointer which reg(max 12, IR+diei=13)
 	ld	a,29
 	jr	regaanpas1
 regaanpas0	call	CHRGET
+	ld d,a
+	ld e,c
+	call CheckRegSortcut
+	ld a,d
+	ld c,e
 	cp	escape
 	jp	z,regaanpasex
 	cp	1
@@ -2383,8 +2462,8 @@ regaanpas51	add	hl,de
 	djnz	regaanpas51
 	ld	a,(hl)
 	inc	hl
-	ld	H,(hl)
-	ld	L,a
+	ld	h,(hl)
+	ld	l,a
 	ld	b,8
 regaanpas52	push	bc
 	call	SETBALK
@@ -2397,6 +2476,7 @@ regaanpaseiblk	ld	b,2
 
 regaanpas4	cp	32
 	jr	nz,regaanpas0
+regaanpas_space:	
 	ld	a,c
 	cp	13
 	jr	nz,regaanpas6
@@ -2443,14 +2523,16 @@ regaanpas62	ld	a,(hl)
 	ld	de,kbuf
 	ld	a,128+64
 	call	INPUTTEXT
+	push af
+	ld	hl,regviewy+6+256*regviewx
+	ld	b,33
+	call	WISBALK
+	pop af
 	pop	bc
 	pop	hl
 	jr	c,regaanpas63
 	push	bc
 	push	hl
-	ld	hl,regviewy+6+256*regviewx
-	ld	b,33
-	call	WISBALK
 	call	resregaanpas
 	call	getadres2
 	ex	de,hl
@@ -2483,6 +2565,11 @@ regaanpas63	ld	hl,80*(6+regviewy)+regviewx
 flagaanpas	ld	c,0
 	jr	flagaanpas5
 flagaanpas0	call	CHRGET
+	ld d,a
+	ld e,c
+	call CheckRegSortcut
+	ld a,d
+	ld c,e
 	cp	up
 	jr	nz,flagaanpas1
 	ld	c,12

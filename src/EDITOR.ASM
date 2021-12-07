@@ -97,10 +97,12 @@ Return:	equ	13
 Bs:	equ	8
 Home:	equ	11
 Ctrl_a:	equ	1
+Ctrl_b:	equ	1+"B"-"A"
 Ctrl_c:	equ	1+"C"-"A"
 Ctrl_d:	equ	1+"D"-"A"
 Ctrl_e:	equ	1+"E"-"A"
 Ctrl_g:	equ	1+"G"-"A"
+Ctrl_i:	equ	1+"I"-"A"
 Ctrl_j:	equ	1+"J"-"A"
 Ctrl_k:	equ	1+"K"-"A"
 Ctrl_l:	equ	1+"L"-"A"
@@ -112,6 +114,7 @@ Ctrl_s:	equ	1+"S"-"A"
 Ctrl_t:	equ	1+"T"-"A"
 Ctrl_v:	equ	1+"V"-"A"
 Ctrl_w:	equ	1+"W"-"A"
+Ctrl_y:	equ	1+"Y"-"A"
 Ctrl_z:	equ	1+"Z"-"A"
 
 Commline:	equ	12
@@ -469,16 +472,16 @@ __about:
 	jp	editor_cont
 
 Menu1:
-	defb	9,13,0	;height, width text, place background
-	defb	"Monitor      "
-	defb	"Debugger     "
-	defb	"Disk       ^D"
-	defb	"Memory       "
-	defb	"Calculator ^C"
-	defb	"Slot view    "
-	db	"Shell        "
-	defb	"Quit       ^Q"
-	defb    "About        "
+	defb	9,15,0	;height, width text, place background
+	defb	"Monitor      ST"
+	defb	"Debugger     SL"
+	defb	"Disk         ^D"
+	defb	"Memory         "
+	defb	"Calculator   ^C"
+	defb	"Slot view      "
+	defb	"Shell    SH+ESC"
+	defb	"Quit         ^Q"
+	defb    "About          "
 
 ;************************ MENU 2
 
@@ -993,7 +996,7 @@ delsource1:
 Menu3:
 	defb	6,16,0
 	defb	"Show errors   ^R"
-	defb	"Show labels     "
+	defb	"Show labels   ^B"
 	defb	"Search        ^Z"
 	defb	"Search next   ^N"
 	defb	"Jump to line  ^J"
@@ -1110,6 +1113,9 @@ reg_hoofd:
 	push	iy
 	call	getkey
 	pop	iy
+	ld c,a
+	call CheckRegSortcut	;Does not return if suitable shortcut found
+	ld a,c
 	cp	Right
 	jr	z,reg_right
 	cp	Left
@@ -1396,6 +1402,70 @@ _berregbalk2:
 	ld	b,3
 	ret
 
+
+;Check if the key passed in A corresponds to a register/flag shortcut,
+;if so select the register/flag and edit/toggle it without returning,
+;otherwise just return.
+
+CheckRegSortcut:
+	or 32
+	ld b,a
+	ld a,(Matrix+6)
+	rra
+	jr c,CheckRegSortcut_NoShift
+	set 7,b
+CheckRegSortcut_NoShift:
+	ld hl,RegShortcuts
+CheckRegSortcutLoop:
+	ld a,(hl)
+	or a
+	ret z
+	inc hl
+	cp b
+	jr z,RegShortcutFound
+	inc hl
+	inc hl
+	jr CheckRegSortcutLoop
+RegShortcutFound:
+	push hl
+	ld	iy,Regoptie
+	call	wisregbalk
+	pop hl
+	ld a,(hl)
+	ld (iy),a
+	inc hl
+	ld a,(hl)
+	ld (iy+1),a
+	pop hl	;Remove return address from stack
+	ld a,c
+	call printreg
+	call	zetregbalk
+	jp reg_space
+
+;Register keyboard shortcuts table
+;Format: key (+128 for +Shift),X coord,Y coord
+
+RegShortcuts:
+	db 'a',1,1
+	db 'b',2,1
+	db 'd',3,1
+	db 'h',4,1
+	db 'x',1,3
+	db 'y',2,3
+	db 's',3,3
+	db 'i',1,4
+	db 'z',2,4
+	db 'c',3,4
+	db 'n',4,4
+	db 'o',5,4
+	db 'g',6,4
+	db 'm',7,4
+	db 'a'+128,1,2
+	db 'b'+128,2,2
+	db 'd'+128,3,2
+	db 'h'+128,4,2
+	db 0
+
 Registers:
 Reg_sp:	defw	0
 Reg_iy:	defw	0
@@ -1514,10 +1584,10 @@ Gotxt:	defs	30+1
 Menu4:
 	defb	6,19,0
 	defb	"Assemble         ^A"
-	defb	"Assemble to disk   "
+	defb	"Assemble to disk ^Y"
 	defb	"Assemble to TSR    "
 	defb	"Assemble to REL    "
-	defb	"Registers          "
+	defb	"Registers        ^I"
 	defb	"Go               ^G"
 
 
@@ -2052,12 +2122,13 @@ editor_shift:
 	jp	z,delrestline
 	jp	editor_norm
 
+Select: equ 24
 Normcommando:
-	defb	Left,Right,Down,Up,Ins,Tab,Return,Bs,Del,Home,250,0
+	defb	Left,Right,Down,Up,Ins,Tab,Return,Bs,Del,Home,250,Select,0
 Normadressen:
 	defw	editor_left,editor_right,editor_down,editor_up
 	defw	editor_ins,editor_tab,edit_ret,edit_bs,edit_del
-	defw	edit_home,__mon
+	defw	edit_home,__mon,__deb
 
 Ctrl_no_ret:
 	defb	Right,Left,Ctrl_l,0
@@ -2067,14 +2138,14 @@ Ctrl_met_ret:
 	defb	Down,Up,Ctrl_s,Ctrl_e,Ctrl_t
 	defb	Ins,Del,Ctrl_a,Ctrl_p,Ctrl_w,Ctrl_k,Ctrl_v
 	defb	Ctrl_j,Ctrl_g,Ctrl_q,Ctrl_z,Ctrl_n
-	defb	Ctrl_d,Ctrl_c,0
+	defb	Ctrl_d,Ctrl_c,Ctrl_y,Ctrl_i,Ctrl_b,0
 Ctrladresret:
 	defw	edit_fastdow,edit_fastup,zetstartblok,zeteindeblok
 	defw	wisstarteind
 	defw	edit_insline,edit_delline,__assemble,toprinter
 	defw	delblock,copyblock,moveblock,__jmpline,__go,__quit
 	defw	__search,__searchnext
-	defw	__disk,__calc
+	defw	__disk,__calc,__assdisk,__reg,__labels
 
 
 ;----- Test whether B=function key, if so: C=menu no (1-5) and [NC]
