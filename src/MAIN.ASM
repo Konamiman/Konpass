@@ -5024,14 +5024,15 @@ oldslotsub	LD	BC,#0000
 	CALL	zetslot
 	LD	HL,tab_inst
 	RET
-tab_inst
+
+tab_inst:
 idhex	db	"#",0,0
 idbin	db	"%",0,0
 printerline	ds	16,0
 mouse	db	0	;1=on, turn off by default
 knipper	db	1	;1=on
-roundcorners db 0 ;0=rounded, 1=square
-tab_inst_end
+config_flags db 0	;See M_Flags in debugger.asm
+tab_inst_end:
 
 SAVECONFIG	LD	A,(Backuponoff)	;backup status
 	LD	(kbuf+#0104),A
@@ -5100,14 +5101,14 @@ si_place1	dw	#0300
 si_lenght	dw	#011C
 	CALL	saven_maar	;save and close
 	JR	skip_save_err
-_saveerror	LD	HL,22*80+31
+_saveerror	LD	HL,23*80+31
 	LD	BC,Writeerror
 	CALL	PRINTTEKST
 	CALL	beep
 	CALL	GETKEY
 skip_save_err	CALL	clrdiskhooks
-	LD	HL,22*80	;ev delete error text?
-	LD	BC,80	;clear line 22
+	LD	HL,23*80	;ev delete error text?
+	LD	BC,80	;clear line 23
 	XOR	A
 	JP	FILLVRAM
 
@@ -6172,10 +6173,14 @@ work_default	LD	HL,(kbuf+#ec)	;palettebytes color 0,(0)
 	LD	HL,(kbuf+#f2)	;palettebytes color 3,(2)
 	LD	(color+4),HL
 	CALL	setcolors
-	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper,roundcorners
+	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper,configflags
 	LD	DE,tab_inst
 	LD	BC,tab_inst_end-tab_inst
 	LDIR
+	ld a,(config_flags)
+	and 1	;Initial file type
+	inc a
+	ld (Soort),a
 	LD	BC,(slotdebugger)
 	CALL	zetslot
 	JP	SETDEBPARS
@@ -6352,6 +6357,7 @@ ABOUT
 	jr call_in_debugger
 
 redefchars:
+	ld a,(config_flags)
 	ld bc,REDEFCHARS
 
 call_in_debugger:
