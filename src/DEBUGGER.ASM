@@ -5489,23 +5489,25 @@ _mainsp3:
 _mainsp4:
 	dec	a
 	jr	nz,_mainsp5
-	ld	hl,M_Mouse
-_mainsp4_1:
-	ld	a,(hl)
-	xor	1
-	ld	(hl),a
+	ld	hl,M_Flags
+	ld a,(hl)
+	xor 100b
+	ld (hl),a
 	jp	_main_hoofd1
 _mainsp5:
 	dec	a
 	jr	nz,_mainsp6
-	ld	hl,M_Knipper
-	jr	_mainsp4_1
+	ld	hl,M_Flags
+	ld a,(hl)
+	xor 1000b
+	ld (hl),a
+	jp	_main_hoofd1
 _mainsp6:
 	dec	a
 	jr	nz,_mainsp6_1
 	ld	hl,M_Flags
 	ld	a,(hl)
-	xor	2
+	xor	10b
 	ld	(hl),a
 	call doredefchars
 	jp	_main_hoofd1
@@ -5637,18 +5639,21 @@ printmain:
 	ld	bc,M_Printerlin
 	call	PRINTTEKST
 	ld	hl,(Main_y+6)*80+42
-	ld	a,(M_Mouse)
+	ld	a,(M_Flags)
+	and 100b
 	call	printonoff
 	ld	hl,(Main_y+7)*80+45
-	ld	a,(M_Knipper)
+	ld	a,(M_Flags)
+	and 1000b	;Cursor blink on/off
 	call	printonoff
 	ld	hl,(Main_y+8)*80+47
 	ld	a,(M_Flags)
-	and 10b
+	and 10b	;Mouse on/off
 	xor 10b
 	call	printonoff
 	ld	hl,(Main_y+9)*80+47
 	ld a,(M_Flags)
+	and 1	;Initially Asm or Ascii
 	call printAsmAscii
 _printmain1:
 	ld	ix,(Coloradres)
@@ -5808,17 +5813,16 @@ testoke:
 
 printonoff:
 	ld	bc,txt_on
-	or	a
-	jr	nz,_printonoff
+	;or	a   ;Assume flags already set at input
+	jp	nz,PRINTTEKST
 	ld	bc,txt_off
-_printonoff
 	jp	PRINTTEKST
 txt_on	db	"on ",0
 txt_off	db	"off",0
 
 printAsmAscii:
 	ld bc,AsmStr
-	and 1
+	;and 1	;Assume flags already set at input
 	jp z,PRINTTEKST
 	ld bc,AsciiStr
 	jp PRINTTEKST
@@ -5833,13 +5837,16 @@ M_config:
 M_Idhex:	defs	3
 M_Idbin:	defs	3
 M_Printerlin:	defs	16
-M_Mouse:	defb	0
-M_Knipper:	defb	0
 
 ; Flags:
 ; Bit 0: initial file type, 0=Asm, 1=Ascii
 ; Bit 1: rounded corners, 0=rounded, 1=square
-M_Flags: db 0
+; Bit 2: mouse, 0=off, 1=on
+; Bit 3: cursor blink, 0=off, 1=on
+M_Flags: db 1000b
+
+	defb 0 ;Two unused bytes, were "mouse" and "cursor blink"
+	defb 0
 
 M_configend:
 
