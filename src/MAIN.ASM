@@ -4866,8 +4866,8 @@ _getkey4	LD	HL,blokvorm
 _getkey3	LD	B,20
 	CALL	WAITFORKEY
 	JR	NC,_getkey2
-	LD	A,(knipper)
-	OR	A
+	LD	A,(config_flags)
+	and 1000b
 	JR	Z,_getkey3
 	LD	HL,oldvorm
 	LD	DE,#1000+255*8
@@ -5024,14 +5024,15 @@ oldslotsub	LD	BC,#0000
 	CALL	zetslot
 	LD	HL,tab_inst
 	RET
-tab_inst
+
+tab_inst:
 idhex	db	"#",0,0
 idbin	db	"%",0,0
 printerline	ds	16,0
-mouse	db	0	;1=on, turn off by default
-knipper	db	1	;1=on
-roundcorners db 0 ;0=rounded, 1=square
-tab_inst_end
+config_flags db 1000b	;See M_Flags in debugger.asm
+    	db	0	;Two unused bytes, were "mouse" and "cursor blink"
+    	db	0
+tab_inst_end:
 
 SAVECONFIG	LD	A,(Backuponoff)	;backup status
 	LD	(kbuf+#0104),A
@@ -5100,14 +5101,14 @@ si_place1	dw	#0300
 si_lenght	dw	#011C
 	CALL	saven_maar	;save and close
 	JR	skip_save_err
-_saveerror	LD	HL,22*80+31
+_saveerror	LD	HL,23*80+31
 	LD	BC,Writeerror
 	CALL	PRINTTEKST
 	CALL	beep
 	CALL	GETKEY
 skip_save_err	CALL	clrdiskhooks
-	LD	HL,22*80	;ev delete error text?
-	LD	BC,80	;clear line 22
+	LD	HL,23*80	;ev delete error text?
+	LD	BC,80	;clear line 23
 	XOR	A
 	JP	FILLVRAM
 
@@ -5767,8 +5768,8 @@ OFFSET	LD	A,B	;mouse offsets
 	SRL	A
 	LD	(OFFS1),A
 	RET
-rdmous	LD	A,(mouse)
-	OR	A
+rdmous	LD	A,(config_flags)
+	and 100b
 	RET	Z
 	DI
 	CALL	fill_delay	;enter correct delay address in getpadrout
@@ -6172,10 +6173,14 @@ work_default	LD	HL,(kbuf+#ec)	;palettebytes color 0,(0)
 	LD	HL,(kbuf+#f2)	;palettebytes color 3,(2)
 	LD	(color+4),HL
 	CALL	setcolors
-	LD	HL,kbuf+#d3	;idhex,idbin,mouse,clipper,roundcorners
+	LD	HL,kbuf+#d3	;idhex,idbin,printerline,configflags
 	LD	DE,tab_inst
 	LD	BC,tab_inst_end-tab_inst
 	LDIR
+	ld a,(config_flags)
+	and 1	;Initial file type
+	inc a
+	ld (Soort),a
 	LD	BC,(slotdebugger)
 	CALL	zetslot
 	JP	SETDEBPARS
@@ -6352,6 +6357,7 @@ ABOUT
 	jr call_in_debugger
 
 redefchars:
+	ld a,(config_flags)
 	ld bc,REDEFCHARS
 
 call_in_debugger:

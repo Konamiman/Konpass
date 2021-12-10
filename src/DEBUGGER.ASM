@@ -5393,8 +5393,9 @@ noadjust	djnz	adjustsubslot
 	ret
 
 Main_y:	equ	7
+Main_y_colors: equ Main_y+10
 Mainoptie:	defb	1
-ConfigLinesCount: equ 11
+ConfigLinesCount: equ 12
 
 mainconfig	ld	(Coloradres),de
 	ld	de,M_config
@@ -5488,26 +5489,35 @@ _mainsp3:
 _mainsp4:
 	dec	a
 	jr	nz,_mainsp5
-	ld	hl,M_Mouse
-_mainsp4_1:
-	ld	a,(hl)
-	xor	1
-	ld	(hl),a
+	ld	hl,M_Flags
+	ld a,(hl)
+	xor 100b
+	ld (hl),a
 	jp	_main_hoofd1
 _mainsp5:
 	dec	a
 	jr	nz,_mainsp6
-	ld	hl,M_Knipper
-	jr	_mainsp4_1
+	ld	hl,M_Flags
+	ld a,(hl)
+	xor 1000b
+	ld (hl),a
+	jp	_main_hoofd1
 _mainsp6:
 	dec	a
-	jr	nz,_mainsp7
-	ld	hl,M_Roundcorners
+	jr	nz,_mainsp6_1
+	ld	hl,M_Flags
 	ld	a,(hl)
-	xor	1
+	xor	10b
 	ld	(hl),a
-	ld (kbuf+#d3+M_Roundcorners-M_config),a
 	call doredefchars
+	jp	_main_hoofd1
+_mainsp6_1:
+	dec	a
+	jr	nz,_mainsp7
+	ld hl,M_Flags
+	ld a,(hl)
+	xor 1
+	ld (hl),a
 	jp	_main_hoofd1
 _mainsp7:
 	cp	11-6
@@ -5528,7 +5538,7 @@ _mainsp7_1:
 	ld	iy,(Coloradres)
 	add	iy,de	;IY = address colors (#RB, #0G)
 	ld	a,b
-	add	a,Main_y+9
+	add	a,Main_y_colors
 	ld	l,a
 	ld	h,43
 	ld	(CURSORY_X),hl
@@ -5591,6 +5601,8 @@ _mainsp7_7:
 	or	a
 	ret
 _mainsp11:
+	ld hl,MainSavingTxt
+	call TEXTTOBLOK
 	ld	a,1
 	ld	(CURSORONOFF),a
 	ld	hl,M_config
@@ -5599,6 +5611,8 @@ _mainsp11:
 	ldir
 	call	saveconfig	;already put debuggerpars in kbuf
 	call	SAVECONFIG
+	ld hl,MainSaveTxt
+	call TEXTTOBLOK
 	jp	_main_hoofd
 mainberbalk:
 	ld	a,(iy)
@@ -5625,31 +5639,38 @@ printmain:
 	ld	bc,M_Printerlin
 	call	PRINTTEKST
 	ld	hl,(Main_y+6)*80+42
-	ld	a,(M_Mouse)
+	ld	a,(M_Flags)
+	and 100b
 	call	printonoff
 	ld	hl,(Main_y+7)*80+45
-	ld	a,(M_Knipper)
+	ld	a,(M_Flags)
+	and 1000b	;Cursor blink on/off
 	call	printonoff
 	ld	hl,(Main_y+8)*80+47
-	ld	a,(M_Roundcorners)
-	xor 1
+	ld	a,(M_Flags)
+	and 10b	;Mouse on/off
+	xor 10b
 	call	printonoff
+	ld	hl,(Main_y+9)*80+47
+	ld a,(M_Flags)
+	and 1	;Initially Asm or Ascii
+	call printAsmAscii
 _printmain1:
 	ld	ix,(Coloradres)
-	ld	hl,(Main_y+9)*80+42
+	ld	hl,(Main_y_colors)*80+42
 	call	printcolor	;color 1 = color num 0
 	ld	de,15*2
 	add	ix,de
-	ld	hl,(Main_y+10)*80+42
+	ld	hl,(Main_y_colors+1)*80+42
 	call	printcolor	;color 2 = color num 15
 	ld	ix,(Coloradres)
 	ld	de,3*2
 	add	ix,de
-	ld	hl,(Main_y+11)*80+42
+	ld	hl,(Main_y_colors+2)*80+42
 	call	printcolor	;color 3 = color num 3
 	dec	ix
 	dec	ix
-	ld	hl,(Main_y+12)*80+42
+	ld	hl,(Main_y_colors+3)*80+42
 	jp	printcolor	;color 4 = color num 2
 printmainid:
 	ld	b,d
@@ -5790,13 +5811,23 @@ testoke:
 	ccf
 	ret
 
-printonoff	ld	bc,txt_on
-	or	a
-	jr	nz,_printonoff
+printonoff:
+	ld	bc,txt_on
+	;or	a   ;Assume flags already set at input
+	jp	nz,PRINTTEKST
 	ld	bc,txt_off
-_printonoff	jp	PRINTTEKST
+	jp	PRINTTEKST
 txt_on	db	"on ",0
 txt_off	db	"off",0
+
+printAsmAscii:
+	ld bc,AsmStr
+	;and 1	;Assume flags already set at input
+	jp z,PRINTTEKST
+	ld bc,AsciiStr
+	jp PRINTTEKST
+AsmStr: db "Asm  ",0
+AsciiStr: db "Ascii",0
 
 Newidhex:	defb	"  FF  ",0
 Newidbin:	defb	"  11  ",0
@@ -5806,9 +5837,17 @@ M_config:
 M_Idhex:	defs	3
 M_Idbin:	defs	3
 M_Printerlin:	defs	16
-M_Mouse:	defb	0
-M_Knipper:	defb	0
-M_Roundcorners: db 0 ;0=rounded, 1=square
+
+; Flags:
+; Bit 0: initial file type, 0=Asm, 1=Ascii
+; Bit 1: rounded corners, 0=rounded, 1=square
+; Bit 2: mouse, 0=off, 1=on
+; Bit 3: cursor blink, 0=off, 1=on
+M_Flags: db 1000b
+
+	defb 0 ;Two unused bytes, were "mouse" and "cursor blink"
+	defb 0
+
 M_configend:
 
 Maintxt:
@@ -5826,20 +5865,28 @@ Maintxt:
 	defb	"Cursor blink:",0
 	defw	(Main_y+8)*80+30
 	defb	"Rounded corners:",0
-	defw	(Main_y+9)*80+33
+	defw	(Main_y+9)*80+28
+	defb	"Initial file type:",0
+	defw	(Main_y_colors)*80+33
 	defb	"Color 1:",0
-	defw	(Main_y+10)*80+33
+	defw	(Main_y_colors+1)*80+33
 	defb	"Color 2:",0
-	defw	(Main_y+11)*80+33
+	defw	(Main_y_colors+2)*80+33
 	defb	"Color 3:",0
-	defw	(Main_y+12)*80+33
+	defw	(Main_y_colors+3)*80+33
 	defb	"Color 4:",0
-	defw	(Main_y+13)*80+31
+MainSaveTxt:
+	defw	(Main_y_colors+4)*80+31
 	defb	"Save configuration",0
 	defw	0
+MainSavingTxt:
+	defw	(Main_y_colors+4)*80+31
+	defb	"    Saving...     ",0
+	defw	0
+
 
 Mainhok:	defw	Mh1,Mh2,Mh3,Mh2,Mh2,Mh2,Mh2,Mh2
-	defw	Mh2,Mh2,Mh2,Mh2,Mh2,Mh2,Mh4,0
+	defw	Mh2,Mh2,Mh2,Mh2,Mh2,Mh2,Mh2,Mh4,0
 Mh1:	defb	1,24,30,23,1,25,0	;--------
 Mh2:	defb	1,22,30,0,1,22,0	;|      |
 Mh3:	defb	1,20,30,23,1,19,0	;|------|
@@ -5886,9 +5933,9 @@ Ah2:	defb	1,22,42,0,1,22,0	;|      |
 Ah3:	defb	1,20,42,23,1,19,0	;|------|
 Ah4:	defb	1,26,42,23,1,27,0	;--------
 
+; Input: A:1=0 for rounded corners, <>0 for square corners
 doredefchars:
-	ld a,(kbuf+#d3+M_Roundcorners-M_config)
-	or a
+	and 10b
 	ld hl,vormen
 	jr z,redefchars2
 	LD	HL,vormen_sq	;change character 17-29
