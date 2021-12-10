@@ -431,13 +431,14 @@ alter the value when this option is chosen. Use [ESC] to cancel. See also the
 assembler directive .LABEL (chapter 3.3.3)
 
 RET INSERT:
-When this option is turned on, a new blank line will be inserted automatically each time [RET] is pressed. If the cursor is at the end of a line, an empty line is inserted after the current line. Otherwise the empty line is inserted before the current l
-
-ine. In both cases the cursor is placed at the new line.
+When this option is turned on, a new blank line will be inserted automatically 
+each time [RET] is pressed. If the cursor is at the end of a line, an empty line 
+is inserted after the current line. Otherwise the empty line is inserted before 
+the current line. In both cases the cursor is placed at the new line.
 
 AUTO ALIGN:
 Turn this option off if you want to read and handle non source ASCII files. 
-For more information see chapter 3.1 .
+For more information see chapter 3.1.
 
 UPPER CASE:
 This makes the assembler case sensitive if turned off. This only affects 
@@ -779,7 +780,7 @@ also enter a filename, the source will be loaded first in sourcebuffer
 
         MACRO / ENDM / DEFL
 
-These directives are necessary for working with macro's. See chapter 11.
+These directives are necessary for working with macros. See chapter 11.
 
         IF / COND /ELSE / ENDIF / ENDC
 
@@ -1533,6 +1534,11 @@ Use this option to choose whether user interface boxes should display
 rounded corners or square corners. Just try both options and stick to the one 
 that you find more visually pleasant.
 
+INITIAL FILE TYPE:
+Use this option to choose which will be the file type selected when you first
+go to the disk menu from the assembler after starting Compass. You can choose
+between Asm and Ascii.
+
 COLOR 1-4:
 You can change Compass' colours with this option. This is done by changing 
 the Red, Green and Blue values of the palette.
@@ -1540,16 +1546,16 @@ the Red, Green and Blue values of the palette.
 SAVE CONFIGURATION:
 VERY USEFUL OPTION!
 This option will save your current Compass configuration:
-* Mouse, printerline, ...
-* Memoryconfiguration
-* Editorparameters for each sourcebuffer: Labellenght, Retins, Autoalign
-* Backupstatus of diskmenu
+* Mouse, printer line, ...
+* Memory configuration
+* Editor parameters for each sourcebuffer: Label lenght, Ret ins, Autoalign
+* Backup status of disk menu
 
 
-11. Macro's
------------
+11. Macros
+----------
 
-Macro's are probably the most used assembler-directives ever. They give the 
+Macros are probably the most used assembler-directives ever. They give the 
 possibility to place short pieces of often used code under a self defined 
 commandname, allowing you to use this home-made command instead of retyping 
 all the commands every single time.
