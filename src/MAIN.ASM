@@ -2,6 +2,16 @@
 ;#1.2.09: DOINCLUDE SEPARATE FCB
 
 	.label	13
+
+_FCLOSE: equ 10h
+_FMAKE: equ 16h
+_WRBLK: equ 26h
+_CREATE: equ 44h
+_CLOSE: equ 45h
+_WRITE: equ 49h
+_PARSE: equ 5Bh
+_GENV: equ 6Bh
+
 bdos	equ	#f37d	;!!!
 cursory_x	equ	#f3dc
 trgflg	equ	#f3e8
@@ -156,8 +166,8 @@ alleslaten	XOR	A	;clear compassID
 	CP	#02
 	JR	C,nietdos2
 	XOR	A	;replace space with period
-	LD	(compasscom+7),A
-	LD	HL,compasscom	;name
+	LD	(compasscfg+7),A
+	LD	HL,compasscfg	;name
 	LD	DE,queuebc+4	;value =0
 	LD	C,#6C	;set envitem, now remove
 	CALL	bdos
@@ -5072,36 +5082,55 @@ SAVECONFIG	LD	A,(Backuponoff)	;backup status
 	LD	A,(dosversion)
 	CP	#02
 	JR	C,openfile_dos1
+
 	XOR	A
-	LD	(compasscom+7),A
-	LD	HL,compasscom
+	LD	(compasscfg+7),A
+	LD	HL,compasscfg
 	LD	DE,buffer1024+750
-	LD	BC,#FF6B
-	CALL	bdos	;get envitem COMPASS (gives a
+	LD	BC,#FF00+_GENV
+	CALL	bdos	;get envitem COMPASS (gives a null string if not exists)
 	LD	DE,buffer1024+750
-	XOR	A	;null string back if not exists)
-	LD	C,#43	;open file handle
+	ld a,(de)
+	or a
+	jr z,_saveerror
+
+	ld bc,_PARSE
+	call bdos
+	jr nz,_saveerror
+	EX	DE,HL
+	LD	A,'.'
+	LD	(compasscfg+7),A
+	LD	HL,compasscfg
+	LD	BC,12	;also copy terminating zero
+	LDIR		;replace filename with CFG version
+
+	XOR	A
+	ld de,buffer1024+750
+	LD	BC,_CREATE	;create file handle, attributes=0
 	CALL	bdos
 	JR	skip_opendos1
-openfile_dos1	LD	HL,compasscom
+openfile_dos1:
+	LD	HL,compasscfg
 	LD	DE,fcb_work+1
 	LD	BC,11
 	LDIR
-	CALL	fcb_open
-skip_opendos1	OR	A
+	ld c,_FMAKE
+	CALL	fcb_open_cont
+skip_opendos1:
+	OR	A
 	JR	NZ,_saveerror
 	LD	A,B
 	LD	(handle_nr),A
-	db	#21	;ld hl,nn
-si_place1	dw	#0300
+	ld hl,0
 	LD	(fcb_work+33),HL
 	LD	DE,kbuf
 	CALL	set_DTA
 	db	#21	;ld hl,nn
-si_lenght	dw	#011C
+si_lenght:	dw	#011C
 	CALL	saven_maar	;save and close
 	JR	skip_save_err
-_saveerror	LD	HL,23*80+31
+_saveerror:
+	LD	HL,23*80+31
 	LD	BC,Writeerror
 	CALL	PRINTTEKST
 	CALL	beep
@@ -5112,38 +5141,30 @@ skip_save_err	CALL	clrdiskhooks
 	XOR	A
 	JP	FILLVRAM
 
-saven_maar	LD	A,(dosversion)
+saven_maar:
+	LD	A,(dosversion)
 	CP	#02
 	JR	C,save_dos1
-	PUSH	HL
 	LD	A,(handle_nr)
 	LD	B,A
-	db	#21	;ld hl,nn
-si_place2	dw	#0300
-	XOR	A
-	LD	D,A
-	LD	E,A
-	LD	C,#4A
-	PUSH	BC
-	CALL	bdos
-	POP	BC
 	LD	DE,kbuf
-	DEC	C
-	POP	HL
+	ld c,_WRITE
 	PUSH	BC
 	CALL	bdos
 	POP	BC
-	LD	C,#45
+	LD	C,_CLOSE
 	JP	bdos
-handle_nr	db	0
-save_dos1	LD	DE,fcb_work
-	LD	C,38
+handle_nr:	db	0
+save_dos1:
+	LD	DE,fcb_work
+	LD	C,_WRBLK
 	PUSH	DE
 	CALL	bdos	;save
 	POP	DE
-	LD	C,#10	;and close
+	LD	C,_FCLOSE	;and close
 	JP	bdos
-compasscom	db	"COMPASS COM"
+compasscfg:	db "COMPASS "
+cfg_ext:	db "CFG",0
 
 GETPAGES	ld	hl,page0	;(2 times ld de,nn)
 	ret
@@ -6250,8 +6271,6 @@ bios	JP	SETVRAMWRITE	;080
 endbios
 
 startcompass	di
-	ld	(#8000+si_place1),hl
-	ld	(#8000+si_place2),hl
 	ld	(#8000+si_lenght),bc
 	ld	a,e
 	ld	(#8000+dosversion),a
