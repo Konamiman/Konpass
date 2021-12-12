@@ -6,6 +6,18 @@
 
 	.label	13
 
+_FOPEN: equ 0Fh
+_FCLOSE: equ 10h
+_SETDTA: equ 1Ah
+_RDBLK: equ 27h
+_OPEN: equ 43h
+_CLOSE: equ 45h
+_READ: equ 48h
+_SEEK: equ 4Ah
+_PARSE: equ 5Bh
+_GENV: equ 6Bh
+_SENV: equ 6Ch
+
 bdos	equ	#0005
 headln	equ	128	;length of the header (DATfile)
 headlncom	equ	110	;length of the header (COM file)
@@ -142,37 +154,51 @@ okidoki	ld	de,txt_okused
 	ld	a,(tab_TPA+2)
 	LD	B,a	;in B: block nr
 	CALL	ld_blokb_2c
+
 	LD	A,(stat_dos)
 	CP	#02
-open_dos1	LD	DE,fcb_compass	;prepare open file (dos1)
-	LD	C,#0F
-	JR	C,go_load
+	LD	DE,fcb_compass	;prepare open file (dos1)
+	LD	C,_FOPEN
+	JR	nc,go_load_dos2
+
+	push de
+	push bc
+	call load_config
+	pop bc
+	pop de
+	jr go_load	
+
+go_load_dos2:
 	LD	HL,env_program
 	LD	DE,#8000
-	LD	BC,#FF6B
+	LD	BC,#FF00+_GENV
 	CALL	bdos	;get env item PROGRAM
+	ld a,(8000h)
 	OR	A
-	scf
-	JR	NZ,open_dos1
+	jp z,noprog_error
+
+	call load_config
+
 	LD	HL,env_compass	;fill COMPASS with the contents of
 	LD	DE,#8000	;the PROGRAM env item
-	LD	C,#6C
+	LD	C,_SENV
 	CALL	bdos
 	or	a
 	jp	nz,env_error
 	LD	DE,#8000	;create filehandle for dat file
-	LD	BC,#005B
+	LD	BC,_PARSE
 	CALL	bdos
 	EX	DE,HL
-	LD	A,#2E	;DE pointing at 'c' of compass
+	LD	A,'.'	;DE pointing at 'c' of compass
 	LD	(fcb_compass+8),A
 	LD	HL,fcb_compass+1
 	LD	BC,12	;also copy terminating zero
 	LDIR		;replace filename with dat version
 	LD	DE,#8000	;the handle is now ready
 	XOR	A
-	LD	C,#43	;open file handle (dos2)
-go_load	CALL	bdos
+	LD	C,_OPEN	;open file handle (dos2)
+go_load:
+	CALL	bdos
 	OR	A
 	JP	NZ,loaderror
 	LD	A,B	;save new handlenr (dos2)
@@ -183,10 +209,11 @@ go_load	CALL	bdos
 	cp	2
 	jr	c,schuifop
 	xor	a
-	ld	c,#4a
+	ld	c,_SEEK
 	call	bdos
 
-schuifop	LD	(fcb_compass+33),HL
+schuifop:
+	LD	(fcb_compass+33),HL
 	LD	(fcb_compass+35),DE
 	ld	l,1	;size at 1 byte
 	LD	(fcb_compass+14),HL
@@ -257,18 +284,99 @@ go_launch	ld	de,txt_launch
 	LD	BC,(compass_1)	;turn on start segment on page2
 	CALL	ld_blokb_2c
 	ld	de,(stat_dos)	;dosversion in E,statmem in D
-	ld	hl,inst-#0100
 	ld	bc,inst_end-inst
 	JP	#8149
 
-env_error	ld	de,txt_err_env
+noprog_error:
+	ld de,txt_noprog
 	jr	free_all
-err_in_call	POP	HL	;discard return address
-loaderror	LD	DE,txt_lderr
-free_all	call	print
+env_error:
+	ld	de,txt_err_env
+	jr	free_all
+err_in_call:
+	POP	HL	;discard return address
+loaderror:
+	LD	DE,txt_lderr
+free_all:
+	call	print
 	ld	hl,ctngcode
 	set	0,(hl)
 	jp	m_freeall	;segments released
+
+
+	;Return: Cy=0 if ok, 1 if file not found or unreadable
+load_config:
+	call _load_config
+	ret nc
+	ld de,txt_nocfg
+	jp print
+
+_load_config:
+	LD	A,(stat_dos)
+	CP	#02
+	jr c,load_config_dos1
+
+load_config_dos2:
+	; COMPASS.DAT path is assumed to be in 8000h
+	ld hl,8000h
+	ld de,8100h
+	ld bc,128
+	ldir
+
+	ld a,'.'
+	ld (fcb_cfg+1+7),a
+	ld de,8100h
+	ld bc,_PARSE
+	call bdos
+	ex de,hl
+	ld hl,fcb_cfg+1
+	ld bc,12
+	ldir
+
+	ld de,8100h
+	ld a,1
+	ld c,_OPEN
+	call 5
+	scf
+	ret nz
+
+	push bc
+	ld c,_READ
+	ld de,inst
+	ld hl,inst_end-inst
+	call bdos
+	pop bc
+	push af
+
+	ld c,_CLOSE
+	call bdos
+	pop af
+	ret z
+	scf
+	ret
+
+load_config_dos1:
+	ld de,fcb_cfg
+	ld c,_FOPEN
+	call bdos
+	or a
+	scf
+	ret nz
+	
+	ld de,inst
+	ld c,_SETDTA
+	call bdos
+
+	ld a,1
+	ld (fcb_cfg+14),a
+	ld c,_RDBLK
+	ld de,fcb_cfg
+	ld hl,inst_end-inst
+	call bdos
+
+	;No need to close the FCB since the fille hasn't been written to
+	or a
+	ret
 
 ;************************************************end main ,start routines
 ;fills in doskernel number
@@ -1255,8 +1363,9 @@ skipmap2	LD	A,C
 	CALL	#0024
 	RET
 
-set_DTA	LD	(curr_DTA),DE
-	LD	C,#1A
+set_DTA:
+	LD	(curr_DTA),DE
+	LD	C,_SETDTA
 	JP	bdos
 
 load_data	LD	A,(stat_dos)
@@ -1310,7 +1419,7 @@ txt_ROMRAM	db	"Locating ROM/RAM: $"
 txt_done	db	"done, found $"
 txt_segments	db	" segments ($"
 txt_kB_RAM	db	"kB RAM)",13,10,"$"
-txt_manage	db	"Memorymanagement: $"
+txt_manage	db	"Memory management: $"
 tab_manage	dw	txt_none
 	dw	txt_DOS2
 	dw	txt_Memman1
@@ -1327,10 +1436,13 @@ txt_search	db	"Searching free memory: $"
 txt_nofree	db	"Insufficient free memory !",13,10,"$"
 txt_load	db	"Loading Compass: $"
 txt_err_env	db	"aborted",13,10,10,"Not enough memory to create the "
-	db	"COMPASS environment item !",13,10,"$"
+	db	"COMPASS environment item!",13,10,"$"
 txt_lderr	db	"Load error !",13,10,10,"$"
 txt_lddone	db	"done",13,10,10,"All engines ready.",13,10,"$"
 txt_launch	db	"Launching Compass...",13,10,"$"
+txt_noprog: db "aborted",13,10,10,"The PROGRAM environment item "
+	db	"does not exist!",13,10,"$"
+txt_nocfg:  db 13,10,10,"COMPASS.CFG not found, will use default config",13,10,10,"$"
 
 nr_max	dw	14*256	;default: search as much as possible
 stat_dos	db	0
@@ -1346,7 +1458,11 @@ tab_TPA	db	3,2,1,0	;default TPAsegments for page 0,1,2 and 3
 decstr	ds	6,0
 env_program	db	"PROGRAM",0
 env_compass	db	"COMPASS",0
-fcb_compass	db	0,"COMPASS DAT"
+fcb_compass:
+	db	0,"COMPASS DAT"
+	ds	25,0
+fcb_cfg:
+	db	0,"COMPASS CFG"
 	ds	25,0
 new_handle	db	0
 curr_DTA	dw	0

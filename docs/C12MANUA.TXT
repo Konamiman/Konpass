@@ -94,6 +94,9 @@ The disk contains:
      PMARC.COM
    * PMA archives, containing useful information for programmers
 
+Note: once "Save configuration" is executed, and extrra COMPASS.CFG file
+will be created. See chapter 10.
+
 1.3 Configuration
 Compass runs on every MSX2, MSX2+ and MSX Turbo R computer with a memory 
 mapper of at least 128kB Ram, though for convenient use, we recommend a 
@@ -209,7 +212,7 @@ Status bar:
 The upperline of the screen always contains the status bar. On the left of 
 this bar you will find the name Compass followed by the main version number. 
 This number will change when a new mainversion is distributed.
-(The complete versionnumber can be obtained by displaying the COMPASS.COM or 
+(The complete version number can be obtained by displaying the COMPASS.COM or 
 COMPASS.DAT file in some textviewer.)
 
 On the right side the announcement '1998 Compjoetania TNG'. Between these two 
@@ -1550,6 +1553,10 @@ This option will save your current Compass configuration:
 * Memory configuration
 * Editor parameters for each sourcebuffer: Label lenght, Ret ins, Autoalign
 * Backup status of disk menu
+
+Configuration will be saved to a COMPASS.CFG file in the same drive/directory
+of the COMPASS.COM and COMPASS.DAT files. In previous versions of Compass
+(1.2.09 and older) configuration was saved into the COMPASS.COM file itself.
 
 
 11. Macros
