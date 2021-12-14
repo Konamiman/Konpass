@@ -55,10 +55,11 @@ J0119	ei
 	halt
 	ld	a,(#fbeb)
 	rrca
-	jr	c,noshift
+	jr	c,noshift	;SHIFT key pressed?
 	ld	a,(i_limit)
 	ld	(nr_max),a
 	xor	a	;this will force a mem search
+	ld (nr_max+1),a
 	ld	(i_skipsrcmem),a	;instead of installing memory
 noshift	LD	A,(#FCC1)
 	LD	HL,#002D
