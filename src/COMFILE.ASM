@@ -443,13 +443,31 @@ no_memman	LD	HL,#FB20
 	INC	HL
 	INC	HL
 	LD	(jp_fre_seg),HL	;FRE_SEG
-	ld	hl,#f2c7
-	ld	de,tab_TPA
-	ld	bc,4
-	ldir
+	ld bc,9*3
+	add hl,bc	;PUT_P1
+	ld (slot_en_move_putp1+1),hl
+	ld bc,2*3
+	add hl,bc	;PUT_P2
+	ld (ld_blokb_2c_putp2+1),hl
+
+get_tpa_segs:
+	ld bc,-3*3
+	add hl,bc	;Now HL points to GET_P0
+	ld b,4
+	ld ix,tab_TPA
+	ld de,6
+get_tpa_segs_loop:
+	call call_hl	
+	ld (ix),a
+	add hl,de
+	inc ix
+	djnz get_tpa_segs_loop
+
 	LD	A,#01
 J2125:	LD	(stat_mem),A
 	RET
+
+call_hl: jp (hl)
 
 chk_ROMRAM	LD	A,(#F341)	;chk_ROMRAM also available in page 2
 	LD	H,#80	;(used when checking page 0)
@@ -1350,15 +1368,23 @@ J26F3:	POP	DE
 	RET
 
 ;******************************************** end of mem routines
-ld_blokb_2c	di
+ld_blokb_2c:
+	di
+	ld a,(stat_mem)
+	and 1
+	jr z,ld_blokb_2c_dos1
+
+ld_blokb_2c_dos2:
+	ld a,b
+ld_blokb_2c_putp2:
+	call 0
+	jr skipmap2
+
+ld_blokb_2c_dos1:
 	ld	a,b
 	OUT	(#FE),A
-	LD	A,(stat_dos)
-	CP	#02
-	jr	c,skipmap2
-	LD	A,B
-	LD	(#F2C9),A
-skipmap2	LD	A,C
+skipmap2:
+	LD	A,C
 	LD	H,#80
 	CALL	#0024
 	RET
@@ -1382,15 +1408,23 @@ eindload	CALL	bdos
 	ret	z
 	JP	err_in_call
 
-slot_en_move	di
+slot_en_move:
+	di
+	ld a,(stat_mem)
+	and 1
+	jr z,slot_en_move_dos1
+
+slot_en_move_dos2:
+	ld a,b
+slot_en_move_putp1:
+	call 0
+	jr skipmap1
+
+slot_en_move_dos1:
 	LD	a,b
 	OUT	(#FD),A
-	LD	A,(stat_dos)
-	CP	#02
-	jr	c,skipmap1
-	LD	A,B
-	LD	(#F2C8),A
-skipmap1	LD	A,C
+skipmap1:
+	LD	A,C
 	LD	H,#40
 	CALL	#0024
 	LD	HL,#8000
