@@ -30,6 +30,8 @@ queuebc	equ	#f9f5
 
 ctngcode	equ	#ff79
 
+env_item_buffer: equ 3F00h
+
 	ORG	#0100
 
 	jp	skipid
@@ -53,7 +55,29 @@ J0109:	LD	A,(DE)
 	JP	bdos
 J0119	ei
 	halt
+
 	ld	a,(#fbeb)
+	push af
+
+	;We need to load config early on,
+	;to have a proper value of i_skipsrcmem available.
+	call fill_dosnr
+
+	ld a,(stat_dos)
+	cp 2
+	jr c,dont_get_env_program
+	LD	HL,env_program
+	LD	DE,env_item_buffer
+	LD	BC,#FF00+_GENV
+	CALL	bdos	;get env item PROGRAM
+	ld a,(8000h)
+	OR	A
+	jp z,noprog_error
+dont_get_env_program:
+
+	call load_config
+
+	pop af
 	rrca
 	jr	c,noshift	;SHIFT key pressed?
 	ld	a,(i_limit)
@@ -97,7 +121,10 @@ J0145:	DI
 ;main program
 	LD	DE,txt_intro
 	CALL	print
-	CALL	fill_dosnr
+	ld de,txt_nocfg
+	ld a,(saved_config_available)
+	or a
+	call z,print
 	CALL	fill_stat_mem
 	LD	DE,txt_ROMRAM
 	CALL	print
@@ -160,33 +187,16 @@ okidoki	ld	de,txt_okused
 	CP	#02
 	LD	DE,fcb_compass	;prepare open file (dos1)
 	LD	C,_FOPEN
-	JR	nc,go_load_dos2
-
-	push de
-	push bc
-	call load_config
-	pop bc
-	pop de
-	jr go_load	
+	JR	c,go_load
 
 go_load_dos2:
-	LD	HL,env_program
-	LD	DE,#8000
-	LD	BC,#FF00+_GENV
-	CALL	bdos	;get env item PROGRAM
-	ld a,(8000h)
-	OR	A
-	jp z,noprog_error
-
-	call load_config
-
 	LD	HL,env_compass	;fill COMPASS with the contents of
-	LD	DE,#8000	;the PROGRAM env item
+	LD	DE,env_item_buffer	;the PROGRAM env item
 	LD	C,_SENV
 	CALL	bdos
 	or	a
 	jp	nz,env_error
-	LD	DE,#8000	;create filehandle for dat file
+	LD	DE,env_item_buffer	;create filehandle for dat file
 	LD	BC,_PARSE
 	CALL	bdos
 	EX	DE,HL
@@ -195,7 +205,7 @@ go_load_dos2:
 	LD	HL,fcb_compass+1
 	LD	BC,12	;also copy terminating zero
 	LDIR		;replace filename with dat version
-	LD	DE,#8000	;the handle is now ready
+	LD	DE,env_item_buffer	;the handle is now ready
 	XOR	A
 	LD	C,_OPEN	;open file handle (dos2)
 go_load:
@@ -308,9 +318,10 @@ free_all:
 	;Return: Cy=0 if ok, 1 if file not found or unreadable
 load_config:
 	call _load_config
-	ret nc
-	ld de,txt_nocfg
-	jp print
+	ret c
+	ld a,0FFh
+	ld (saved_config_available),a
+	ret
 
 _load_config:
 	LD	A,(stat_dos)
@@ -318,7 +329,11 @@ _load_config:
 	jr c,load_config_dos1
 
 load_config_dos2:
-	; COMPASS.DAT path is assumed to be in 8000h
+	LD	HL,env_program
+	LD	DE,#8100
+	LD	BC,#FF00+_GENV
+	CALL	bdos	;get env item PROGRAM
+
 	ld hl,8000h
 	ld de,8100h
 	ld bc,128
@@ -1477,7 +1492,7 @@ txt_lddone	db	"done",13,10,10,"All engines ready.",13,10,"$"
 txt_launch	db	"Launching Compass...",13,10,"$"
 txt_noprog: db "aborted",13,10,10,"The PROGRAM environment item "
 	db	"does not exist!",13,10,"$"
-txt_nocfg:  db 13,10,10,"COMPASS.CFG not found, will use default config",13,10,10,"$"
+txt_nocfg:  db "COMPASS.CFG not found, will use default config",13,10,10,"$"
 
 nr_max	dw	14*256	;default: search as much as possible
 stat_dos	db	0
@@ -1506,6 +1521,7 @@ m_priortab	db	4,1,1,5,255,1,2,1,6,4,1,1,5,1
 	db	4,2,1,6,4,3,1,7,3,2,1,6,4,3,1,7
 	db	255,1,4,1,8,3,3,1,7,4,4,1,8,4,4,1
 	db	8,3,4,1,8,0
+saved_config_available: db 0
 
 inst	db	0	;0=another virginal program
 	                        ;-->then show src_mem
