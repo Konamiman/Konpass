@@ -991,9 +991,9 @@ _haalpage0	push	hl
 _haalpage0_1:	ld	a,(page0+#8000)
 	call	set_slot_p0+#8000
 	ld	a,(page0+1+#8000)
-	out	(#fc),a	;source page on page 0
-	pop	bc	;don't adjust f2c7 or anything, switch
-	pop	de	;from page0 is only provisional
+	call SETPAGE0_DOS2	;source page on page 0
+	pop	bc
+	pop	de
 	pop	hl
 	set	7,d	;now on page 2
 	ld	a,(Command+#8000)
@@ -1004,7 +1004,7 @@ _haalpage0_2:	ldir
 	ld	a,(slothoofdp+#8000)
 	call	set_slot_p0+#8000
 	ld	a,(slothoofdp+1+#8000)
-	out	(#fc),a	;this program back on page 0
+	call SETPAGE0_DOS2	;this program back on page 0
 	ld	a,(#f343)
 	ld	h,#80
 	jp	SLOT	;automatically return to page 0
