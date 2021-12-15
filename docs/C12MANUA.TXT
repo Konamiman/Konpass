@@ -171,7 +171,7 @@ Mapper. This might help to prevent the previous problem, although this will
 make the program somewhat slower.
 
 In some cases it can be useful not to use all available memory. You can limit 
-the memoryallocation of Compass by pressing the SHIFT key when you start 
+the memory allocation of Compass by pressing the SHIFT key when you start 
 Compass. Currently this limitation is set to 9 segments. In future versions 
 of Compass this number will be changeable.
 

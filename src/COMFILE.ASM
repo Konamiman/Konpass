@@ -126,13 +126,6 @@ J0145:	DI
 	or a
 	call z,print
 	CALL	fill_stat_mem
-	LD	DE,txt_ROMRAM
-	CALL	print
-	CALL	chk_ROMRAM
-	ld	de,txt_done
-	CALL	print
-	ld	hl,(RAM_count)
-	call	print_memory
 	ld	de,txt_manage
 	call	print
 	ld	a,(stat_mem)
@@ -145,6 +138,81 @@ J0145:	DI
 	inc	hl
 	ld	d,(hl)
 	call	print
+
+	ld a,(stat_mem)
+	and 1
+	jr z,locate_dos2_ram_end
+
+	;If mapper support routines are available,
+	;get the address of the mappers table
+	;and use that table for:
+	;
+	;1. Calculating RAM_count
+	;2. Filling the appropriate entries in work_ROMRAM
+	;
+	;By doing that, later chk_ROMRAM will skip
+	;the size calculation for mapped RAM slots.
+
+	ld de,0401h
+	call 0FFCAh ;HL = Mappers table
+	ld de,0		;DE = Segments count
+locate_dos2_ram_loop:
+	ld a,(hl)	;Slot number
+	or a
+	jr z,locate_dos2_ram_end
+
+	;Calculate the entry for the slot number in work_ROMRAM:
+	;(slot*8)+subslot*2 for page 0, +32 for page 1, +64 for page 2
+	ld ix,work_ROMRAM
+	ld b,a
+	rla
+	rla
+	rla
+	and 11000b
+	ld c,a	;C = main slot*8
+	ld a,b
+	rra
+	and 00110b	;A = subslot*2
+	or c
+	ld c,a
+	ld b,0
+	add ix,bc
+
+	ld (ix),2	;Mark as RAM in pages 0,1,2
+	ld (ix+32),2
+	ld (ix+64),2
+	
+	inc hl		;Point to "total segments"
+	ld c,(hl)
+
+	dec c
+	ld (ix+1),c	;Save segments count -1 for pages 0,1,2
+	ld (ix+32+1),c
+	ld (ix+64+1),c
+	inc c
+
+	ex de,hl
+	ld b,0	
+	add hl,bc	;Update segments count
+	ex de,hl
+
+	ld bc,7
+	add hl,bc	;Point to table for next mapper
+	jr locate_dos2_ram_loop
+
+locate_dos2_ram_end:
+	ld (RAM_count),de
+
+locate_dos2_ram_done:
+	LD	DE,txt_ROMRAM
+	CALL	print
+	CALL	chk_ROMRAM
+	ld	de,txt_done
+	CALL	print
+	ld	hl,(RAM_count)
+	call	print_memory
+	ld de,txt_lf
+	call print
 	ld	a,(i_skipsrcmem)	;saved version without shiftboot?
 	or	a
 	jr	nz,meminst	;yes, install immediately then
@@ -459,12 +527,19 @@ no_memman	LD	HL,#FB20
 	INC	HL
 	INC	HL
 	LD	(jp_fre_seg),HL	;FRE_SEG
-	ld bc,9*3
+	ld bc,7*3
+	add hl,bc	;PUT_P0
+	ld (fix_page0_setp0+1),hl
+	ld a,0CDh	;"call" opcode
+	ld (fix_page0_setp0),a
+	ld bc,2*3
 	add hl,bc	;PUT_P1
 	ld (slot_en_move_putp1+1),hl
 	ld bc,2*3
 	add hl,bc	;PUT_P2
 	ld (ld_blokb_2c_putp2+1),hl
+	ld (chk_ROMRAM_setp2+1),hl
+	ld (chk_ROMRAM_setp2),a
 
 get_tpa_segs:
 	ld bc,-3*3
@@ -485,16 +560,29 @@ J2125:	LD	(stat_mem),A
 
 call_hl: jp (hl)
 
+
+; Scan all slots and fill work_ROMRAM appropriately.
+; If mapper support routines are available the entries for mapped RAM slots
+; will already have been filled with information from the mappers table,
+; thus the process of counting the available segments won't be repeated.
+
 chk_ROMRAM	LD	A,(#F341)	;chk_ROMRAM also available in page 2
 	LD	H,#80	;(used when checking page 0)
 	CALL	#0024
 	LD	A,(tab_TPA)
+chk_ROMRAM_setp2:
 	OUT	(#FE),A
+	nop		;Space for patching with a CALL PUT_P2
 	LD	IX,work_ROMRAM
 	LD	B,3	;do for 3 pages: 0,1,2
-	ld	hl,0	;start with page 0,ramcount to zero
-	ld	(savepage),hl	;save to page 3
+	xor a	;start with page 0
+	ld	(savepage),a	;save to page 3
+	ld a,(stat_mem)
+	and 1
+	jr nz,skip_reset_ramcount	;Since it has been calculated already
+	ld hl,0
 	ld	(RAM_count),hl
+skip_reset_ramcount:
 
 loop_page	PUSH	BC
 	LD	DE,#FCC1
@@ -555,7 +643,9 @@ cl_adres	dw	0
 fix_page0	LD	A,(#F341)	;restore slot setting page 0
 	CALL	#8000+set_slot_p0
 	LD	A,(#8000+tab_TPA)	;and also page
+fix_page0_setp0:
 	OUT	(#FC),A
+	nop		;Space for patching with a CALL PUT_P0
 	ld	de,#8000	;note: -#8000 =#8000
 	add	ix,de	;#8000 SUBSTRACT from IX
 	RET
@@ -755,7 +845,7 @@ print	LD	C,#09
 ;*****************************************************memory routines
 ;NOTE: there is a difference between a tpa segment and a tpaslot segment
 ;tpa-segment is thus (in many cases) ramblock 0,1,2 or 3 of the primary mapper
-;tpaslot_segment can be any primarymapper ram block
+;tpaslot_segment can be any primary mapper ram block
 
 src_mem	CALL	m_tabel	;create table with segments
 	ret	c	;no tpaslotsegm found
@@ -1468,16 +1558,17 @@ txt_old	db	7,"Notice: You are using a version of Memman older "
 txt_ROMRAM	db	"Locating ROM/RAM: $"
 txt_done	db	"done, found $"
 txt_segments	db	" segments ($"
-txt_kB_RAM	db	"kB RAM)",13,10,"$"
+txt_kB_RAM	db	"kB RAM)",13
+txt_lf:	db 10,"$"
 txt_manage	db	"Memory management: $"
 tab_manage	dw	txt_none
 	dw	txt_DOS2
 	dw	txt_Memman1
 	dw	txt_Memman2
-txt_none	db	"none",13,10,10,"$"
-txt_DOS2	db	"DOS2 mapper support",13,10,10,"$"
-txt_Memman1	db	"Memman (DOS1 environment)",13,10,10,"$"
-txt_Memman2	db	"Memman (DOS2 environment)",13,10,10,"$"
+txt_none	db	"none",13,10,"$"
+txt_DOS2	db	"DOS2 mapper support",13,10,"$"
+txt_Memman1	db	"Memman (DOS1 environment)",13,10,"$"
+txt_Memman2	db	"Memman (DOS2 environment)",13,10,"$"
 txt_limit	db	"Memory allocation limited to $"
 txt_inst	db	"Installing saved memory: $"
 txt_notfree	db	"Not free or different memory configuration !",13,10,"$"
@@ -1498,7 +1589,18 @@ nr_max	dw	14*256	;default: search as much as possible
 stat_dos	db	0
 stat_mem	db	0
 primmap_slot	db	0
-work_ROMRAM	ds	#60,0	;here comes the ROMRAMslot table, must be 0!
+
+;ROMRAM slot table format:
+;+0: Slot 0-0, page 0: 0=nothing, 1=ROM, 2=RAM (mapped or not)
+;+1: If mapped RAM: segments count minus one, otherwise 0
+;+2,3: Slot 0-1, page 0
+;+4,5: Slot 0-2, page 0
+;+6,7: Slot 0-3, page 0
+;+8,9: Slot 1-0, page 0
+;...and so on until Slot 3-3, page 0.
+;Then repeat for page 1 and then for page 2.
+work_ROMRAM	ds	#60,0
+
 mem_tabel	ds	#c1,0
 compass_0	dw	0
 compass_1	dw	0

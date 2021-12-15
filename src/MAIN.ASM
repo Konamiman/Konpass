@@ -6121,7 +6121,7 @@ hook_back	LD	A,(#FCC1)
 	LD	H,#00
 	CALL	#0024
 	LD	A,(tab_tpa+0)
-	call	SETPAGE0_DOS2	;Page 0 must be set last
+	call	SETPAGE0_DOS2
 	LD	HL,hook_feda-hook+hookadres
 	LD	(#FEDB),HL
 	LD	A,#C3
