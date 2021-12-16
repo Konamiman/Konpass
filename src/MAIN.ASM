@@ -1059,6 +1059,48 @@ _incl_error	PUSH	AF
 	LD	SP,(diskhook_sp)
 	RET
 
+;Input:  A  = key pressed
+;Output: Cy = 0 if key not found, 1 if key found
+set_file_type_by_key:
+	ld b,a
+	ld hl,file_type_by_key_table_asm
+	ld a,(Bronprog)
+	dec a
+	jr z,set_file_type_by_key_loop
+	ld hl,file_type_by_key_table_mon_deb
+set_file_type_by_key_loop:
+	ld a,(hl)
+	or a
+	ret z
+	inc hl
+	cp b
+	jr z,set_file_type_by_key_found
+	inc hl
+	jr set_file_type_by_key_loop
+
+set_file_type_by_key_found:
+	ld a,(hl)
+	ld (Soort),a
+	call printtype
+	scf
+	ret
+
+file_type_by_key_table_asm:
+	db 'E'-'A'+1,1	;Asm
+	db 'I'-'A'+1,2	;Ascii
+	db 'Y'-'A'+1,3	;Binary
+	db 'D'-'A'+1,4	;Dat
+	db 'K'-'A'+1,5	;Block
+	db 'O'-'A'+1,6	;Sector
+	db 0
+
+file_type_by_key_table_mon_deb:
+	db 'Y'-'A'+1,3	;Binary
+	db 'D'-'A'+1,4	;Dat
+	db 'O'-'A'+1,6	;Sector
+	db 0
+
+
 ; Diskdrive: IN: A: 1 = assembler
 ;                   2 = debugger
 ;                   3 = monitor
@@ -1087,7 +1129,8 @@ fcb_work	db	0,"???????????"
 	NOP		;0C7E
 fcb_inclbkup	ds	37
 
-GODISKDRIVE	di
+GODISKDRIVE:
+	di
 	ld	(Bronprog),a
 	ld	a,c
 	ld	(Buffer),a
@@ -1145,14 +1188,24 @@ _nodiskasm	xor	a
 	ld	(Aantalfiles),a
 	inc	a
 	ld	(cursoronoff),a
-diskerrcont	call	WISKEYBUFFER
+diskerrcont:
+	call	WISKEYBUFFER
 	call	jon1
-diskhoofdprt	call	prtdskinfo
-diskhoofd	ld	sp,(Sp_disk)
+diskhoofdprt:
+	xor a
+	ld a,(disk_must_back)
+	call	prtdskinfo
+diskhoofd:
+	ld	sp,(Sp_disk)
 	xor	a
 	ld	(Asmbusy),a
 	call	WISKEYBUFFER
 	call	zetdiskbalk
+	ld a,(disk_must_back)
+	or a
+	ld a,0
+	ld (disk_must_back),a
+	jp nz,_diskback
 	call	GETKEY
 	cp	27
 	jr	z,_diskback
@@ -1172,7 +1225,15 @@ diskhoofd	ld	sp,(Sp_disk)
 	jp	z,_diskbackup
 	cp	"T"-"A"+1
 	jp	z,_disktype
+	cp  "S"-"A"+1
+	jp  z,_disksave
+	cp  "L"-"A"+1
+	jp  z,_diskload
+	cp  "R"-"A"+1
+	jp  z,_diskdir
 	ld	d,a	;ALWAYS LEAVE !!!
+	call set_file_type_by_key
+	jr c,diskhoofd
 	ld	a,(matrix+6)
 	and	%00000010
 	jr	nz,_disk_noctrl
@@ -1520,7 +1581,12 @@ printload	ld	hl,14*80+(80-10)/2
 	ld	bc,Loading
 	jp	PRINTTEKST
 Loading:	defb	"Loading...",0
-_diskload	call	inidir
+_diskload:
+	ld	a,(matrix+6)
+	cpl
+	and	%00000010
+	ld (disk_must_back),a
+	call	inidir
 	ld	de,buffer1024
 	call	set_DTA
 	ld	a,(Diskasm)
@@ -1534,6 +1600,8 @@ _diskload	call	inidir
 	call	fcb_open
 	or	a
 	jr	z,_diskload1
+	xor a
+	ld (disk_must_back),a
 	ld	hl,Dskerrline*80+(80-14)/2
 	ld	bc,Filenotfound
 	call	PRINTTEKST
@@ -1792,7 +1860,13 @@ wissaveload	ld	hl,14*80+(80-10)/2
 	ld	bc,10
 	xor	a
 	jp	FILLVRAM
-_disksave	ld	de,buffer1024
+
+_disksave:
+	ld	a,(matrix+6)
+	cpl
+	and	%00000010
+	ld (disk_must_back),a
+	ld	de,buffer1024
 	call	set_DTA
 	call	inidir
 	call	printsave
@@ -2874,7 +2948,10 @@ savefile	ld	de,fcb_work
 	call	bdos
 	or	a
 	ret	z
-writeerror	ld	de,fcb_work
+writeerror:
+	xor a
+	ld (disk_must_back),a
+	ld	de,fcb_work
 	ld	c,#10
 	call	bdos
 	ld	de,fcb_work
@@ -4822,7 +4899,8 @@ oudslot	db	#ff,#ff,#ff,#ff
 stat_getkey	db	0	;input only possible with Left fire button
 GETKEY2	ld	a,1
 	ld	(stat_getkey),a
-GETKEY	PUSH	HL
+GETKEY:
+	PUSH	HL
 	PUSH	DE
 	PUSH	BC
 	LD	A,(cursoronoff)
@@ -4907,7 +4985,8 @@ getkey_back	PUSH	AF
 oldvorm	ds	8,0
 blokvorm	ds	8,0
 
-WAITFORKEY	PUSH	BC
+WAITFORKEY:
+	PUSH	BC
 	CALL	rdmous	;mouse handling
 	CALL	janeetoetsen	;Z80/R800
 	CALL	hertztoetsen	;ctrl+5/6
@@ -6451,5 +6530,7 @@ oldslotsub2:
 	LD	(slotsubroutin),BC
 	CALL	zetslot
 	RET
+
+disk_must_back: db 0
 
 	ds	#4000-$,0	;(fill with padding just to be sure)
