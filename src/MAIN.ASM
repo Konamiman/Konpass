@@ -206,7 +206,8 @@ dosviabasic	LD	A,(DE)
 	CALL	putkeybuf
 	DJNZ	dosviabasic
 	LD	(#F3F8),HL
-uitbasic	LD	SP,(sp_back_2_dos)
+uitbasic:
+	LD	SP,(sp_back_2_dos)
 	ld	hl,ctngcode
 	set	0,(hl)
 	JP	hook_back-hook+hookadres
@@ -990,9 +991,9 @@ _haalpage0	push	hl
 _haalpage0_1:	ld	a,(page0+#8000)
 	call	set_slot_p0+#8000
 	ld	a,(page0+1+#8000)
-	out	(#fc),a	;source page on page 0
-	pop	bc	;don't adjust f2c7 or anything, switch
-	pop	de	;from page0 is only provisional
+	call SETPAGE0_DOS2	;source page on page 0
+	pop	bc
+	pop	de
 	pop	hl
 	set	7,d	;now on page 2
 	ld	a,(Command+#8000)
@@ -1003,7 +1004,7 @@ _haalpage0_2:	ldir
 	ld	a,(slothoofdp+#8000)
 	call	set_slot_p0+#8000
 	ld	a,(slothoofdp+1+#8000)
-	out	(#fc),a	;this program back on page 0
+	call SETPAGE0_DOS2	;this program back on page 0
 	ld	a,(#f343)
 	ld	h,#80
 	jp	SLOT	;automatically return to page 0
@@ -6144,30 +6145,36 @@ _hook_feda1	POP	BC
 	RET
 hook_text	db	10,"Press [SHIFT] + [ESC] or type CMD COMPASS "
 	db	"to return.",10,0
-getpage0_dos2	db	#3a	;ld a,(nn)
-fill_getpage0	dw	current_p0	;under dos2:f2c7
+
+getpage0_dos2:
+	ld a,(current_p0)
 	RET
 GETPAGE0_DOS2	equ	getpage0_dos2-hook+hookadres
-getpage1_dos2	db	#3a
-fill_getpage1	dw	current_p1	;under dos2:f2c8
+
+getpage1_dos2:
+	ld a,(current_p1)
 	RET
 GETPAGE1_DOS2	equ	getpage1_dos2-hook+hookadres
-getpage2_dos2	db	#3a
-fill_getpage2	dw	current_p2	;under dos2:f2c9
+
+getpage2_dos2:
+	ld a,(current_p2)
 	RET
 GETPAGE2_DOS2	equ	getpage2_dos2-hook+hookadres
-setpage0_dos2	db	#32	;ld (nn),a
-fill_setpage0	dw	current_p0	;under dos2:f2c7
+
+setpage0_dos2:
+	ld (current_p0),a
 	OUT	(#FC),A
 	RET
 SETPAGE0_DOS2	equ	setpage0_dos2-hook+hookadres
-setpage1_dos2	db	#32
-fill_setpage1	dw	current_p1	;under dos2:f2c8
+
+setpage1_dos2:
+	ld (current_p1),a
 	OUT	(#FD),A
 	RET
 SETPAGE1_DOS2	equ	setpage1_dos2-hook+hookadres
-setpage2_dos2	db	#32
-fill_setpage2	dw	current_p2	;under dos2:f2c9
+
+setpage2_dos2:
+	ld (current_p2),a
 	OUT	(#FE),A
 	RET
 SETPAGE2_DOS2	equ	setpage2_dos2-hook+hookadres
@@ -6270,7 +6277,8 @@ bios	JP	SETVRAMWRITE	;080
 	JP  ABOUT ;137
 endbios
 
-startcompass	di
+startcompass:
+	di
 	ld	(#8000+si_lenght),bc
 	ld	a,e
 	ld	(#8000+dosversion),a
@@ -6279,60 +6287,79 @@ startcompass	di
 	ld	hl,-512
 	add	hl,sp
 	ld	(#8000+reg_sp),hl
-	LD	HL,#8000+hook
-	LD	DE,hookadres
-	LD	BC,hook_end-hook
-	LDIR
-	LD	HL,#C000	;ROMRAMtable
-	LD	DE,#8000+tab_ROMRAM
-	LD	BC,#60
-	LDIR
-	LD	DE,#8000+tab_memtabel	;mem_table
-	LD	BC,#C1
-	LDIR
-	LD	DE,#8000+tab_compass	;compass blocks
-	LD	BC,8
-	LDIR
-	ld	de,tab_tpa
-	ld	bc,4
-	ldir
-	LD	A,(#8000+slothoofdp)	;get slot code
-	LD	(hook_slot-hook+hookadres),A
-	LD	H,#00
-	CALL	#0024
-	LD	A,(#8000+slothoofdp+1)	;get block num
-	LD	(hook_blok-hook+hookadres),A
-	ld	(current_p0),a
-	OUT	(#FC),A
-	;from now on no more +#8000 needed
-	ld	(current_p2),a
+	
+init_mapper_routines:
+	LD	A,(8000h+stat_mem)
+	and 1
+	jr z,init_mapper_routines_dos1
+
+init_mapper_routines_dos2:
+	ld a,0C3h	;"jp" opcode
+	ld (8000h+getpage0_dos2),a
+	ld (8000h+getpage1_dos2),a
+	ld (8000h+getpage2_dos2),a
+	ld (8000h+setpage0_dos2),a
+	ld (8000h+setpage1_dos2),a
+	ld (8000h+setpage2_dos2),a
+
+	XOR	A
+	LD	DE,#0402
+	CALL	#FFCA
+	di
+	ld bc,0018h+1
+	add hl,bc		;Point HL to PUT_P0+1
+
+	call 8000h+ld_de_hl_inc
+	ld (8000h+setpage0_dos2+1),de
+	call 8000h+ld_de_hl_inc
+	ld (8000h+getpage0_dos2+1),de
+	call 8000h+ld_de_hl_inc
+	ld (8000h+setpage1_dos2+1),de
+	call 8000h+ld_de_hl_inc
+	ld (8000h+getpage1_dos2+1),de
+	call 8000h+ld_de_hl_inc
+	ld (8000h+setpage2_dos2+1),de
+	call 8000h+ld_de_hl_inc
+	ld (8000h+getpage2_dos2+1),de
+
+	call set_hook_data+8000h
+	jr init_mapper_routines_done
+
+	;load DE with (HL), then HL+=3
+	;(point to next entry in mapper support routines table)
+ld_de_hl_inc:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	inc hl
+	ret
+
+init_mapper_routines_dos1:
+	call set_hook_data+8000h
+
 	ld	a,(tab_tpa+3)
 	ld	(current_p3),a
-	ld	a,(tab_compass+7)	;the last loaded segment
-	ld	(current_p1),a
+
+init_mapper_routines_done:
+	LD	A,(#8000+slothoofdp+1)
+	call 8000h+setpage0_dos2
+	;from now on no more +#8000 needed
+	call setpage2_dos2
+	ld	a,(tab_compass+1)
+	call setpage1_dos2
+
 	LD	A,(dosversion)
 	CP	#02
-	jr	c,dos1versie
-	ld	hl,current_p0
-	ld	de,#f2c7
-	ld	bc,4
-	ldir
-	LD	HL,#F2C7
-	LD	(fill_getpage0-hook+hookadres),HL
-	LD	(fill_setpage0-hook+hookadres),HL
-	INC	L
-	LD	(fill_getpage1-hook+hookadres),HL
-	LD	(fill_setpage1-hook+hookadres),HL
-	INC	L
-	LD	(fill_getpage2-hook+hookadres),HL
-	LD	(fill_setpage2-hook+hookadres),HL
-	jr	no_change
-dos1versie	ld	hl,(#f349)
+	jr	nc,secure_interrupts_done
+	ld	hl,(#f349)
 	ld	(oldf349),hl
 	ld	hl,(#f34b)	;secure dosinterrupt,etc on return to BASIC
 	ld	(#f349),hl
 	ld	(newf349),hl
-no_change	LD	A,(#FCC1)	;put msxtype in our own bios
+secure_interrupts_done:
+
+	LD	A,(#FCC1)	;put msxtype in our own bios
 	LD	HL,msxtype
 	CALL	#000C
 	LD	(msxtype),A
@@ -6370,6 +6397,36 @@ _startcompass	or	(hl)	;create special byte for debugger
 	ld	(page3deb+1),a
 	ld	(page3+1),a
 	jp	shellentry
+
+set_hook_data:
+	LD	HL,hook
+	LD	DE,hookadres
+	LD	BC,hook_end-hook
+	LDIR
+	LD	HL,#8000+hook
+	LD	DE,hookadres
+	LD	BC,hook_end-hook
+	LDIR
+	LD	HL,#C000	;ROMRAMtable
+	LD	DE,#8000+tab_ROMRAM
+	LD	BC,#60
+	LDIR
+	LD	DE,#8000+tab_memtabel	;mem_table
+	LD	BC,#C1
+	LDIR
+	LD	DE,#8000+tab_compass	;compass blocks
+	LD	BC,8
+	LDIR
+	ld	de,tab_tpa
+	ld	bc,4
+	ldir
+	LD	A,(#8000+slothoofdp)	;get slot code
+	LD	(hook_slot-hook+hookadres),A
+	LD	H,#00
+	CALL	#0024
+	LD	A,(#8000+slothoofdp+1)	;get block num
+	LD	(hook_blok-hook+hookadres),A
+	ret
 
 ABOUT	
 	ld bc,ABOUTPROG
