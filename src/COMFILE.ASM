@@ -41,7 +41,7 @@ env_item_buffer: equ 3F00h
     db  "Based on Compass #1.2.09 by Compjoetania TNG",13,10,26
 	ds	#0100+headlncom-2-$,0	;reserve bytes
 	db	#09,#12	;IDbyte subnr (bit7=beta),mainnr
-skipid	LD	HL,queuebc+4
+skipid	LD	HL,queuebc+6
 	LD	DE,compass_ID
 	LD	B,#08
 J0109:	LD	A,(DE)
@@ -52,7 +52,13 @@ J0109:	LD	A,(DE)
 	DJNZ	J0109
 	LD	DE,txt_inmem
 	LD	C,#09
-	JP	bdos
+	call	bdos
+	ei
+	ld b,30	;Delay half a second for the message to be visible
+resuming:
+	halt
+	djnz resuming
+	jp queuebc+2
 J0119	ei
 	halt
 
@@ -1543,7 +1549,7 @@ skipmap1:
 
 ;*********************************************************data area
 compass_ID	db	"COMPASS",0
-txt_inmem	db	"Compass already in memory !",13,10,"$"
+txt_inmem	db	"Compass already in memory, resuming... $"
 txt_msx1	db	"Minimal MSX 2 required !",13,10,"$"
 startpalet	db	#00,#00,#00,#00,#77,#07,#04,#00
 	db	#17,#01,#27,#03,#51,#01,#27,#06

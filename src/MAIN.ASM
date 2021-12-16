@@ -161,14 +161,14 @@ newf349	dw	0	;under dos2 this remains 0
 oldf349	dw	0
 	ld	(#f349),hl
 alleslaten	XOR	A	;clear compassID
-	LD	(queuebc+4),A
+	LD	(queuebc+6),A
 	LD	A,(dosversion)	;delete envitem compass under dos2
 	CP	#02
 	JR	C,nietdos2
 	XOR	A	;replace space with period
 	LD	(compasscfg+7),A
 	LD	HL,compasscfg	;name
-	LD	DE,queuebc+4	;value =0
+	LD	DE,queuebc+6	;value =0
 	LD	C,#6C	;set envitem, now remove
 	CALL	bdos
 nietdos2	LD	A,#01
@@ -6064,6 +6064,7 @@ labelbuffer	ds	9,0
 buffer1024
 
 hook	jr	hookcontinue
+	jr hook_hoofd
 hook_slot	db	0
 hook_blok	db	0
 cmd_id	db	"COMPASS",0	;ID
