@@ -3,14 +3,36 @@
 
 	.label	13
 
+_SELDSK: equ 0Eh
+_FOPEN: equ 0Fh
 _FCLOSE: equ 10h
+_SFIRST: equ 11h
+_SNEXT: equ 12h
+_FDEL: equ 13h
 _FMAKE: equ 16h
+_FREN: equ 17h
+_LOGIN: equ 18h
+_CURDRV: equ 19h
+_SETDTA: equ 1Ah
+_ALLOC: equ 1Bh
 _WRBLK: equ 26h
+_RDBLK: equ 27h
+_RDABS: equ 2Fh
+_WRABS: equ 30h
+_DPARM: equ 31h
+_FFIRST: equ 40h
+_FNEXT: equ 41h
 _CREATE: equ 44h
 _CLOSE: equ 45h
 _WRITE: equ 49h
+_GETCD: equ 59h
+_CHDIR: equ 5Ah
 _PARSE: equ 5Bh
+_ERROR: equ 65h
+_EXPLAIN: equ 66h
+_FORMAT: equ 67h
 _GENV: equ 6Bh
+_SENV: equ 6Ch
 
 bdos	equ	#f37d	;!!!
 cursory_x	equ	#f3dc
@@ -169,7 +191,7 @@ alleslaten	XOR	A	;clear compassID
 	LD	(compasscfg+7),A
 	LD	HL,compasscfg	;name
 	LD	DE,queuebc+6	;value =0
-	LD	C,#6C	;set envitem, now remove
+	LD	C,_SENV	;set envitem, now remove
 	CALL	bdos
 nietdos2	LD	A,#01
 	LD	(quitvlag),A
@@ -381,7 +403,7 @@ oldblink	db	0
 oldfunkkey	db	0
 
 
-inidos	LD	C,#18	;get login vector: get connected drives
+inidos	LD	C,_LOGIN	;get login vector: get connected drives
 	CALL	bdos
 	LD	A,L
 	LD	(drives),A
@@ -416,7 +438,7 @@ diskhook_sp	dw	0
 	SCF
 	db	#c3	;jp nn
 diskhook_jp	dw	0
-haalpath	LD	C,#19	;get default drive
+haalpath	LD	C,_CURDRV	;get default drive
 	CALL	bdos
 	LD	(huidigedrive),A
 	ADD	A,"A"
@@ -431,7 +453,7 @@ haalpath	LD	C,#19	;get default drive
 	LD	A,(dosversion)
 	DEC	A
 	RET	Z
-	LD	BC,#0059	;only do for dos2
+	LD	BC,0000h + _GETCD	;only do for dos2
 	LD	DE,pathnamebuf+3
 	PUSH	DE
 	CALL	bdos
@@ -1415,7 +1437,7 @@ _diskmkdir1	xor	a
 	ld	(de),a
 	ld	b,%10010000
 	xor	a
-	ld	c,#44
+	ld	c,_CREATE
 	ld	de,kbuf
 	call	bdos	;Create file handle
 	cp	#cb
@@ -1458,14 +1480,15 @@ _diskkill	call	inidir
 	jp	nz,diskhoofdprt
 _diskkill3	call	setdirectory
 	ld	de,fcb_work
-	ld	c,#13
+	ld	c,_FDEL
 	call	bdos
 	or	a
 	jr	nz,_diskkill1
 	jp	diskhoofd
 _diskkill1	ld	hl,Dskerrline*80+(80-14)/2
 	ld	bc,Filenotfound
-_diskkill2	call	PRINTTEKST
+_diskkill2:
+	call	PRINTTEKST
 	call	beep
 	jp	diskhoofd
 Areyousure:	defb	"Are you sure ? (y/n)",0
@@ -1482,7 +1505,7 @@ _diskformat	ld	a,1
 	ld	a,(dosversion)
 	dec	a
 	jr	z,_formdos1
-_formdos2	ld	bc,#0067
+_formdos2	ld	bc,0000h+_FORMAT
 	xor	a
 	call	bdos
 	push	hl
@@ -1493,7 +1516,7 @@ _formdos2	ld	bc,#0067
 	call	formoptie
 	jr	c,_formdos2cnt
 	call	_form_print
-	ld	bc,#0067
+	ld	bc,0000h+_FORMAT
 	ld	hl,#8100
 	ld	de,#3e00
 	call	bdos
@@ -1785,7 +1808,7 @@ _load_sect	call	wissaveload
 _load_sect1	push	bc
 	push	de
 	push	hl
-	ld	c,#2f
+	ld	c,_RDABS
 	ld	a,(huidigedrive)
 	ld	l,a
 	ld	h,1
@@ -1818,7 +1841,7 @@ Sectadr:	defw	0
 Startsect:	defw	14
 Lengthsect:	defw	1
 Sectsize:	defw	0
-printinpsect	ld	bc,#001b
+printinpsect	ld	bc,_ALLOC
 	call	bdos
 	ld	(Sectsize),bc
 	ld	hl,17*80+19
@@ -2046,7 +2069,7 @@ _save_sect1	push	bc
 	pop	de
 	push	de
 	push	hl
-	ld	c,#30
+	ld	c,_WRABS
 	ld	a,(huidigedrive)
 	ld	l,a
 	ld	h,1
@@ -2064,7 +2087,7 @@ _save_sect1	push	bc
 testharddisk	ld	a,(dosversion)
 	dec	a
 	ret	z
-	ld	c,#31
+	ld	c,_DPARM
 	ld	de,buffer1024
 	ld	l,0
 	call	bdos
@@ -2217,10 +2240,10 @@ dos2firstent	ld	de,pathnamebuf
 	ld	hl,(adrsfilepath)
 	ld	b,%00010111
 	ld	ix,buffer1024
-	ld	c,#40
+	ld	c,_FFIRST
 	jp	bdos
 dos2nextentr	ld	ix,buffer1024
-	ld	c,#41
+	ld	c,_FNEXT
 	jp	bdos
 _dir_dos1	ld	a,(huidigedrive)
 	ld	e,a
@@ -2253,9 +2276,9 @@ _enddos1dir	ld	hl,Oldfcb
 	ldir
 	ret
 dos1firstent	ld	de,fcb_work
-	ld	c,#11
+	ld	c,_SFIRST
 	jp	bdos
-dos1nextentr	ld	c,#12
+dos1nextentr	ld	c,_SNEXT
 	jp	bdos
 Oldfcb:	defs	11
 vulfcbin	ld	b,11
@@ -2582,7 +2605,7 @@ _file_subdi1	ld	b,3
 	xor	a
 	ld	(de),a
 	ld	de,pathnamebuf
-	ld	c,#5a
+	ld	c,_CHDIR
 	call	bdos
 	call	haalpath
 	ex	de,hl
@@ -2784,12 +2807,12 @@ jon4	LD	C,A
 	JR	NZ,_contdrv
 	INC	HL
 	JR	_contdrv
-_nodrv	LD	C,#19	;get defaultdrv
+_nodrv	LD	C,_CURDRV	;get defaultdrv
 	CALL	bdos
 	LD	HL,pathnamebuf
 	jr	jon4
 _pathdos2	LD	DE,pathnamebuf
-	LD	BC,#005B
+	LD	BC,0000h+_PARSE
 	CALL	bdos
 	LD	A,(DE)
 	OR	A
@@ -2807,7 +2830,7 @@ schuifdrives	RRCA		;is the drive connected?
 	DEC	A
 	LD	(huidigedrive),A
 	LD	E,A	;set default drive
-	LD	C,14
+	LD	C,_SELDSK
 	CALL	bdos
 	OR	A
 	RET
@@ -2876,7 +2899,7 @@ _beradrname2	add	a,a
 Names:	dw	name_asm,name_asc,name_bin,name_com1,name_blk
 Disknames:	dw	name_com2,name_tsr,name_rel
 ;--Calculate and print kB free on disk    IN: E=disknr (1-8)
-prtfreedisk	ld	c,#1b
+prtfreedisk	ld	c,_ALLOC
 	inc	e
 	call	bdos
 	call	ber_kb
@@ -2924,15 +2947,15 @@ setdirectory	LD	A,(dosversion)
 	XOR	A
 	LD	(DE),A
 	LD	DE,buffer1024
-	LD	C,#5A	;set directory
+	LD	C,_CHDIR	;set directory
 	JP	bdos
 
-set_DTA	ld	c,26
+set_DTA	ld	c,_SETDTA
 	jp	bdos
 fcb_read	ld	de,fcb_work
-	ld	c,39
+	ld	c,_RDBLK
 	jp	bdos
-fcb_open	LD	C,#0F
+fcb_open	LD	C,_FOPEN
 fcb_open_cont	LD	DE,fcb_work
 	CALL	bdos
 	LD	HL,#0000
@@ -2941,10 +2964,10 @@ fcb_open_cont	LD	DE,fcb_work
 	INC	HL
 	LD	(fcb_work+14),HL
 	RET
-fcb_create	ld	c,22
+fcb_create	ld	c,_FMAKE
 	jr	fcb_open_cont
 savefile	ld	de,fcb_work
-	ld	c,#26
+	ld	c,_WRBLK
 	call	bdos
 	or	a
 	ret	z
@@ -2952,10 +2975,10 @@ writeerror:
 	xor a
 	ld (disk_must_back),a
 	ld	de,fcb_work
-	ld	c,#10
+	ld	c,_FCLOSE
 	call	bdos
 	ld	de,fcb_work
-	ld	c,#13
+	ld	c,_FDEL
 	call	bdos	;delete file
 	ld	hl,14*80+(80-17)/2
 	ld	bc,Writeerror
@@ -2972,7 +2995,7 @@ makebackup	ld	hl,fcb_work
 	inc	hl
 	ld	(hl),"K"
 	ld	de,fcb_work
-	ld	c,#13
+	ld	c,_FDEL
 	call	bdos	;delete .bak file
 	ld	hl,fcb_work+1
 	ld	de,fcb_work+17
@@ -2982,7 +3005,7 @@ makebackup	ld	hl,fcb_work
 	ld	de,fcb_work+1
 	ld	bc,11
 	ldir
-	ld	c,#17
+	ld	c,_FREN
 	ld	de,fcb_work
 	call	bdos	;rename .asm/.asc => .bak
 	ld	hl,buffer1024
@@ -3390,7 +3413,7 @@ printspecial	LD	A,(specialchar)
 	JP	FILLVRAM
 
 CLOSEFILE	LD	DE,fcb_work
-	LD	C,16
+	LD	C,_FCLOSE
 	CALL	bdos
 	LD	A,(doinclude)
 	OR	A
@@ -5441,7 +5464,8 @@ olderroradres	defw	0
 Specialerror	defw	Specialerr1
 Sp_disk	defw	0
 
-Specialerr1	push	hl
+Specialerr1:
+	push	hl
 	push	de
 	push	bc
 	ld	a,(Asmbusy)
@@ -5493,7 +5517,7 @@ _specialer1	push	hl
 	ld	a,c
 	and	%00001100
 	ld	de,fcb_work
-	ld	c,#10
+	ld	c,_FCLOSE
 	call	nz,bdos	;close file (not with offline/protected)
 	ld	sp,(Sp_disk)
 	jp	diskerrcont
