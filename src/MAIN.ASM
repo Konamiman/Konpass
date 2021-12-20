@@ -28,6 +28,7 @@ _WRITE: equ 49h
 _GETCD: equ 59h
 _CHDIR: equ 5Ah
 _PARSE: equ 5Bh
+_FLUSH: equ 5Fh
 _ERROR: equ 65h
 _EXPLAIN: equ 66h
 _FORMAT: equ 67h
@@ -403,7 +404,8 @@ oldblink	db	0
 oldfunkkey	db	0
 
 
-inidos	LD	C,_LOGIN	;get login vector: get connected drives
+inidos:
+	LD	C,_LOGIN	;get login vector: get connected drives
 	CALL	bdos
 	LD	A,L
 	LD	(drives),A
@@ -415,18 +417,63 @@ inidos	LD	C,_LOGIN	;get login vector: get connected drives
 	LD	(diskhook_jp),HL
 	CALL	setdiskhooks
 	CALL	haalpath
-clrdiskhooks	LD	HL,(olderroradres)
+
+clrdiskhooks:
+	LD	HL,(olderroradres)
 	LD	(#F323),HL
 	LD	A,#C9	;insert disk for drive...
 	LD	(#F24F),A	;back to normal
+
+	ld  hl,(old_abort_handler_address)	
+	ld a,(dosversion)
+	cp 2
+	jr c,clear_abort_hook_dos1
+
+clear_abort_hook_dos2:
+	ld (#F325),hl
 	RET
-setdiskhooks	LD	HL,(#F323)
+
+clear_abort_hook_dos1:
+	ld (#F1E6),hl
+	RET
+	
+setdiskhooks_sperr:
+	ld hl,Specialerror
+	jr setdiskhooks_do
+
+setdiskhooks:
+	ld hl,diskhook1
+setdiskhooks_do:
+	push hl
+	LD	HL,(#F323)
 	LD	(olderroradres),HL
-	LD	HL,diskhook1
-	LD	(#F323),HL
+	pop hl
+	ld (#F323),hl
+
 	LD	HL,#C9F1	;pop af,ret
 	LD	(#F24F),HL	;to replace: insert disk...
+
+	ld a,(dosversion)
+	cp 2
+	jr c,set_abort_hook_dos1
+
+; DOS 1: F1E6h must be set to the abort handler.
+; DOS 2: F325h must be set to a pointer to the abort handler.
+
+set_abort_hook_dos2:
+	ld hl,(#F325)
+	ld (old_abort_handler_address),hl
+	ld hl,disk_abort_handler_address
+	ld  (#F325),hl
 	RET
+
+set_abort_hook_dos1:
+	ld hl,(#F1E6)
+	ld (old_abort_handler_address),hl
+	ld hl,disk_abort_handler
+	ld  (#F1E6),hl
+	RET
+
 diskhook1	dw	dodiskhook
 dodiskhook	db	#31	;ld sp,nn
 diskhook_sp	dw	0
@@ -438,6 +485,7 @@ diskhook_sp	dw	0
 	SCF
 	db	#c3	;jp nn
 diskhook_jp	dw	0
+
 haalpath	LD	C,_CURDRV	;get default drive
 	CALL	bdos
 	LD	(huidigedrive),A
@@ -655,7 +703,8 @@ CLS	LD	HL,#0000
 	LD	BC,27*80
 	XOR	A
 	JR	FILLVRAM
-PRINTTEKST	CALL	SETVRAMWRITE
+PRINTTEKST:
+	CALL	SETVRAMWRITE
 _printtekst	LD	A,(BC)
 	OR	A
 	RET	Z
@@ -1165,12 +1214,7 @@ GODISKDRIVE:
 	xor	a
 	ld	(Formatdone),a
 	ld	(doinclude),a
-	ld	hl,(#f323)
-	ld	(olderroradres),hl
-	ld	hl,Specialerror
-	ld	(#f323),hl
-	ld	hl,#c9f1	;pop af, ret
-	ld	(#f24f),hl	;override "Insert disk ..."
+	call setdiskhooks_sperr
 	ld	bc,#0503
 	call	OFFSET
 	ld	hl,#1800+3*10
@@ -1211,13 +1255,14 @@ _nodiskasm	xor	a
 	inc	a
 	ld	(cursoronoff),a
 diskerrcont:
+	call flush_disk_buffers
 	call	WISKEYBUFFER
 	call	jon1
 diskhoofdprt:
-	xor a
-	ld a,(disk_must_back)
 	call	prtdskinfo
 diskhoofd:
+	xor a
+	ld a,(disk_must_back)
 	ld	sp,(Sp_disk)
 	xor	a
 	ld	(Asmbusy),a
@@ -1271,10 +1316,7 @@ _disk_noctrl	ld	a,d
 	jr	c,diskhoofd
 	jp	inputname
 _diskback	call	wisdiskbalk
-	ld	hl,(olderroradres)
-	ld	(#f323),hl
-	ld	a,#c9
-	ld	(#f24f),a
+	call clrdiskhooks
 	ld	bc,(Oldsubrouti)
 	ld	(slotsubroutin),bc
 	call	zetslot
@@ -1440,13 +1482,14 @@ _diskmkdir1	xor	a
 	ld	c,_CREATE
 	ld	de,kbuf
 	call	bdos	;Create file handle
-	cp	#cb
-	jp	nz,diskhoofd
-_mkdirerr	call	inidir
-	ld	hl,Dskerrline*80+(80-19)/2
-	ld	bc,Mkdirerr
-	jr	_diskkill2
-Mkdirerr:	defb	"Name already exists",0
+	or a
+	jp	z,diskhoofd
+_mkdirerr:
+	ld (last_dos_error),a
+
+	call	inidir
+	call	_diskkill2
+	jp diskhoofd
 
 _mkdir_vul	ld	a,(hl)
 	inc	hl
@@ -1465,7 +1508,74 @@ _diskbackup	ld	hl,Backuponoff
 	ld	(hl),0
 	jp	diskhoofdprt
 ;--Kill
-_diskkill	call	inidir
+_diskkill:
+	call	inidir
+	call ask_are_you_sure
+	jp	c,diskhoofdprt
+_diskkill3:
+	call	setdirectory
+	ld	de,fcb_work
+	ld	c,_FDEL
+	call	bdos
+	or	a
+	jp z,diskhoofd
+	call set_last_dos_error
+	ld	hl,Dskerrline*80+(80-14)/2
+	ld	bc,Filenotfound
+	call _diskkill2
+	jp diskhoofd
+
+_diskkill2:
+	ld a,(dosversion)
+	cp 2
+	jr c,explain_error_done2
+	
+	push hl
+	push bc
+	call flush_disk_buffers
+	pop bc
+	pop hl
+
+	ld a,(last_dos_error)
+	or a
+	jr z,explain_error_done2
+
+	push bc
+	push hl
+
+	ld b,a
+	ld c,_EXPLAIN
+	ld de,buffer1024
+	call bdos
+	xor a
+	ld (last_dos_error),a
+	ld a,b
+	or a
+	jr nz,explain_error_done
+	
+	call get_xcoord_and_bangify
+
+	pop hl
+	ld	hl,Dskerrline*80
+	ld c,a
+	ld b,0
+	add hl,bc
+	pop bc
+	ld bc,buffer1024
+	jr explain_error_done2
+
+explain_error_done:
+	pop hl
+	pop bc
+explain_error_done2:
+
+	call	PRINTTEKST
+	call	beep
+	ret
+Areyousure:	defb	"Are you sure ? (y/n)",0
+
+;Ouput: NC if sure, C if not
+ask_are_you_sure:
 	ld	hl,Dskerrline*80+(80-20)/2
 	ld	bc,Areyousure
 	call	PRINTTEKST
@@ -1474,24 +1584,14 @@ _diskkill	call	inidir
 	call	inidir
 	pop	af
 	or	a
-	jr	z,_diskkill3
+	scf
+	ret z
 	and	%11011111
 	cp	"Y"
-	jp	nz,diskhoofdprt
-_diskkill3	call	setdirectory
-	ld	de,fcb_work
-	ld	c,_FDEL
-	call	bdos
-	or	a
-	jr	nz,_diskkill1
-	jp	diskhoofd
-_diskkill1	ld	hl,Dskerrline*80+(80-14)/2
-	ld	bc,Filenotfound
-_diskkill2:
-	call	PRINTTEKST
-	call	beep
-	jp	diskhoofd
-Areyousure:	defb	"Are you sure ? (y/n)",0
+	ret z
+	scf
+	ret
+
 ;--Format
 Formatdone:	defb	0
 _diskformat	ld	a,1
@@ -1505,9 +1605,27 @@ _diskformat	ld	a,1
 	ld	a,(dosversion)
 	dec	a
 	jr	z,_formdos1
-_formdos2	ld	bc,0000h+_FORMAT
+
+	;Disk format, DOS 2 version
+
+_formdos2:
+	ld	bc,0000h+_FORMAT
 	xor	a
 	call	bdos
+	or a
+	jr z,_formdos2_choiceok
+	ld (last_dos_error),a
+	call _diskkill2
+	jp diskhoofd
+_formdos2_choiceok:
+	ld a,h
+	or l
+	jr nz,_formdos2_havechoices
+	call ask_are_you_sure
+	jp c,_formdos2cnt
+	ld a,1	;Single choice, so assume choice num. 1
+	jr _formdos2_do
+_formdos2_havechoices:
 	push	hl
 	ld	a,b
 	ld	h,#40
@@ -1515,23 +1633,36 @@ _formdos2	ld	bc,0000h+_FORMAT
 	pop	hl
 	call	formoptie
 	jr	c,_formdos2cnt
+_formdos2_do:
 	call	_form_print
 	ld	bc,0000h+_FORMAT
 	ld	hl,#8100
 	ld	de,#3e00
 	call	bdos
-_formdos2cnt	ld	hl,#8000
+	ld (last_dos_error),a
+_formdos2cnt:
+	ld	hl,#8000
 	ld	de,#8001
 	ld	bc,#3fff
 	ld	(hl),0
 	ldir
+_formdos2_end:
 	call	inidir
 	ld	bc,(slotsubroutin)
 	call	zetslot
+
+	ld a,(last_dos_error)
+	or a
+	call nz,_diskkill2
 	jp	diskhoofd
-_formdos1	ld	hl,#fb21-2
+
+	;Disk format, DOS 1 version
+
+_formdos1:
+	ld	hl,#fb21-2
 	ld	a,(#f1c4)	;current physical drive
-_formjon	inc	hl
+_formjon:
+	inc	hl
 	inc	hl
 	sub	(hl)
 	jr	nc,_formjon
@@ -1541,19 +1672,77 @@ _formjon	inc	hl
 	ld	a,(hl)
 	ld	h,#40
 	call	SLOT
-	call	#4019	;get choice address
+
+	;Get choice string address in HL:
+	;HL=0 means single choice, empty string means can't format.
+	call	#4019	
 	ld	a,h
 	or	l
-	call	nz,formoptie
+	jr nz,_formdos1_maybe_havechoices
+
+	call ask_are_you_sure
+	ld a,1	;Single choice, so assume choice num. 1
+	jr nc,_formdos1_do
+	jr	_formdos2cnt
+
+_formdos1_maybe_havechoices:
+	ld a,(hl)
+	or a
+	jr nz,_formdos1_havechoices
+
+	ld	hl,14*80+(80-26)/2
+	ld bc,err_cannot_format
+	jr _formdos1_showerror
+
+_formdos1_havechoices
+	call	formoptie
 	pop	de
 	jr	c,_formdos2cnt
+_formdos1_do:
 	call	_form_print
 	ld	hl,#8100
 	ld	bc,#3e00
 	call	#401c
-	jr	_formdos2cnt
+	jr	nc,_formdos2cnt
+
+	cp 16+1
+	jr c,_formdos1_okerrcode
+	ld a,16
+_formdos1_okerrcode:
+	ld c,a
+	ld b,0
+	ld hl,format_errors
+	add hl,bc
+	ld a,(hl)
+	inc hl
+	ld h,(hl)
+	ld l,a
+	ld de,buffer1024
+	ld bc,32
+	ldir
+	call get_xcoord_and_bangify
+	ld c,a
+	ld b,0
+	ld	hl,14*80
+	add hl,bc
+	ld bc,buffer1024
+_formdos1_showerror:
+	push hl
+	push bc
+	call	inidir
+	pop bc
+	pop hl
+	call _diskkill2
+	call GETKEY
+	jp _formdos2cnt
+
 Formtxt:	defb	"Format options:",0
-formoptie	push	hl
+
+;This is used in DOS 1 only
+err_cannot_format: db "Cannot format this drive !",0
+
+formoptie:
+	push	hl
 	ld	hl,9*80+2
 	ld	bc,Formtxt
 	call	PRINTTEKST
@@ -1587,7 +1776,8 @@ _formloop2	call	GETKEY
 	sub	"0"
 	or	a
 	ret
-_form_print	push	af
+_form_print:
+	push	af
 	push	de
 	ld	hl,14*80+(80-13)/2
 	ld	bc,Form_txt
@@ -1598,6 +1788,42 @@ _form_print	push	af
 Form_txt:	defb	"Formatting...",0
 _foptieesc	scf
 	ret
+
+format_errors:
+	dw formerr_0, formerr_2, formerr_4, formerr_6, formerr_8, formerr_10, formerr_12, formerr_14, formerr_16
+formerr_0:  db "Write protected",0
+formerr_2:  db "Not ready",0
+formerr_4:  db "Data (CRC) error",0
+formerr_6:  db "Seek error",0
+formerr_8:  db "Record not found",0
+formerr_10: db "Write fault",0
+formerr_12: db "Bad parameter",0
+formerr_14: db "Insufficient buffer",0
+formerr_16: db "Format error",0
+
+;Add " !" to the end of the error message in buffer1024,
+;calculate its length, and return (80-length)/2 in A
+get_xcoord_and_bangify:
+	ld hl,buffer1024
+	ld b,1
+get_err_length:
+	ld a,(hl)
+	inc hl
+	inc b
+	or a
+	jr nz,get_err_length
+	dec hl
+	ld (hl),' '
+	inc hl
+	ld (hl),'!'
+	inc hl
+	ld (hl),0
+
+	ld a,80
+	sub b
+	sra a
+	ret
+
 
 ;--Load
 printload	ld	hl,14*80+(80-10)/2
@@ -1625,9 +1851,10 @@ _diskload:
 	jr	z,_diskload1
 	xor a
 	ld (disk_must_back),a
+	call set_last_dos_error
 	ld	hl,Dskerrline*80+(80-14)/2
 	ld	bc,Filenotfound
-	call	PRINTTEKST
+	call _diskkill2
 	jp	diskhoofdprt
 _diskload1	ld	a,(Soort)
 	add	a,a
@@ -2100,7 +2327,8 @@ testharddisk	ld	a,(dosversion)
 	jp	diskhoofdprt
 Noflop:	defb	"No diskdrive !",0
 
-jon1	LD	A,(Diskasm)
+jon1:
+	LD	A,(Diskasm)
 	OR	A
 	JR	NZ,_jon12
 	LD	A,(Soort)
@@ -2736,7 +2964,8 @@ Datf	defb	" Data file "
 Blkf	defb	"Block file "
 Sect	defb	"  Sector   "
 ;--Print info from disk on screen
-prtdskinfo	call	printtype
+prtdskinfo:
+	call	printtype
 	call	printboven
 	call	printpath
 	call	prtfilenaam
@@ -2972,8 +3201,10 @@ savefile	ld	de,fcb_work
 	or	a
 	ret	z
 writeerror:
+	call set_last_dos_error
 	xor a
 	ld (disk_must_back),a
+
 	ld	de,fcb_work
 	ld	c,_FCLOSE
 	call	bdos
@@ -2982,7 +3213,9 @@ writeerror:
 	call	bdos	;delete file
 	ld	hl,14*80+(80-17)/2
 	ld	bc,Writeerror
-	jp	_diskkill2
+	call _diskkill2
+	jp diskhoofd
+
 ;--Back up filename in FCB
 makebackup	ld	hl,fcb_work
 	ld	de,buffer1024
@@ -3062,6 +3295,15 @@ Disktext:	defw	6*80+3
 	defw	0
 Disktextasm:
 	defb	"  Assemble ",0
+
+set_last_dos_error:
+	ld a,(dosversion)
+	cp 2
+	ld bc,_ERROR
+	call nc,bdos
+	ld a,b
+	ld (last_dos_error),a
+	ret
 
 ;in: DE=pointersto text HL=startVRAM
 PRINTBLOK	CALL	SETVRAMWRITE
@@ -5458,13 +5700,42 @@ Protected:	defb	"Write protected !",0
 Offline:	defb	" Disk offline !",0
 Writeerror:	defb	"  Write error !",0
 Ioerror:	defb	"Disk I/O error !",0
+BadFatErr:  defb    "    Bad FAT !   ",0
 Abortretry:	defb	"Abort or retry ? (a/r)",0
 
-olderroradres	defw	0
-Specialerror	defw	Specialerr1
-Sp_disk	defw	0
+olderroradres:	defw	0
+Specialerror:	defw	Specialerr1
+Sp_disk:	defw	0
+
+;Disk error handler
+;
+;Input:
+;A = drive
+;C = Error:
+;  b7=1 : Bad FAT
+;  b0=0 : Read action
+;  b0=1 : Write action
+;  b3 b2 b1
+;  0  0  0: Write Protected
+;  0  0  1: Not Read (disk offline)
+;  0  1  0: CRC error
+;  0  1  1: Seek error
+;  1  0  0: Record not found (sector not found)
+;  1  0  1: Write error
+;  1  1  0: Other
+;
+;Output: C = action:
+;  0 = ignore
+;  1 = retry
+;  2 = abort
 
 Specialerr1:
+	;set 7,c
+	ld a,(flushing_disk_buffers)
+	or a
+	ld a,1	;Abort if we are in the middle of flushing disk buffers
+	ret nz
+
 	push	hl
 	push	de
 	push	bc
@@ -5473,6 +5744,32 @@ Specialerr1:
 	call	z,inidir	;screen blank
 	pop	bc
 	push	bc
+
+	ld	a,(Asmbusy)
+	or	a
+	ld	hl,12*80+(80-17)/2
+	jr	z,_specialer1
+	ld	hl,18*80+(80-17)/2
+_specialer1:
+
+	bit 7,c
+	jr z,_specialerr_nobadfat
+
+	ld	de,2*80
+	add	hl,de
+	push hl
+	ld bc,BadFatErr
+	call	PRINTTEKST
+	pop hl
+	call beep
+	call GETKEY
+	ld a,"A"	;Simulate user choosing "abort"
+	jr _specialerr_after_getkey
+	
+	jp _specialerr_abort
+
+_specialerr_nobadfat
+	push hl
 	ld	a,c
 	and	%00001110
 	ld	e,a
@@ -5482,12 +5779,8 @@ Specialerr1:
 	ld	c,(hl)
 	inc	hl
 	ld	b,(hl)
-	ld	a,(Asmbusy)
-	or	a
-	ld	hl,12*80+(80-17)/2
-	jr	z,_specialer1
-	ld	hl,18*80+(80-17)/2
-_specialer1	push	hl
+	pop hl
+	push hl
 	call	PRINTTEKST
 	ld	bc,Abortretry
 	pop	hl
@@ -5496,6 +5789,7 @@ _specialer1	push	hl
 	call	PRINTTEKST	;abort or retry
 	call	beep
 	call	GETKEY
+_specialerr_after_getkey:
 	push	af
 	ld	a,(Asmbusy)
 	or	a
@@ -5508,24 +5802,159 @@ _specialer1	push	hl
 	jr	z,_retry
 	cp	"R"
 	jr	z,_retry
+_specialerr_abort:
+	pop bc
+	pop de
+	pop hl
+	ld a,c
+	ld (disk_error_handling_errnum),a
+	ld c,2	;Abort
+	ret
+_retry:	
+	pop	bc
+	pop	de
+	pop	hl
+	ld	c,1	;Retry
+	ret
+
+	if 0
+
+;DOS 2 disk error handler
+;Input: 
+;A = Error code
+;B = Drive
+;C = b0 - set if writing
+;    b1 - set if ignore not recommended
+;    b2 - set if auto-abort suggested
+;
+;Output: A = action:
+; 0 => Call system error routine
+; 1 => Abort
+; 2 => Retry
+; 3 => Ignore
+
+specialerr_dos2:
+	ld b,a
+	ld a,(flushing_disk_buffers)
+	or a
+	jr z,specialerr_noflushing
+	ld a,1	;Abort
+	ret
+specialerr_noflushing:
+	push bc	;Save input flags for later
+
+	ld c,_EXPLAIN
+	ld de,buffer1024
+	call bdos
+
+	ld	a,(Asmbusy)
+	or	a
+	call	z,inidir	;screen blank
+
+	call get_xcoord_and_bangify
+	ld c,a
+	ld b,0
+	ld	a,(Asmbusy)
+	or	a
+	ld	hl,12*80
+	jr	z,_specialer_dos2_1
+	ld	hl,18*80
+_specialer_dos2_1:
+	add hl,bc
+
+	ld bc,buffer1024
+	call PRINTTEKST
+
+	pop bc	;Input flags
+	bit 2,c
+	ld a,1	;Abort if recommended
+	ret
+
+	call ask_abort_retry
+	ld a,1	;Abort
+	ret c
+	inc a	;retry
+	ret
+
+	endif
+
+; Ask "Abort or retry?"
+; Output: Cy = 1 if abort, 0 if retry
+ask_abort_retry:
+	ld	a,(Asmbusy)
+	or	a
+	ld	hl,14*80+(80-17)/2
+	jr	z,_ask_abort_retry_1
+	ld	hl,20*80+(80-17)/2
+_ask_abort_retry_1:
+	ld	bc,Abortretry
+	call	PRINTTEKST
+	call	beep
+	call	GETKEY
+	push	af
+	ld	a,(Asmbusy)
+	or	a
+	call	z,inidir
+	ld	hl,18*80
+	ld	b,3
+	call	inidircont	;LEAVE IT !
+	pop	af
+	and	%11011111
+	ret z
+	cp	"R"
+	ret z
+	scf
+	ret
+
+
+old_abort_handler_address: dw 0
+disk_abort_handler_address: dw disk_abort_handler
+disk_abort_handler:
+	ld a,(flushing_disk_buffers)
+	or a
+	jp nz,flush_disk_buffers_cont
+
 	ld	hl,#ffff
 	ld	(oudslot),hl
 	ld	(oudslot+2),hl
 	ld	bc,(Oldsubrouti)
 	call	zetslot
-	pop	bc
-	ld	a,c
+	ld	bc,(disk_error_handling_errnum)
+	xor a
+	ld (disk_error_handling_errnum),a
+	ld a,c
 	and	%00001100
 	ld	de,fcb_work
 	ld	c,_FCLOSE
 	call	nz,bdos	;close file (not with offline/protected)
 	ld	sp,(Sp_disk)
 	jp	diskerrcont
-_retry:	pop	bc
-	pop	de
-	pop	hl
-	ld	c,1
+
+flush_disk_buffers:
+	ld a,(dosversion)
+	cp 2
+	ret c
+
+	ld (flushing_disk_buffers_sp),sp
+
+	ld a,1
+	ld (flushing_disk_buffers),a
+
+	ld bc,0000h+_FLUSH
+	ld d,0FFh
+	call bdos
+flush_disk_buffers_cont:
+	xor a
+	ld (flushing_disk_buffers),a
+	ld sp,(flushing_disk_buffers_sp)
 	ret
+
+;Non-zero while flushing disk buffers.
+;Needed for proper error handling if of flushing fails.
+flushing_disk_buffers: db 0
+
+;Stack pointer to restore if flushing disk buffers fails.
+flushing_disk_buffers_sp: dw 0
 
 printhok	LD	B,(IX)
 	dec	b
@@ -6164,7 +6593,7 @@ labelbuffer	ds	9,0
 
 ;**************************************************************************
 ;everything from here will be erased (one time use routines on startup)
-buffer1024
+buffer1024:
 
 hook	jr	hookcontinue
 	jr hook_hoofd
@@ -6555,6 +6984,14 @@ oldslotsub2:
 	CALL	zetslot
 	RET
 
+;Non-zero if on success load or save operation disk menu must close
 disk_must_back: db 0
+
+;On DOS 2 stores the last disk error code to be _EXPLAIN-ed
+last_dos_error: db 0
+
+;Stores the disk error received by error handler
+;so that it can be examined by abort handler
+disk_error_handling_errnum: db 0
 
 	ds	#4000-$,0	;(fill with padding just to be sure)
