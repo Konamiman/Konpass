@@ -50,7 +50,7 @@ matrix	equ	#fbe5
 ctngcode	equ	#ff79
 
 videoramfree	equ	#1a00	;from here videoram is free to use
-Dskerrline	equ	14
+Dskerrline:	equ	14
 Testlabeladr	equ	#400c	;in ass/monitor segment
 MAININSTPROG	equ	#4009	;in debugger segment
 SETDEBPARS	equ	#400c	;in debugger segment
@@ -1602,12 +1602,22 @@ Areyousure:	defb	"Are you sure ? (y/n)",0
 
 ;Ouput: NC if sure, C if not
 ask_are_you_sure:
+	or a
+	jr _ask_are_you_sure_core
+
+ask_are_you_sure_no_cls:
+	scf
+	
+_ask_are_you_sure_core:
+	push af
 	ld	hl,Dskerrline*80+(80-20)/2
 	ld	bc,Areyousure
 	call	PRINTTEKST
 	call	GETKEY
-	push	af
-	call	inidir
+	ld b,a
+	pop af
+	push	bc
+	call	nc,inidir
 	pop	af
 	or	a
 	scf
@@ -1856,6 +1866,7 @@ printload	ld	hl,14*80+(80-10)/2
 	ld	bc,Loading
 	jp	PRINTTEKST
 Loading:	defb	"Loading...",0
+Loaded_at:  defb    "Loaded at:",0
 _diskload:
 	ld	a,(matrix+6)
 	cpl
@@ -1930,7 +1941,8 @@ _load_asc	ld	l,(ix+4)
 _load_blk	ld	l,(ix+8)
 	ld	h,(ix+9)
 	jp	(hl)
-_load_bin	ld	de,Binldheader	;LOAD BINARY FILE
+_load_bin:
+	ld	de,Binldheader	;LOAD BINARY FILE
 	call	set_DTA
 	ld	hl,7
 	call	fcb_read
@@ -1938,12 +1950,18 @@ _load_bin	ld	de,Binldheader	;LOAD BINARY FILE
 	cp	#fe
 	jr	nz,_nobinfile
 	call	printbin
-loadbincont:	;Load call from data file
+loadbincont:
+	;Load call from data file
 	ld	de,buffer1024
 	call	set_DTA
 	ld	hl,(Startldadr)
 	push	hl
-_loadbin_cnt	ld	hl,(Eindldadr)
+_loadbin_cnt:
+	ld hl,15*80+10
+	ld bc,Loading
+	call PRINTTEKST
+
+	ld	hl,(Eindldadr)
 	inc	hl
 	ld	de,(Startldadr)
 	or	a
@@ -1958,7 +1976,8 @@ _loadbin_cnt	ld	hl,(Eindldadr)
 	ex	af,af'
 	jr	c,_loadbin_1	;<=1024
 	ld	hl,1024
-_loadbin_1:	call	fcb_read
+_loadbin_1:	
+	call	fcb_read
 	ld	a,h
 	or	l
 	jr	z,_endloadbin
@@ -1973,10 +1992,16 @@ _loadbin_1:	call	fcb_read
 	add	hl,de
 	ld	(Startldadr),hl	;next address
 	jr	_loadbin_cnt
-_endloadbin	pop	hl
+_endloadbin:
+	ld hl,15*80+10
+	ld bc,Loaded_at
+	call PRINTTEKST
+
+	pop	hl
 	ld	(Startldadr),hl
 	jp	CLOSEFILE
-_nobinfile	ld	bc,Nobinfile
+_nobinfile:
+	ld	bc,Nobinfile
 	ld	hl,15*80+(80-19)/2
 	call	PRINTTEKST
 	call	beep
@@ -2007,7 +2032,9 @@ Binldheader:	defb	0
 Startldadr:	defw	0
 Eindldadr:	defw	0
 Execldadr:	defw	0
-_load_data	call	wissaveload
+
+_load_data:
+	call	wissaveload
 	ld	hl,fcb_work+16
 	ld	e,(hl)
 	inc	hl
@@ -2031,7 +2058,8 @@ _load_data	call	wissaveload
 	ld	(Starttxt),a
 	ld	(Endtxt),a
 	ld	(Exectxt),a
-_dat_again1	call	bininput1
+_dat_again1:
+	call	bininput1
 	ld	hl,(Startsvadr)
 	ld	de,(Lengthfile)
 	add	hl,de
@@ -2050,14 +2078,22 @@ _dat_again1	call	bininput1
 	ld	hl,(Endsvadr)
 	ld	(Eindldadr),hl
 	jp	loadbincont
+
 Lengthfile:	defw	0
+
 _load_sect	call	wissaveload
 	ld	hl,Secttxt
 	call	TEXTTOBLOK
 	call	printinpsect
+
+	ld hl,15*80+10
+	ld bc,Loading
+	call PRINTTEKST
+
 	ld	bc,(Lengthsect)
 	ld	de,(Startsect)
 	ld	hl,(Sectadr)
+
 _load_sect1	push	bc
 	push	de
 	push	hl
@@ -2082,6 +2118,9 @@ _load_sect1	push	bc
 	or	c
 	jr	nz,_load_sect1
 	call	wissaveload
+	ld hl,15*80+10
+	ld bc,Loaded_at
+	call PRINTTEKST
 	jp	diskhoofdprt
 Secttxt:	defw	17*80+10
 	defb	"Address:",0
@@ -2119,21 +2158,29 @@ printinpsect	ld	bc,_ALLOC
 	call	inputsect
 	ld	(Lengthsect),de
 	ret
-inputsect	push	hl
+inputsect:
+	push	hl
 	ld	de,buffer1024
 	call	inputbin
-	jp	c,CLOSEFILE
+	jp	c,bininput_cancel
 	call	BEREKENGETAL
 	pop	hl
 	jr	c,inputsect
 	ret
+
 ;--Disk save
 Saving:	defb	"Saving...",0
-printsave	ld	hl,14*80+(80-10)/2
+Saved_from:  defb    "Saved from:",0
+printsave:
+	push af
+	ld	hl,14*80+(80-10)/2
 	ld	bc,Saving
-	jp	PRINTTEKST
-wissaveload	ld	hl,14*80+(80-10)/2
-	ld	bc,10
+	call	PRINTTEKST
+	pop af
+	ret
+wissaveload:
+	ld	hl,14*80+(80-40)/2
+	ld	bc,40
 	xor	a
 	jp	FILLVRAM
 
@@ -2196,7 +2243,9 @@ _save_asc	push	ix
 _save_blk	ld	l,(ix+10)
 	ld	h,(ix+11)
 	jp	(hl)
-_save_bin	ld	de,Binsvheader
+_save_bin:
+	call wissaveload
+	ld	de,Binsvheader
 	call	set_DTA
 	call	wissaveload
 	ld	hl,Bintext
@@ -2219,15 +2268,21 @@ _bin_again3	ld	hl,19*80+17
 	call	BEREKENGETAL
 	jr	c,_bin_again3
 	ld	(Execsvadr),de
-	call	printsave
+	;call	printsave
 	ld	hl,7
 	call	savefile
-binsavecont:	;save call from data
+binsavecont:
+	;save call from data
 	ld	de,buffer1024
 	call	set_DTA
 	ld	hl,(Startsvadr)
 	push	hl
-_binsave_cnt	ld	hl,(Endsvadr)
+_binsave_cnt:
+	ld hl,15*80+10
+	ld bc,Saving
+	call PRINTTEKST
+
+	ld	hl,(Endsvadr)
 	inc	hl
 	ld	de,(Startsvadr)
 	or	a
@@ -2254,27 +2309,36 @@ _savebin_1:	push	hl
 	pop	hl
 	call	savefile
 	jr	_binsave_cnt
-_endsavebin	pop	hl
+_endsavebin:
+	ld hl,15*80+10
+	ld bc,Saved_from
+	call PRINTTEKST
+
+	pop	hl
 	ld	(Startsvadr),hl
 	jp	CLOSEFILE
-inputbin	push	de
+
+inputbin:
+	push	de
 	ld	b,20
 	ld	a,%11000001
 	call	INPUTTEXT
 	pop	hl
 	ret
-bininput1	ld	hl,17*80+17
+bininput1:
+	ld	hl,17*80+17
 	ld	de,Starttxt
 	call	inputbin
-	jp	c,CLOSEFILE
+	jp	c,bininput_cancel
 	call	BEREKENGETAL
 	jr	c,bininput1
 	ld	(Startsvadr),de
 	ret
-bininput2	ld	hl,18*80+17
+bininput2:
+	ld	hl,18*80+17
 	ld	de,Endtxt
 	call	inputbin
-	jp	c,CLOSEFILE
+	jp	c,bininput_cancel
 	call	BEREKENGETAL
 	jr	c,bininput2
 	ld	(Endsvadr),de
@@ -2283,6 +2347,12 @@ bininput2	ld	hl,18*80+17
 	sbc	hl,de	;is set to [NC]
 	jr	c,bininput2	;end address < start address
 	ret
+bininput_cancel:
+	xor a
+	ld (disk_must_back),a
+	call inidir
+	jp CLOSEFILE
+
 Binsvheader:	db	#fe
 Startsvadr:	dw	0
 Endsvadr:	dw	0
@@ -2290,7 +2360,9 @@ Execsvadr:	dw	0
 Starttxt:	ds	21
 Endtxt:	ds	21
 Exectxt:	ds	21
-_save_data	ld	hl,Bintext1
+_save_data:
+	call wissaveload
+	ld	hl,Bintext1
 	call	TEXTTOBLOK
 	ld	hl,17*80+17
 	ld	bc,Starttxt
@@ -2300,13 +2372,21 @@ _save_data	ld	hl,Bintext1
 	call	PRINTTEKST
 	call	bininput1
 	call	bininput2
-	call	printsave
 	jp	binsavecont
-_save_sect	call	wissaveload
-	call	testharddisk
+_save_sect:
+	call	wissaveload
 	ld	hl,Secttxt
 	call	TEXTTOBLOK
 	call	printinpsect
+	call	ask_sector_write_confirmation
+	jr nc,_save_sect_confirmed
+	call inidir	
+	jp diskhoofdprt
+_save_sect_confirmed:
+	ld hl,15*80+10
+	ld bc,Saving
+	call PRINTTEKST
+
 	ld	bc,(Lengthsect)
 	ld	de,(Startsect)
 	ld	hl,(Sectadr)
@@ -2335,23 +2415,30 @@ _save_sect1	push	bc
 	ld	a,b
 	or	c
 	jr	nz,_save_sect1
+
+	ld hl,15*80+10
+	ld bc,Saved_from
+	call PRINTTEKST
+
 	call	wissaveload
 	jp	diskhoofdprt
-testharddisk	ld	a,(dosversion)
+
+ask_sector_write_confirmation:
+	ld	a,(dosversion)
 	dec	a
-	ret	z
+	jp z,ask_are_you_sure_no_cls
 	ld	c,_DPARM
 	ld	de,buffer1024
 	ld	l,0
 	call	bdos
 	ld	a,(buffer1024+11)
 	cp	#f8
-	ret	nc
-	ld	hl,15*80+(80-14)/2
+	ld	hl,(Dskerrline-2)*80+(80-19)/2
 	ld	bc,Noflop
-	call	PRINTTEKST
-	jp	diskhoofdprt
-Noflop:	defb	"No diskdrive !",0
+	call	c,PRINTTEKST
+	jp ask_are_you_sure_no_cls
+	
+Noflop:	defb	"Not a floppy disk !",0
 
 jon1:
 	LD	A,(Diskasm)
@@ -2446,7 +2533,8 @@ printdir	call	inidir
 	ld	bc,Filenotfound
 	jp	PRINTTEKST
 Filenotfound:	defb	"File not found",0
-inidir	xor	a
+inidir:
+	xor	a
 	ld	(Aantalfiles),a
 	inc	a
 	ld	(X_file),a
