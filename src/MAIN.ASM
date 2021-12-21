@@ -1455,7 +1455,13 @@ _diskdir	call	inputpath
 	jp	diskhoofd
 
 ;--Mkdir (only comes here in dos2)
+creating_msg: db "Creating...",0
 _diskmkdir:
+	call wissaveload
+	ld	hl,14*80+(80-14)/2
+	ld	bc,creating_msg
+	call	PRINTTEKST
+
 	call fcb_to_printable_filename
 
 	ld	b,%10010000
@@ -1464,7 +1470,9 @@ _diskmkdir:
 	ld	de,kbuf
 	call	bdos	;Create file handle
 	or a
-	jp	z,diskhoofd
+	jr	nz,_mkdirerr
+	call wissaveload
+	jp diskhoofd
 _mkdirerr:
 	ld (last_dos_error),a
 
@@ -1519,10 +1527,17 @@ _diskbackup	ld	hl,Backuponoff
 	jp	diskhoofdprt
 
 ;--Kill
+deleting_msg: db "Deleting...",0
 _diskkill:
 	call	inidir
 	call ask_are_you_sure
 	jp	c,diskhoofdprt
+
+	call wissaveload
+	ld	hl,14*80+(80-14)/2
+	ld	bc,deleting_msg
+	call	PRINTTEKST
+
 	call	setdirectory
 
 	ld a,(dosversion)
@@ -1544,7 +1559,10 @@ _diskkill_dos1:
 _diskkill_do:
 	call	bdos
 	or	a
-	jp z,diskhoofd
+	jr nz,diskkill_err
+	call wissaveload
+	jp diskhoofd
+diskkill_err:
 	call set_last_dos_error
 	ld	hl,Dskerrline*80+(80-14)/2
 	ld	bc,Filenotfound
