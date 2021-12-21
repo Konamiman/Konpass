@@ -1458,7 +1458,7 @@ _diskdir	call	inputpath
 ;--Mkdir (only comes here in dos2)
 _diskmkdir:
 	call fcb_to_printable_filename
-	
+
 	ld	b,%10010000
 	xor	a
 	ld	c,_CREATE
@@ -2711,7 +2711,9 @@ X_file:	defb	0
 X_file1:	defb	0
 Y_file1:	defb	0
 Filemenu:	defb	0
-filemenu	ld	hl,#0101
+
+filemenu:
+	ld	hl,#0101
 	ld	(X_file1),hl
 	ld	a,h
 	ld	(Filemenu),a
@@ -2791,8 +2793,15 @@ _filedown	ld	a,(Filemenu)
 	add	a,5
 	ld	(Filemenu),a
 	jp	filehoofd
-_filespace	call	haalfile
-	jr	c,_file_subdir
+
+_filespace:
+	call	haalfile
+	jr	nc,_filespace_select
+	ld a,(matrix+6)
+	and 2	;CTRL pressed?
+	scf
+	jr	nz,_file_subdir
+_filespace_select:
 	call	beradrname
 	jr	c,_filespace1
 	ld	hl,Filename
@@ -2801,6 +2810,7 @@ _filespace	call	haalfile
 	call	jon2
 	call	prtfilenaam
 _filespace1	jp	_fileback
+
 ;----- remove file from screen   (empty places become spaces, without ".")
 ;----- OUT: filename in FILENAME+2, [C]=subdirectory
 haalfile	ld	hl,7*80-12+1	;not "["
@@ -2840,7 +2850,9 @@ _haalfile4_1:	ld	(hl),a
 	ret	z
 	scf
 	ret
-_file_subdir	call	wisfilebalk
+
+_file_subdir:
+	call	wisfilebalk
 	ld	hl,(adrsfilepath)
 	ld	de,buffer1024
 	ld	bc,20
@@ -3133,7 +3145,8 @@ _prtfilenaa2:	ld	a,(hl)
 	out	(#98),a
 	djnz	_prtfilenaa2
 	ret
-beradrname	ld	a,(Diskasm)
+beradrname:
+	ld	a,(Diskasm)
 	or	a
 	jr	z,_beradrname1
 	ld	hl,Disknames-2
