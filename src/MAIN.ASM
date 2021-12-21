@@ -1262,8 +1262,6 @@ diskerrcont:
 diskhoofdprt:
 	call	prtdskinfo
 diskhoofd:
-	xor a
-	ld a,(disk_must_back)
 	ld	sp,(Sp_disk)
 	xor	a
 	ld	(Asmbusy),a
@@ -1316,7 +1314,8 @@ _disk_noctrl	ld	a,d
 	cp	" "
 	jr	c,diskhoofd
 	jp	inputname
-_diskback	call	wisdiskbalk
+_diskback:
+	call	wisdiskbalk
 	call clrdiskhooks
 	ld	bc,(Oldsubrouti)
 	ld	(slotsubroutin),bc
@@ -1876,19 +1875,19 @@ _diskload:
 	call	fcb_open
 	or	a
 	jr	z,_diskload1
-	xor a
-	ld (disk_must_back),a
 	call set_last_dos_error
 	ld	hl,Dskerrline*80+(80-14)/2
 	ld	bc,Filenotfound
 	call _diskkill2
 	jp	diskhoofdprt
-_diskload1	ld	a,(Soort)
+_diskload1:
+	ld	a,(Soort)
 	add	a,a
 	ld	e,a
 	ld	d,0
 	ld	hl,Jp_loads-2
-_diskloadcnt	add	hl,de
+_diskloadcnt:
+	add	hl,de
 	ld	e,(hl)
 	inc	hl
 	ld	d,(hl)
@@ -3242,8 +3241,6 @@ savefile	ld	de,fcb_work
 	ret	z
 writeerror:
 	call set_last_dos_error
-	xor a
-	ld (disk_must_back),a
 
 	ld	de,fcb_work
 	ld	c,_FCLOSE
@@ -3339,10 +3336,14 @@ Disktextasm:
 set_last_dos_error:
 	ld a,(dosversion)
 	cp 2
-	ld bc,_ERROR
+	ld bc,0000h+_ERROR
 	call nc,bdos
 	ld a,b
 	ld (last_dos_error),a
+	or a
+	ret z
+	xor a
+	ld (disk_must_back),a
 	ret
 
 ;in: DE=pointersto text HL=startVRAM
@@ -3694,7 +3695,8 @@ printspecial	LD	A,(specialchar)
 	LD	A,(specialchar)
 	JP	FILLVRAM
 
-CLOSEFILE	LD	DE,fcb_work
+CLOSEFILE:
+	LD	DE,fcb_work
 	LD	C,_FCLOSE
 	CALL	bdos
 	LD	A,(doinclude)
@@ -6631,6 +6633,16 @@ textbuffer4	ds	33,0
 databuffer4	ds	13,0
 labelbuffer	ds	9,0
 
+;Non-zero if on success load or save operation disk menu must close
+disk_must_back: db 0
+
+;On DOS 2 stores the last disk error code to be _EXPLAIN-ed
+last_dos_error: db 0
+
+;Stores the disk error received by error handler
+;so that it can be examined by abort handler
+disk_error_handling_errnum: db 0
+
 ;**************************************************************************
 ;everything from here will be erased (one time use routines on startup)
 buffer1024:
@@ -7023,15 +7035,5 @@ oldslotsub2:
 	LD	(slotsubroutin),BC
 	CALL	zetslot
 	RET
-
-;Non-zero if on success load or save operation disk menu must close
-disk_must_back: db 0
-
-;On DOS 2 stores the last disk error code to be _EXPLAIN-ed
-last_dos_error: db 0
-
-;Stores the disk error received by error handler
-;so that it can be examined by abort handler
-disk_error_handling_errnum: db 0
 
 	ds	#4000-$,0	;(fill with padding just to be sure)
