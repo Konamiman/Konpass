@@ -1447,7 +1447,10 @@ _type_sect	call	soortmenu
 	jp	diskhoofdprt
 
 ;--Dir
-_diskdir	call	inputpath
+_diskdir:
+	call inidir
+	call	inputpath
+_diskdir_2:
 	call	printdir
 	ld	a,(Aantalfiles)
 	or	a
@@ -2501,8 +2504,10 @@ _jon21	LD	A,(Buffer)
 	LD	B,A
 	XOR	A
 	JR	parse_nam_deb
+
 ;--input pathname
-inputpath	ld	hl,pathnamebuf
+inputpath:
+	ld	hl,pathnamebuf
 	ld	de,kbuf
 	ld	bc,64
 	ldir
@@ -2539,8 +2544,10 @@ _inputpath1	call	testpath
 	ldir		;Copy name back
 	call	printpath
 _inputpath2	jp	jon2
+
 ;--print directory on screen (including directories with < >)
-printdir	call	inidir
+printdir:
+	call	inidir
 	call	printpath
 	ret	c
 	call	doprintdir
@@ -2549,7 +2556,8 @@ printdir	call	inidir
 	ret	nz
 	ld	hl,Dskerrline*80+(80-14)/2
 	ld	bc,Filenotfound
-	jp	PRINTTEKST
+	call _diskkill2
+	jp diskhoofd
 Filenotfound:	defb	"File not found",0
 inidir:
 	xor	a
@@ -2574,16 +2582,46 @@ _inidir1:	ld	a,0
 	djnz	_inidir2
 	ret
 Vramnaam:	defw	0
+
 ;--print directory on screen
-doprintdir	ld	a,(dosversion)
+
+;In DOS 2 we use the _PARSE function and look at the result
+;of the directory scan for the first result to make adjustments
+;in the supplied path:
+;
+;- If an ambiguous path was passed (contains ? or *),
+;  suppress the last part of the path. So e.g.
+;  entering "A:\DIRNAME\*.COM" will display the
+;  appropriate files, but the resulting path will be
+;  "A:\DIRNAME\".
+;
+;- Otherwise, if the resulting single result is a file,
+;  suppress it from the path, so entering "A:\DIRNAME\FILE.COM"
+;  will list the single file, but the resulting path will be
+;  "A:\DIRNAME\".
+;
+;- Otherwise, the resulting single result is a directory,
+;  so append a "\" at the end and enter it. So e.g.
+;  entering "A:\DIRNAME" will list the contents of the file,
+;  and the resulting path will be "A:\DIRNAME\".
+;
+;- Exception to the above: if CTRL+ENTER is pressed to trigger
+;  the directory scan, a directory will be treated like a file,
+;  so e.g. "A:\DIRNAME" will list that single directory and
+;  the resulting path will be "A:\".
+
+doprintdir:
+	ld	a,(dosversion)
 	dec	a
-	jr	z,_dir_dos1
+	jp	z,_dir_dos1
 _dir_dos2	ld	a,(huidigedrive)
 	ld	e,a
 	call	prtfreedisk
 	call	dos2firstent
+	ld a,(last_dos_error)
 	or	a
 	ret	nz
+	call printpath
 	call	printfile
 _nextdos2dir	call	dos2nextentr
 	or	a
@@ -2596,13 +2634,70 @@ _nextdos2dir	call	dos2nextentr
 	ret	c
 	call	inidir
 	jr	_nextdos2dir
-dos2firstent	ld	de,pathnamebuf
+dos2firstent:
+	ld	de,pathnamebuf
+	ld bc,0000h+_PARSE
+	call bdos
+	or a
+	jr nz,dos2firstent_go	;Error parsing? Skip path processing
+	push hl
+	or a
+	sbc hl,de
+	ld a,h
+	or l
+	pop hl
+	jr z,dos2firstent_go	;No last item in string? Skip path processing
+
+	push hl	;Pointer to last item
+	push de	;Pointer to termination
+	push bc	;Flags
+
+	call dos2firstent_go
+
+	pop bc
+	pop de
+	pop hl
+	or a
+	ret nz
+
+	bit 5,b
+	jr z,dos2firstent_noamb
+
+	ld (hl),0
+	ret
+
+dos2firstent_noamb:
+	ld a,(buffer1024+14)
+	and 10000b
+	jr z,dos2firstent_nodir
+	ld a,(matrix+6)
+	and 2	;If CTRL is pressed, don't automatically enter a dir
+	jr z,dos2firstent_nodir
+	ex de,hl
+	ld (hl),'\'
+	inc hl
+	ld (hl),0
+	jp dos2firstent_go
+
+dos2firstent_nodir:
+	push hl
+	call dos2firstent_go
+	pop hl
+	ld (hl),0
+	ret
+
+dos2firstent_go:
+	ld	de,pathnamebuf
 	ld	hl,(adrsfilepath)
 	ld	b,%00010111
 	ld	ix,buffer1024
 	ld	c,_FFIRST
-	jp	bdos
-dos2nextentr	ld	ix,buffer1024
+	call	bdos
+	ld (last_dos_error),a
+	ret
+
+dos2nextentr:
+	ld	ix,buffer1024
 	ld	c,_FNEXT
 	jp	bdos
 _dir_dos1	ld	a,(huidigedrive)
@@ -2841,7 +2936,9 @@ filehoofd	call	GETKEY
 	and	255-32
 	jr	z,_filespace
 	jr	filehoofd
-_fileback	jp	wisfilebalk
+_fileback:
+	call inidir
+	jp	wisfilebalk
 _fileright	ld	a,(Aantalfiles)
 	ld	b,a
 	ld	a,(Filemenu)
@@ -2902,8 +2999,11 @@ _filedown	ld	a,(Filemenu)
 _filespace:
 	call	haalfile
 	jr	nc,_filespace_select
+	ld a,(Filename)
+	cp '.'	;Ignore CTRL press for ".."
+	jr z,_file_subdir
 	ld a,(matrix+6)
-	and 2	;CTRL pressed?
+	and 2	;CTRL pressed? Treat like a file then
 	scf
 	jr	nz,_file_subdir
 _filespace_select:
@@ -2990,7 +3090,8 @@ _file_subdi1	ld	b,3
 zetfilebalk	call	filebalkadre
 	ld	b,14
 	jp	SETBALK
-wisfilebalk	call	filebalkadre
+wisfilebalk:
+	call	filebalkadre
 	ld	b,14
 	jp	WISBALK
 filebalkadre	ld	a,(X_file1)
@@ -3153,6 +3254,7 @@ _printboven1:	call	WRITEVRAM
 Off:	defb	"off"
 Asm:	defb	"Asm"
 Asc:	defb	"Asc"
+
 ;--print path and drive on screen
 printpath	ld	hl,6*80+3+10
 	ld	bc,64
@@ -3161,9 +3263,12 @@ printpath	ld	hl,6*80+3+10
 	ld	bc,pathnamebuf
 	ld	hl,6*80+3+10
 	call	PRINTTEKST
-testpath	LD	A,(dosversion)
+testpath:
+	LD	A,(dosversion)
 	DEC	A
 	JR	NZ,_pathdos2
+
+_pathdos1:
 	LD	A,(pathnamebuf+1)
 	CP	":"
 	JR	NZ,_nodrv
@@ -3173,26 +3278,38 @@ testpath	LD	A,(dosversion)
 	SUB	"A"
 	JR	C,_badpath
 	LD	HL,pathnamebuf+2
-jon4	LD	C,A
+jon4:
+	LD	C,A
 	INC	C
 	LD	A,(HL)
 	CP	"\"
 	JR	NZ,_contdrv
 	INC	HL
 	JR	_contdrv
-_nodrv	LD	C,_CURDRV	;get defaultdrv
+_nodrv:
+	LD	C,_CURDRV	;get defaultdrv
 	CALL	bdos
 	LD	HL,pathnamebuf
 	jr	jon4
-_pathdos2	LD	DE,pathnamebuf
+
+_pathdos2:
+	LD	DE,pathnamebuf
 	LD	BC,0000h+_PARSE
 	CALL	bdos
+	ld (last_dos_error),a
+	jr nz,printpath_error
 	LD	A,(DE)
 	OR	A
-	JP	NZ,_badpath
-_contdrv	LD	B,C
+	jr z,_contdrv
+	ld a,0D9h	;Invalid pathname
+	ld (last_dos_error),a
+	jp printpath_error
+	
+_contdrv:
+	LD	B,C
 	LD	A,(drives)	;login vector
-schuifdrives	RRCA		;is the drive connected?
+schuifdrives:
+	RRCA		;is the drive connected?
 	DJNZ	schuifdrives
 	JR	NC,_badpath
 	LD	A,C
@@ -3206,19 +3323,21 @@ schuifdrives	RRCA		;is the drive connected?
 	LD	C,_SELDSK
 	CALL	bdos
 	OR	A
-	RET
+	ret
 
-_badpath	LD	A,(doinclude)
+_badpath:
+	LD	A,(doinclude)
 	OR	A
 	SCF
 	RET	NZ
 	LD	HL,Dskerrline*80+(80-14)/2
 	LD	BC,txt_badpath
-	CALL	PRINTTEKST
-	CALL	beep
-	SCF
-	RET
-txt_badpath	db	"Bad pathname !",0
+
+printpath_error:
+	call _diskkill2
+	jp diskhoofd
+
+txt_badpath	db	"Invalid drive !",0
 
 doinclude	db	0
 
@@ -3303,7 +3422,8 @@ _prtfreedis3:	srl	d
 	ex	de,hl
 	ret
 
-setdirectory	LD	A,(dosversion)
+setdirectory:
+	LD	A,(dosversion)
 	DEC	A
 	RET	Z
 	LD	HL,(adrsfilepath)
