@@ -25,6 +25,7 @@ _FNEXT: equ 41h
 _CREATE: equ 44h
 _CLOSE: equ 45h
 _WRITE: equ 49h
+_DELETE: equ 4Dh
 _GETCD: equ 59h
 _CHDIR: equ 5Ah
 _PARSE: equ 5Bh
@@ -1445,6 +1446,7 @@ _disktype	call	beradrname
 _type_sect	call	soortmenu
 	call	jon1
 	jp	diskhoofdprt
+
 ;--Dir
 _diskdir	call	inputpath
 	call	printdir
@@ -1452,8 +1454,27 @@ _diskdir	call	inputpath
 	or	a
 	call	nz,filemenu
 	jp	diskhoofd
+
 ;--Mkdir (only comes here in dos2)
-_diskmkdir	ld	hl,pathnamebuf
+_diskmkdir:
+	call fcb_to_printable_filename
+	
+	ld	b,%10010000
+	xor	a
+	ld	c,_CREATE
+	ld	de,kbuf
+	call	bdos	;Create file handle
+	or a
+	jp	z,diskhoofd
+_mkdirerr:
+	ld (last_dos_error),a
+
+	call	inidir
+	call	_diskkill2
+	jp diskhoofd
+
+fcb_to_printable_filename:
+	ld	hl,pathnamebuf
 	ld	de,kbuf
 	ld	bc,64
 	ldir
@@ -1475,21 +1496,10 @@ _diskmkdir	ld	hl,pathnamebuf
 	inc	de
 	ld	b,3
 	call	_mkdir_vul
-_diskmkdir1	xor	a
-	ld	(de),a
-	ld	b,%10010000
+_diskmkdir1:
 	xor	a
-	ld	c,_CREATE
-	ld	de,kbuf
-	call	bdos	;Create file handle
-	or a
-	jp	z,diskhoofd
-_mkdirerr:
-	ld (last_dos_error),a
-
-	call	inidir
-	call	_diskkill2
-	jp diskhoofd
+	ld	(de),a
+	ret
 
 _mkdir_vul	ld	a,(hl)
 	inc	hl
@@ -1499,6 +1509,7 @@ _mkdir_vul	ld	a,(hl)
 	inc	de
 _mkdir_vul1	djnz	_mkdir_vul
 	ret
+
 ;--Backup on/asm/asc
 _diskbackup	ld	hl,Backuponoff
 	inc	(hl)
@@ -1507,15 +1518,31 @@ _diskbackup	ld	hl,Backuponoff
 	jp	c,diskhoofdprt
 	ld	(hl),0
 	jp	diskhoofdprt
+
 ;--Kill
 _diskkill:
 	call	inidir
 	call ask_are_you_sure
 	jp	c,diskhoofdprt
-_diskkill3:
 	call	setdirectory
+
+	ld a,(dosversion)
+	cp 2
+	jr c,_diskkill_dos1
+
+	;On DOS 2 use _DELETE, so that directories can be deleted too.
+
+	call fcb_to_printable_filename
+
+	ld de,kbuf	;buffer1024
+	ld c,_DELETE
+	jr _diskkill_do
+
+_diskkill_dos1:
 	ld	de,fcb_work
 	ld	c,_FDEL
+
+_diskkill_do:
 	call	bdos
 	or	a
 	jp z,diskhoofd
