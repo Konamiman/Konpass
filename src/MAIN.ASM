@@ -57,6 +57,7 @@ SETDEBPARS	equ	#400c	;in debugger segment
 ABOUTPROG equ #4015 	;in debugger segment
 REDEFCHARS equ #4018 	;in debugger segment
 SETNAMEBUFFERS equ #401B	;in debugger segment
+PRINTDISKLINES equ #401E	;in debugger segment
 
 ;--------------------------------------------
 	ORG	#0140
@@ -538,18 +539,6 @@ name_com2	db	"NAME    COM"
 name_tsr	db	"NAME    TSR"
 name_rel	db	"NAME    REL"
 
-;ASM and ASCII file names for each source buffer
-names_asm_for_buffers:
-	db "NAME    ASM"
-	db "NAME    ASM"
-	db "NAME    ASM"
-	db "NAME    ASM"
-names_asc_for_buffers:
-	db "NAME    ASC"
-	db "NAME    ASC"
-	db "NAME    ASC"
-	db "NAME    ASC"
-
 stat_mem	db	0
 tab_ROMRAM	ds	#60,0	;ROMRAMtable, 3*16*2=#60 bytes
 tab_memory
@@ -571,7 +560,6 @@ change_current_buffer:
 	ld d,a
 	ld (Buffer),a
 	ld ix,name_asm
-	ld iy,names_asm_for_buffers-11
 	ld bc,SETNAMEBUFFERS
 	jp call_in_debugger
 
@@ -1256,11 +1244,8 @@ GODISKDRIVE:
 	ld	bc,24*10	;ERRORLIST(#1910...) bug fix!! (it was 25*10)
 	xor	a
 	call	FILLVRAM	;clear blink table (lines 3-27)
-	ld	hl,3*80
-	ld	de,Disklines
-	call	PRINTBLOK
-	ld	hl,Disktext
-	call	TEXTTOBLOK
+	ld bc,PRINTDISKLINES
+	call call_in_debugger
 	ld	a,(Diskasm)
 	or	a
 	jr	nz,_diskasm
@@ -3546,53 +3531,7 @@ makebackup	ld	hl,fcb_work
 	ld	bc,1+11+25
 	ldir
 	ret
-Disklines:	defw	Dline1,Dline2,Dline3,Dline4,Dline5,Dline6,Dline6
-	defw	Dline6,Dline6,Dline6,Dline6,Dline6,Dline6,Dline6
-	defw	Dline6,Dline6,Dline6,Dline6,Dline6,Dline6,Dline7
-Disklinesend:	defw	Dline8,Dline9,0
-Dline1:	defb	1,24,19,23,1,18,17,23,1,18,13,23,1,18,10,23,1,18,15,23
-	defb	1,25,0
-Dline2:	defb	1,22,19,0,1,22,17,0,1,22,13,0,1,22,10,0,1,22,15,0
-	defb	1,22,0
-Dline3:	defb	1,20,19,23,1,17,17,23,1,17,13,23,1,17,10,23,1,17,15,23
-	defb	1,19,0
-Dline6:
-Dline4:	defb	1,22,78,0,1,22,0
-Dline5:	defb	1,20,78,23,1,19,0
-Dline7:	defb	1,20,6,23,1,18,6,23,1,18,6,23,1,18,6,23,1,18,6,23,1,18
-	defb	6,23,1,18,6,23,1,18,29,23,1,19,0
-Dline8:	defb	1,22,6,0,1,22,6,0,1,22,6,0,1,22,6,0,1,22,6,0,1,22
-	defb	6,0,1,22,6,0,1,22,29,0,1,22,0
-Dline9:	defb	1,26,6,23,1,17,6,23,1,17,6,23,1,17,6,23,1,17,6,23,1,17
-	defb	6,23,1,17,6,23,1,17,29,23,1,27,0
-Disktext:	defw	6*80+3
-	defb	"Pathname:",0
-	defw	4*80+2
-	defb	"Type:",0
-	defw	4*80+22
-	defb	"Sourcebuffer:",0
-	defw	4*80+40
-	defb	"Backup:",0
-	defw	4*80+65
-	defb	"Free:      kB",0
 
-	defw	24*80+2
-	defb	"Save",0
-	defw	24*80+9
-	defb	"Load",0
-	defw	24*80+16+1
-	defb	"Dir",0
-	defw	24*80+23
-	defb	"Type",0
-	defw	24*80+30
-	defb	"Mkdir",0
-	defw	24*80+37
-	defb	"Kill",0
-	defw	24*80+44-1
-	defb	"Format",0
-	defw	24*80+53
-	defb	"Filename:",0
-	defw	0
 Disktextasm:
 	defb	"  Assemble ",0
 

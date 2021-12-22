@@ -67,6 +67,7 @@ SETGETADRES	jp	setgetadres
 ABOUTPROG jp doabout
 REDEFCHARS jp doredefchars
 SETNAMEBUFFERS jp change_current_source_buffer
+PRINTDISKLINES jp print_disk_lines
 
 wisbreak	ld	hl,breakbuf
 	ld	(breakbufpoint),hl
@@ -5976,12 +5977,11 @@ vormen_sq	db	#10,#10,#10,#ff,#00,#00,#00,#00	;17
 
 ; Adjust ASM and ASCII file names in the disk menu
 ; when changing the current source buffer
-; (moved here due to exhaustion of space in main buffer)
+; (moved here due to exhaustion of space in main segment)
 ;
 ; Input: E = Old source buffer number
 ;        D = New source buffer number
 ;        IX = Address of name_asm
-;        IY = Address of names_asm_for_buffers-11
 
 change_current_source_buffer:
 	ld a,e
@@ -6033,13 +6033,83 @@ change_current_source_buffer:
 ;Input:  A = Buffer num, 1-4
 ;Output: HL = Address in names_asm_for_buffers
 get_buffer_name_asm_address:
-	push iy
-	pop hl
+	ld hl,names_asm_for_buffers-11
 	ld b,a
 	ld de,11
 _get_buf_name_asm_address_loop:
 	add hl,de
 	djnz _get_buf_name_asm_address_loop
 	ret
+
+;ASM and ASCII file names for each source buffer
+names_asm_for_buffers:
+	db "NAME    ASM"
+	db "NAME    ASM"
+	db "NAME    ASM"
+	db "NAME    ASM"
+names_asc_for_buffers:
+	db "NAME    ASC"
+	db "NAME    ASC"
+	db "NAME    ASC"
+	db "NAME    ASC"
+
+
+;Print the disk menu frame and fixed texts
+; (moved here due to exhaustion of space in main segment)
+
+print_disk_lines:
+	ld	hl,3*80
+	ld	de,Disklines
+	call	PRINTBLOKKLE
+	ld	hl,Disktext
+	jp	TEXTTOBLOK
+
+Disklines:	defw	Dline1,Dline2,Dline3,Dline4,Dline5,Dline6,Dline6
+	defw	Dline6,Dline6,Dline6,Dline6,Dline6,Dline6,Dline6
+	defw	Dline6,Dline6,Dline6,Dline6,Dline6,Dline6,Dline7
+Disklinesend:	defw	Dline8,Dline9,0
+Dline1:	defb	1,24,19,23,1,18,17,23,1,18,13,23,1,18,10,23,1,18,15,23
+	defb	1,25,0
+Dline2:	defb	1,22,19,0,1,22,17,0,1,22,13,0,1,22,10,0,1,22,15,0
+	defb	1,22,0
+Dline3:	defb	1,20,19,23,1,17,17,23,1,17,13,23,1,17,10,23,1,17,15,23
+	defb	1,19,0
+Dline6:
+Dline4:	defb	1,22,78,0,1,22,0
+Dline5:	defb	1,20,78,23,1,19,0
+Dline7:	defb	1,20,6,23,1,18,6,23,1,18,6,23,1,18,6,23,1,18,6,23,1,18
+	defb	6,23,1,18,6,23,1,18,29,23,1,19,0
+Dline8:	defb	1,22,6,0,1,22,6,0,1,22,6,0,1,22,6,0,1,22,6,0,1,22
+	defb	6,0,1,22,6,0,1,22,29,0,1,22,0
+Dline9:	defb	1,26,6,23,1,17,6,23,1,17,6,23,1,17,6,23,1,17,6,23,1,17
+	defb	6,23,1,17,6,23,1,17,29,23,1,27,0
+Disktext:	defw	6*80+3
+	defb	"Pathname:",0
+	defw	4*80+2
+	defb	"Type:",0
+	defw	4*80+22
+	defb	"Sourcebuffer:",0
+	defw	4*80+40
+	defb	"Backup:",0
+	defw	4*80+65
+	defb	"Free:      KB",0
+
+	defw	24*80+2
+	defb	"Save",0
+	defw	24*80+9
+	defb	"Load",0
+	defw	24*80+16+1
+	defb	"Dir",0
+	defw	24*80+23
+	defb	"Type",0
+	defw	24*80+30
+	defb	"Mkdir",0
+	defw	24*80+37
+	defb	"Kill",0
+	defw	24*80+44-1
+	defb	"Format",0
+	defw	24*80+53
+	defb	"Filename:",0
+	defw	0
 
 	ds	#8000-$,0
