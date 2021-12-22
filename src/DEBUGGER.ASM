@@ -5944,7 +5944,14 @@ doredefchars:
 redefchars2:
 	LD	DE,#1000+17*8
 	LD	BC,13*8
-	JP	RAMTOVRAM
+	call	RAMTOVRAM
+	ld hl,backslash
+	ld de,#1000+92*8
+	ld bc,8
+	jp	RAMTOVRAM
+
+backslash:
+	db 0,0,#80,#40,#20,#10,#08,0
 
 vormen	db	#10,#10,#6c,#80,#00,#00,#00,#00	;17
 	db	#00,#00,#00,#80,#6c,#10,#10,#10	;18
