@@ -35,6 +35,8 @@ _EXPLAIN: equ 66h
 _FORMAT: equ 67h
 _GENV: equ 6Bh
 _SENV: equ 6Ch
+_DOSVER: equ 6Fh
+_DSPACE: equ 76h
 
 bdos	equ	#f37d	;!!!
 cursory_x	equ	#f3dc
@@ -522,6 +524,7 @@ haalpath	LD	C,_CURDRV	;get default drive
 	INC	HL
 	RET
 dosversion	db	0	;dos 1 or 2
+is_nextor: db 0
 drives	db	0	;login vector
 huidigedrive	db	0	;default drive
 pathname	db	" :\"	;current default directory
@@ -3413,11 +3416,60 @@ _beradrname2	add	a,a
 	ret
 Names:	dw	name_asm,name_asc,name_bin,name_com1,name_blk
 Disknames:	dw	name_com2,name_tsr,name_rel
+
 ;--Calculate and print kB free on disk    IN: E=disknr (1-8)
-prtfreedisk	ld	c,_ALLOC
+prtfreedisk:
 	inc	e
+	ld a,(is_nextor)
+	or a
+	ld a,"K"
+	jr z,_prtfreedisk_dos
+
+	xor a
+	ld c,_DSPACE
+	call bdos
+
+	ld a,h
+	or l
+	jr nz,_prtfreedisk_is_m
+	bit 7,d
+	jr z,_prtfreedisk_is_k
+
+	;Convert size if KB to size in MB,
+	;the result will be valid up to 64GB.
+_prtfreedisk_is_m:
+	ld e,d
+	ld d,l
+	ld l,h
+	srl l
+	rr d
+	rr e
+	srl l
+	rr d
+	rr e
+
+_prtfreedisk_is_M:
+	ld a,"M"
+	jr _prtfreedisk_doprint
+
+_prtfreedisk_is_k:
+	ld a,"K"
+	jr _prtfreedisk_doprint
+
+_prtfreedisk_dos:
+	ld	c,_ALLOC
 	call	bdos
 	call	ber_kb
+	jr _prtfreedisk_doprint2
+_prtfreedisk_doprint:
+	push af
+	push de
+	ld hl,4*80+76
+	call SETVRAMWRITE
+	pop de
+	pop af
+	out (98h),a
+_prtfreedisk_doprint2:
 	ld	hl,4*80+70
 	ld	b,5
 	jp	PRINTDECIMAAL
@@ -7098,6 +7150,17 @@ startcompass:
 	ld	hl,-512
 	add	hl,sp
 	ld	(#8000+reg_sp),hl
+
+	ld a,e
+	cp 2
+	ld b,5Ah
+	ld hl,1234h
+	ld de,0ABCDh
+	ld ix,0
+	ld c,_DOSVER
+	call nc,bdos
+	ld a,ixh
+	ld (8000h+is_nextor),a
 	
 init_mapper_routines:
 	LD	A,(8000h+stat_mem)
