@@ -66,6 +66,7 @@ SETGETPATH	jp	filenames
 SETGETADRES	jp	setgetadres
 ABOUTPROG jp doabout
 REDEFCHARS jp doredefchars
+SETNAMEBUFFERS jp change_current_source_buffer
 
 wisbreak	ld	hl,breakbuf
 	ld	(breakbufpoint),hl
@@ -5971,5 +5972,74 @@ vormen_sq	db	#10,#10,#10,#ff,#00,#00,#00,#00	;17
 	db	#10,#10,#10,#f0,#00,#00,#00,#00	;27
 	db	#00,#0f,#1f,#1f,#1f,#1f,#0f,#00	;28
 	db	#00,#c0,#e0,#e0,#e0,#e0,#c0,#00	;29
+
+
+; Adjust ASM and ASCII file names in the disk menu
+; when changing the current source buffer
+; (moved here due to exhaustion of space in main buffer)
+;
+; Input: E = Old source buffer number
+;        D = New source buffer number
+;        IX = Address of name_asm
+;        IY = Address of names_asm_for_buffers-11
+
+change_current_source_buffer:
+	ld a,e
+	or a
+	ret z	;Nothing to do if no old buffer number
+	cp d
+	ret z	;Nothing to do if not actually changing the buffer number
+
+	push de
+
+	;First backup the current name_asm and name_asc
+	;into the appropriate entries in names_asm_for_buffers
+	;and names_asc_for_buffers for the old buffer.
+	
+	call get_buffer_name_asm_address
+	push hl
+	ex de,hl
+	push ix
+	pop hl
+	ld bc,11
+	ldir	;HL points now to name_asc
+	ex de,hl
+	pop hl
+	ld bc,4*11
+	add hl,bc	;Entry in asc buffer = entry in asm buffer + 11*4
+	ex de,hl
+	ld bc,11
+	ldir
+
+	;Now set the name from the asm and asc buffers into
+	;the appropriate entries in names_asm_for_buffers
+	;and names_asc_for_buffers for the new buffer.
+
+	pop af
+
+	call get_buffer_name_asm_address
+	push hl
+	push ix
+	pop de
+	ld bc,11
+	ldir	;DE points now to name_asc
+	pop hl
+	ld bc,4*11
+	add hl,bc	;Entry in asc buffer = entry in asm buffer + 11*4
+	ld bc,11
+	ldir
+	ret
+
+;Input:  A = Buffer num, 1-4
+;Output: HL = Address in names_asm_for_buffers
+get_buffer_name_asm_address:
+	push iy
+	pop hl
+	ld b,a
+	ld de,11
+_get_buf_name_asm_address_loop:
+	add hl,de
+	djnz _get_buf_name_asm_address_loop
+	ret
 
 	ds	#8000-$,0

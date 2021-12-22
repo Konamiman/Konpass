@@ -56,6 +56,7 @@ MAININSTPROG	equ	#4009	;in debugger segment
 SETDEBPARS	equ	#400c	;in debugger segment
 ABOUTPROG equ #4015 	;in debugger segment
 REDEFCHARS equ #4018 	;in debugger segment
+SETNAMEBUFFERS equ #401B	;in debugger segment
 
 ;--------------------------------------------
 	ORG	#0140
@@ -526,15 +527,28 @@ pathname	db	" :\"	;current default directory
 	ds	61,0
 pathnamebuf	ds	93,0
 
-names
+;Note: name_asc needs to be placed immediately after name_asm!
+names:
 name_asm	db	"NAME    ASM"
-name_bin	db	"NAME    BIN"
 name_asc	db	"NAME    ASC"
+name_bin	db	"NAME    BIN"
 name_blk	db	"NAME    BLK"
 name_com1	db	"NAME    COM"	;probably for that and ass.to disk
 name_com2	db	"NAME    COM"
 name_tsr	db	"NAME    TSR"
 name_rel	db	"NAME    REL"
+
+;ASM and ASCII file names for each source buffer
+names_asm_for_buffers:
+	db "NAME    ASM"
+	db "NAME    ASM"
+	db "NAME    ASM"
+	db "NAME    ASM"
+names_asc_for_buffers:
+	db "NAME    ASC"
+	db "NAME    ASC"
+	db "NAME    ASC"
+	db "NAME    ASC"
 
 stat_mem	db	0
 tab_ROMRAM	ds	#60,0	;ROMRAMtable, 3*16*2=#60 bytes
@@ -551,6 +565,15 @@ slotass	equ	tab_compass+4	;ok
 slotmonitor	equ	tab_compass+4	;ok
 slotdebugger	equ	tab_compass+6	;ok
 slotsubroutin	db	0,2
+
+change_current_buffer:
+	ld de,(Buffer)
+	ld d,a
+	ld (Buffer),a
+	ld ix,name_asm
+	ld iy,names_asm_for_buffers-11
+	ld bc,SETNAMEBUFFERS
+	jp call_in_debugger
 
 slotregister	PUSH	BC
 	PUSH	DE
@@ -1151,9 +1174,18 @@ set_file_type_by_key_loop:
 	jr set_file_type_by_key_loop
 
 set_file_type_by_key_found:
+	push hl
+	call	beradrname
+	jr	c,set_file_type_no_sector
+	ld	hl,fcb_work+1
+	ld	bc,11
+	ldir
+set_file_type_no_sector:
+	pop hl
 	ld a,(hl)
 	ld (Soort),a
 	call printtype
+	call prtfilenaam
 	scf
 	ret
 
@@ -1205,7 +1237,9 @@ GODISKDRIVE:
 	di
 	ld	(Bronprog),a
 	ld	a,c
-	ld	(Buffer),a
+	push bc
+	call change_current_buffer
+	pop bc
 	ld	(Pointer),ix
 	ld	(Sp_disk),sp
 	ld	hl,(slotsubroutin)
@@ -1409,7 +1443,7 @@ _ctrl1234	call	WISKEYBUFFER
 	pop	bc
 	jp	c,diskhoofd
 	ld	a,b
-	ld	(Buffer),a
+	call change_current_buffer
 	call	jon1
 	jp	diskhoofdprt
 _ctrl1234_1	push	hl
@@ -1437,7 +1471,8 @@ _balkadres1:	add	a,7
 	ld	b,6
 	ret
 ;--type
-_disktype	call	beradrname
+_disktype:
+	call	beradrname
 	jr	c,_type_sect
 	ld	hl,fcb_work+1
 	ld	bc,11
@@ -3107,7 +3142,8 @@ _filebalkad1:	add	a,15
 ;--Menu of types of files
 Soortmenvram:	equ	10*80+31
 Soortmenopt:	defb	1
-soortmenu	ld	a,(Bronprog)
+soortmenu:
+	ld	a,(Bronprog)
 	ld	ix,Asmfiles+1
 	dec	a
 	jr	z,_soortmenu1
@@ -3215,7 +3251,8 @@ prtdskinfo:
 	call	printpath
 	call	prtfilenaam
 	ret
-printtype	ld	a,(Diskasm)
+printtype:
+	ld	a,(Diskasm)
 	or	a
 	ld	hl,Asmdiskf-11
 	jr	nz,_printtype2
@@ -5392,7 +5429,8 @@ GOTOASS	LD	(invul_call1),HL
 	LD	(sub),BC
 	LD	BC,(slotass)
 	JR	goto_cont
-zetslot	PUSH	AF
+zetslot:
+	PUSH	AF
 	PUSH	DE
 	PUSH	HL
 	LD	A,B
@@ -6869,6 +6907,29 @@ last_dos_error: db 0
 ;so that it can be examined by abort handler
 disk_error_handling_errnum: db 0
 
+ABOUT	
+	ld bc,ABOUTPROG
+	jr call_in_debugger
+
+redefchars:
+	ld a,(config_flags)
+	ld bc,REDEFCHARS
+
+call_in_debugger:
+	ld (call_in_debugger_address+1),bc
+	LD	BC,(slotsubroutin)
+	LD	(oldslotsub2+1),BC
+	LD	BC,(slotdebugger)
+	LD	(slotsubroutin),BC
+	CALL	zetslot
+call_in_debugger_address:
+	call	#0000
+oldslotsub2:
+	LD	BC,#0000
+	LD	(slotsubroutin),BC
+	CALL	zetslot
+	RET
+
 ;**************************************************************************
 ;everything from here will be erased (one time use routines on startup)
 buffer1024:
@@ -7238,28 +7299,5 @@ set_hook_data:
 	LD	A,(#8000+slothoofdp+1)	;get block num
 	LD	(hook_blok-hook+hookadres),A
 	ret
-
-ABOUT	
-	ld bc,ABOUTPROG
-	jr call_in_debugger
-
-redefchars:
-	ld a,(config_flags)
-	ld bc,REDEFCHARS
-
-call_in_debugger:
-	ld (call_in_debugger_address+1),bc
-	LD	BC,(slotsubroutin)
-	LD	(oldslotsub2+1),BC
-	LD	BC,(slotdebugger)
-	LD	(slotsubroutin),BC
-	CALL	zetslot
-call_in_debugger_address:
-	call	#0000
-oldslotsub2:
-	LD	BC,#0000
-	LD	(slotsubroutin),BC
-	CALL	zetslot
-	RET
 
 	ds	#4000-$,0	;(fill with padding just to be sure)
