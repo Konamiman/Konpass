@@ -36,6 +36,8 @@ _FORMAT: equ 67h
 _GENV: equ 6Bh
 _SENV: equ 6Ch
 _DOSVER: equ 6Fh
+_RDDRV: equ 73h
+_WRDRV: equ 74h
 _DSPACE: equ 76h
 
 bdos	equ	#f37d	;!!!
@@ -2141,11 +2143,10 @@ _load_sect	call	wissaveload
 _load_sect1	push	bc
 	push	de
 	push	hl
-	ld	c,_RDABS
 	ld	a,(huidigedrive)
 	ld	l,a
 	ld	h,1
-	call	bdos
+	call	do_rdabs
 	pop	hl
 	ld	d,h
 	ld	e,l
@@ -2166,6 +2167,25 @@ _load_sect1	push	bc
 	ld bc,Loaded_at
 	call PRINTTEKST
 	jp	diskhoofdprt
+
+do_wrabs:
+	ld bc,_WRDRV*256+_WRABS
+	jr do_rdabs_wrabs
+do_rdabs:
+	ld bc,_RDDRV*256+_RDABS
+do_rdabs_wrabs:
+	ld a,(is_nextor)
+	or a
+	jp z,bdos
+
+	ld c,b	;Function call to use
+	ld a,l	;Drive number
+	ld b,h	;Sector count
+	ld hl,0	;Sector number, high word
+	;DE=Sector number, low word
+	jp bdos
+
+
 Secttxt:	defw	17*80+10
 	defb	"Address:",0
 	defw	18*80+10
@@ -2446,11 +2466,10 @@ _save_sect1	push	bc
 	pop	de
 	push	de
 	push	hl
-	ld	c,_WRABS
 	ld	a,(huidigedrive)
 	ld	l,a
 	ld	h,1
-	call	bdos
+	call	do_wrabs
 	pop	hl
 	pop	de
 	inc	de
