@@ -1231,7 +1231,9 @@ GODISKDRIVE:
 	ld	(Bronprog),a
 	ld	a,c
 	push bc
+	push ix
 	call change_current_buffer
+	pop ix
 	pop bc
 	ld	(Pointer),ix
 	ld	(Sp_disk),sp
