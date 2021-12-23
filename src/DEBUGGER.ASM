@@ -62,10 +62,15 @@ WISBREAK	jp	wisbreak
 INSERTBREAK	jp	insertbreak
 MAININSTPROG	jp	mainconfig
 SETDEBPARS	jp	loadconfig
-SETGETPATH	jp	filenames
+;was SETGETPATH: jp filenames
+	ret
+	ret
+	ret
 SETGETADRES	jp	setgetadres
 ABOUTPROG jp doabout
 REDEFCHARS jp doredefchars
+SETNAMEBUFFERS jp change_current_source_buffer
+PRINTDISKLINES jp print_disk_lines
 
 wisbreak	ld	hl,breakbuf
 	ld	(breakbufpoint),hl
@@ -95,28 +100,6 @@ loadconfig:
 	ld	bc,maxvbouts+1
 	ldir
 	ret
-
-filenames	push	de
-	push	hl
-	ld	hl,filbuf-(64+11)
-	ld	de,64+11
-_filenames1	add	hl,de
-	djnz	_filenames1
-	ld	bc,64
-	or	a
-	jr	z,_filenames2
-	pop	de
-	ldir
-	pop	de
-_filenames3	ld	bc,11
-	ldir
-	ret
-_filenames2	ex	de,hl
-	pop	hl
-	ldir
-	pop	hl
-	jr	_filenames3
-filbuf	ds	4*(64+11),0
 
 realfkeys	ds	10
 
@@ -5942,7 +5925,14 @@ doredefchars:
 redefchars2:
 	LD	DE,#1000+17*8
 	LD	BC,13*8
-	JP	RAMTOVRAM
+	call	RAMTOVRAM
+	ld hl,backslash
+	ld de,#1000+92*8
+	ld bc,8
+	jp	RAMTOVRAM
+
+backslash:
+	db 0,0,#80,#40,#20,#10,#08,0
 
 vormen	db	#10,#10,#6c,#80,#00,#00,#00,#00	;17
 	db	#00,#00,#00,#80,#6c,#10,#10,#10	;18
@@ -5971,5 +5961,143 @@ vormen_sq	db	#10,#10,#10,#ff,#00,#00,#00,#00	;17
 	db	#10,#10,#10,#f0,#00,#00,#00,#00	;27
 	db	#00,#0f,#1f,#1f,#1f,#1f,#0f,#00	;28
 	db	#00,#c0,#e0,#e0,#e0,#e0,#c0,#00	;29
+
+
+; Adjust ASM and ASCII file names in the disk menu
+; when changing the current source buffer
+; (moved here due to exhaustion of space in main segment)
+;
+; Input: E = Old source buffer number
+;        D = New source buffer number
+;        IX = Address of name_asm
+
+change_current_source_buffer:
+	ld a,e
+	or a
+	ret z	;Nothing to do if no old buffer number
+	cp d
+	ret z	;Nothing to do if not actually changing the buffer number
+
+	push de
+
+	;First backup the current name_asm and name_asc
+	;into the appropriate entries in names_asm_for_buffers
+	;and names_asc_for_buffers for the old buffer.
+	
+	call get_buffer_name_asm_address
+	push hl
+	ex de,hl
+	push ix
+	pop hl
+	ld bc,11
+	ldir	;HL points now to name_asc
+	ex de,hl
+	pop hl
+	ld bc,4*11
+	add hl,bc	;Entry in asc buffer = entry in asm buffer + 11*4
+	ex de,hl
+	ld bc,11
+	ldir
+
+	;Now set the name from the asm and asc buffers into
+	;the appropriate entries in names_asm_for_buffers
+	;and names_asc_for_buffers for the new buffer.
+
+	pop af
+
+	call get_buffer_name_asm_address
+	push hl
+	push ix
+	pop de
+	ld bc,11
+	ldir	;DE points now to name_asc
+	pop hl
+	ld bc,4*11
+	add hl,bc	;Entry in asc buffer = entry in asm buffer + 11*4
+	ld bc,11
+	ldir
+	ret
+
+;Input:  A = Buffer num, 1-4
+;Output: HL = Address in names_asm_for_buffers
+get_buffer_name_asm_address:
+	ld hl,names_asm_for_buffers-11
+	ld b,a
+	ld de,11
+_get_buf_name_asm_address_loop:
+	add hl,de
+	djnz _get_buf_name_asm_address_loop
+	ret
+
+;ASM and ASCII file names for each source buffer
+names_asm_for_buffers:
+	db "NAME    ASM"
+	db "NAME    ASM"
+	db "NAME    ASM"
+	db "NAME    ASM"
+names_asc_for_buffers:
+	db "NAME    ASC"
+	db "NAME    ASC"
+	db "NAME    ASC"
+	db "NAME    ASC"
+
+
+;Print the disk menu frame and fixed texts
+; (moved here due to exhaustion of space in main segment)
+
+print_disk_lines:
+	ld	hl,3*80
+	ld	de,Disklines
+	call	PRINTBLOKKLE
+	ld	hl,Disktext
+	jp	TEXTTOBLOK
+
+Disklines:	defw	Dline1,Dline2,Dline3,Dline4,Dline5,Dline6,Dline6
+	defw	Dline6,Dline6,Dline6,Dline6,Dline6,Dline6,Dline6
+	defw	Dline6,Dline6,Dline6,Dline6,Dline6,Dline6,Dline7
+Disklinesend:	defw	Dline8,Dline9,0
+Dline1:	defb	1,24,19,23,1,18,17,23,1,18,13,23,1,18,10,23,1,18,15,23
+	defb	1,25,0
+Dline2:	defb	1,22,19,0,1,22,17,0,1,22,13,0,1,22,10,0,1,22,15,0
+	defb	1,22,0
+Dline3:	defb	1,20,19,23,1,17,17,23,1,17,13,23,1,17,10,23,1,17,15,23
+	defb	1,19,0
+Dline6:
+Dline4:	defb	1,22,78,0,1,22,0
+Dline5:	defb	1,20,78,23,1,19,0
+Dline7:	defb	1,20,6,23,1,18,6,23,1,18,6,23,1,18,6,23,1,18,6,23,1,18
+	defb	6,23,1,18,6,23,1,18,29,23,1,19,0
+Dline8:	defb	1,22,6,0,1,22,6,0,1,22,6,0,1,22,6,0,1,22,6,0,1,22
+	defb	6,0,1,22,6,0,1,22,29,0,1,22,0
+Dline9:	defb	1,26,6,23,1,17,6,23,1,17,6,23,1,17,6,23,1,17,6,23,1,17
+	defb	6,23,1,17,6,23,1,17,29,23,1,27,0
+Disktext:	defw	6*80+3
+	defb	"Pathname:",0
+	defw	4*80+2
+	defb	"Type:",0
+	defw	4*80+22
+	defb	"Sourcebuffer:",0
+	defw	4*80+40
+	defb	"Backup:",0
+	defw	4*80+65
+	defb	"Free:      KB",0
+
+	defw	24*80+2
+	defb	"Save",0
+	defw	24*80+9
+	defb	"Load",0
+	defw	24*80+16+1
+	defb	"Dir",0
+	defw	24*80+23
+	defb	"Type",0
+	defw	24*80+30
+	defb	"Mkdir",0
+	defw	24*80+37
+	defb	"Kill",0
+	defw	24*80+44-1
+	defb	"Format",0
+	defw	24*80+53
+	defb	"Filename:",0
+	defw	0
 
 	ds	#8000-$,0

@@ -3,14 +3,42 @@
 
 	.label	13
 
+_SELDSK: equ 0Eh
+_FOPEN: equ 0Fh
 _FCLOSE: equ 10h
+_SFIRST: equ 11h
+_SNEXT: equ 12h
+_FDEL: equ 13h
 _FMAKE: equ 16h
+_FREN: equ 17h
+_LOGIN: equ 18h
+_CURDRV: equ 19h
+_SETDTA: equ 1Ah
+_ALLOC: equ 1Bh
 _WRBLK: equ 26h
+_RDBLK: equ 27h
+_RDABS: equ 2Fh
+_WRABS: equ 30h
+_DPARM: equ 31h
+_FFIRST: equ 40h
+_FNEXT: equ 41h
 _CREATE: equ 44h
 _CLOSE: equ 45h
 _WRITE: equ 49h
+_DELETE: equ 4Dh
+_GETCD: equ 59h
+_CHDIR: equ 5Ah
 _PARSE: equ 5Bh
+_FLUSH: equ 5Fh
+_ERROR: equ 65h
+_EXPLAIN: equ 66h
+_FORMAT: equ 67h
 _GENV: equ 6Bh
+_SENV: equ 6Ch
+_DOSVER: equ 6Fh
+_RDDRV: equ 73h
+_WRDRV: equ 74h
+_DSPACE: equ 76h
 
 bdos	equ	#f37d	;!!!
 cursory_x	equ	#f3dc
@@ -26,12 +54,14 @@ matrix	equ	#fbe5
 ctngcode	equ	#ff79
 
 videoramfree	equ	#1a00	;from here videoram is free to use
-Dskerrline	equ	14
+Dskerrline:	equ	14
 Testlabeladr	equ	#400c	;in ass/monitor segment
 MAININSTPROG	equ	#4009	;in debugger segment
 SETDEBPARS	equ	#400c	;in debugger segment
 ABOUTPROG equ #4015 	;in debugger segment
 REDEFCHARS equ #4018 	;in debugger segment
+SETNAMEBUFFERS equ #401B	;in debugger segment
+PRINTDISKLINES equ #401E	;in debugger segment
 
 ;--------------------------------------------
 	ORG	#0140
@@ -169,7 +199,7 @@ alleslaten	XOR	A	;clear compassID
 	LD	(compasscfg+7),A
 	LD	HL,compasscfg	;name
 	LD	DE,queuebc+6	;value =0
-	LD	C,#6C	;set envitem, now remove
+	LD	C,_SENV	;set envitem, now remove
 	CALL	bdos
 nietdos2	LD	A,#01
 	LD	(quitvlag),A
@@ -252,17 +282,12 @@ data_2_editor	CALL	getreg
 	PUSH	HL
 	LD	HL,#400F	;parse registers to editor(at 1st time)
 	JP	GOTOEDITOR
-fill_NAMEASM	LD	HL,pathnamebuf	;use max. 64 bytes from the
+fill_NAMEASM:
+	LD	HL,pathnamebuf	;use max. 64 bytes from the
 	LD	DE,pathname	;pathnamebuffer
 	LD	BC,64
 	LDIR
-	LD	B,#04
-nxt_name_deb	PUSH	BC
-	XOR	A	;load 4 filenames+path in debugger
-	CALL	parse_nam_deb	;this routine happens to be in the
-	POP	BC	;debugger segment
-	DJNZ	nxt_name_deb
-	RET
+	ret
 
 chk_comline	LD	A,(#0080)	;is there anything else on the command line?
 	OR	A
@@ -381,7 +406,8 @@ oldblink	db	0
 oldfunkkey	db	0
 
 
-inidos	LD	C,#18	;get login vector: get connected drives
+inidos:
+	LD	C,_LOGIN	;get login vector: get connected drives
 	CALL	bdos
 	LD	A,L
 	LD	(drives),A
@@ -393,18 +419,63 @@ inidos	LD	C,#18	;get login vector: get connected drives
 	LD	(diskhook_jp),HL
 	CALL	setdiskhooks
 	CALL	haalpath
-clrdiskhooks	LD	HL,(olderroradres)
+
+clrdiskhooks:
+	LD	HL,(olderroradres)
 	LD	(#F323),HL
 	LD	A,#C9	;insert disk for drive...
 	LD	(#F24F),A	;back to normal
+
+	ld  hl,(old_abort_handler_address)	
+	ld a,(dosversion)
+	cp 2
+	jr c,clear_abort_hook_dos1
+
+clear_abort_hook_dos2:
+	ld (#F325),hl
 	RET
-setdiskhooks	LD	HL,(#F323)
+
+clear_abort_hook_dos1:
+	ld (#F1E6),hl
+	RET
+	
+setdiskhooks_sperr:
+	ld hl,Specialerror
+	jr setdiskhooks_do
+
+setdiskhooks:
+	ld hl,diskhook1
+setdiskhooks_do:
+	push hl
+	LD	HL,(#F323)
 	LD	(olderroradres),HL
-	LD	HL,diskhook1
-	LD	(#F323),HL
+	pop hl
+	ld (#F323),hl
+
 	LD	HL,#C9F1	;pop af,ret
 	LD	(#F24F),HL	;to replace: insert disk...
+
+	ld a,(dosversion)
+	cp 2
+	jr c,set_abort_hook_dos1
+
+; DOS 1: F1E6h must be set to the abort handler.
+; DOS 2: F325h must be set to a pointer to the abort handler.
+
+set_abort_hook_dos2:
+	ld hl,(#F325)
+	ld (old_abort_handler_address),hl
+	ld hl,disk_abort_handler_address
+	ld  (#F325),hl
 	RET
+
+set_abort_hook_dos1:
+	ld hl,(#F1E6)
+	ld (old_abort_handler_address),hl
+	ld hl,disk_abort_handler
+	ld  (#F1E6),hl
+	RET
+
 diskhook1	dw	dodiskhook
 dodiskhook	db	#31	;ld sp,nn
 diskhook_sp	dw	0
@@ -416,7 +487,8 @@ diskhook_sp	dw	0
 	SCF
 	db	#c3	;jp nn
 diskhook_jp	dw	0
-haalpath	LD	C,#19	;get default drive
+
+haalpath	LD	C,_CURDRV	;get default drive
 	CALL	bdos
 	LD	(huidigedrive),A
 	ADD	A,"A"
@@ -431,7 +503,7 @@ haalpath	LD	C,#19	;get default drive
 	LD	A,(dosversion)
 	DEC	A
 	RET	Z
-	LD	BC,#0059	;only do for dos2
+	LD	BC,0000h + _GETCD	;only do for dos2
 	LD	DE,pathnamebuf+3
 	PUSH	DE
 	CALL	bdos
@@ -449,16 +521,18 @@ haalpath	LD	C,#19	;get default drive
 	INC	HL
 	RET
 dosversion	db	0	;dos 1 or 2
+is_nextor: db 0
 drives	db	0	;login vector
 huidigedrive	db	0	;default drive
 pathname	db	" :\"	;current default directory
 	ds	61,0
 pathnamebuf	ds	93,0
 
-names
+;Note: name_asc needs to be placed immediately after name_asm!
+names:
 name_asm	db	"NAME    ASM"
-name_bin	db	"NAME    BIN"
 name_asc	db	"NAME    ASC"
+name_bin	db	"NAME    BIN"
 name_blk	db	"NAME    BLK"
 name_com1	db	"NAME    COM"	;probably for that and ass.to disk
 name_com2	db	"NAME    COM"
@@ -480,6 +554,14 @@ slotass	equ	tab_compass+4	;ok
 slotmonitor	equ	tab_compass+4	;ok
 slotdebugger	equ	tab_compass+6	;ok
 slotsubroutin	db	0,2
+
+change_current_buffer:
+	ld de,(Buffer)
+	ld d,a
+	ld (Buffer),a
+	ld ix,name_asm
+	ld bc,SETNAMEBUFFERS
+	jp call_in_debugger
 
 slotregister	PUSH	BC
 	PUSH	DE
@@ -633,7 +715,8 @@ CLS	LD	HL,#0000
 	LD	BC,27*80
 	XOR	A
 	JR	FILLVRAM
-PRINTTEKST	CALL	SETVRAMWRITE
+PRINTTEKST:
+	CALL	SETVRAMWRITE
 _printtekst	LD	A,(BC)
 	OR	A
 	RET	Z
@@ -1059,6 +1142,57 @@ _incl_error	PUSH	AF
 	LD	SP,(diskhook_sp)
 	RET
 
+;Input:  A  = key pressed
+;Output: Cy = 0 if key not found, 1 if key found
+set_file_type_by_key:
+	ld b,a
+	ld hl,file_type_by_key_table_asm
+	ld a,(Bronprog)
+	dec a
+	jr z,set_file_type_by_key_loop
+	ld hl,file_type_by_key_table_mon_deb
+set_file_type_by_key_loop:
+	ld a,(hl)
+	or a
+	ret z
+	inc hl
+	cp b
+	jr z,set_file_type_by_key_found
+	inc hl
+	jr set_file_type_by_key_loop
+
+set_file_type_by_key_found:
+	push hl
+	call	beradrname
+	jr	c,set_file_type_no_sector
+	ld	hl,fcb_work+1
+	ld	bc,11
+	ldir
+set_file_type_no_sector:
+	pop hl
+	ld a,(hl)
+	ld (Soort),a
+	call printtype
+	call prtfilenaam
+	scf
+	ret
+
+file_type_by_key_table_asm:
+	db 'E'-'A'+1,1	;Asm
+	db 'I'-'A'+1,2	;Ascii
+	db 'Y'-'A'+1,3	;Binary
+	db 'D'-'A'+1,4	;Dat
+	db 'K'-'A'+1,5	;Block
+	db 'O'-'A'+1,6	;Sector
+	db 0
+
+file_type_by_key_table_mon_deb:
+	db 'Y'-'A'+1,3	;Binary
+	db 'D'-'A'+1,4	;Dat
+	db 'O'-'A'+1,6	;Sector
+	db 0
+
+
 ; Diskdrive: IN: A: 1 = assembler
 ;                   2 = debugger
 ;                   3 = monitor
@@ -1087,39 +1221,38 @@ fcb_work	db	0,"???????????"
 	NOP		;0C7E
 fcb_inclbkup	ds	37
 
-GODISKDRIVE	di
+GODISKDRIVE:
+	di
 	ld	(Bronprog),a
-	ld	a,c
-	ld	(Buffer),a
 	ld	(Pointer),ix
 	ld	(Sp_disk),sp
 	ld	hl,(slotsubroutin)
 	ld	(Oldsubrouti),hl
 	ld	a,b
 	ld	(Diskasm),a
+	ld a,c
+	call change_current_buffer
 	xor	a
 	ld	(Formatdone),a
 	ld	(doinclude),a
-	ld	hl,(#f323)
-	ld	(olderroradres),hl
-	ld	hl,Specialerror
-	ld	(#f323),hl
-	ld	hl,#c9f1	;pop af, ret
-	ld	(#f24f),hl	;override "Insert disk ..."
+	call setdiskhooks_sperr
 	ld	bc,#0503
 	call	OFFSET
 	ld	hl,#1800+3*10
 	ld	bc,24*10	;ERRORLIST(#1910...) bug fix!! (it was 25*10)
 	xor	a
 	call	FILLVRAM	;clear blink table (lines 3-27)
-	ld	hl,3*80
-	ld	de,Disklines
-	call	PRINTBLOK
-	ld	hl,Disktext
-	call	TEXTTOBLOK
+	ld bc,PRINTDISKLINES
+	call call_in_debugger
 	ld	a,(Diskasm)
 	or	a
 	jr	nz,_diskasm
+	ld a,(Diskmenu)
+	cp 3
+	jr nc,_okmenuid
+	LD	A,#03	;start on 'DIR'
+	LD	(Diskmenu),A
+_okmenuid:
 	call	setsoort
 	jr	_nodiskasm
 _diskasm	ld	hl,23*80+7
@@ -1145,14 +1278,23 @@ _nodiskasm	xor	a
 	ld	(Aantalfiles),a
 	inc	a
 	ld	(cursoronoff),a
-diskerrcont	call	WISKEYBUFFER
+diskerrcont:
+	call flush_disk_buffers
+	call	WISKEYBUFFER
 	call	jon1
-diskhoofdprt	call	prtdskinfo
-diskhoofd	ld	sp,(Sp_disk)
+diskhoofdprt:
+	call	prtdskinfo
+diskhoofd:
+	ld	sp,(Sp_disk)
 	xor	a
 	ld	(Asmbusy),a
 	call	WISKEYBUFFER
 	call	zetdiskbalk
+	ld a,(disk_must_back)
+	or a
+	ld a,0
+	ld (disk_must_back),a
+	jp nz,_diskback
 	call	GETKEY
 	cp	27
 	jr	z,_diskback
@@ -1172,7 +1314,17 @@ diskhoofd	ld	sp,(Sp_disk)
 	jp	z,_diskbackup
 	cp	"T"-"A"+1
 	jp	z,_disktype
+	cp  "S"-"A"+1
+	jp  z,_maybe_disksave
+	cp  "L"-"A"+1
+	jp  z,_maybe_diskload
+	cp  "X"-"A"+1
+	jp  z,_maybe_disk_asm
+	cp  "R"-"A"+1
+	jp  z,_diskdir
 	ld	d,a	;ALWAYS LEAVE !!!
+	call set_file_type_by_key
+	jr c,diskhoofd
 	ld	a,(matrix+6)
 	and	%00000010
 	jr	nz,_disk_noctrl
@@ -1187,11 +1339,9 @@ _disk_noctrl	ld	a,d
 	cp	" "
 	jr	c,diskhoofd
 	jp	inputname
-_diskback	call	wisdiskbalk
-	ld	hl,(olderroradres)
-	ld	(#f323),hl
-	ld	a,#c9
-	ld	(#f24f),a
+_diskback:
+	call	wisdiskbalk
+	call clrdiskhooks
 	ld	bc,(Oldsubrouti)
 	ld	(slotsubroutin),bc
 	call	zetslot
@@ -1284,7 +1434,7 @@ _ctrl1234	call	WISKEYBUFFER
 	pop	bc
 	jp	c,diskhoofd
 	ld	a,b
-	ld	(Buffer),a
+	call change_current_buffer
 	call	jon1
 	jp	diskhoofdprt
 _ctrl1234_1	push	hl
@@ -1312,7 +1462,8 @@ _balkadres1:	add	a,7
 	ld	b,6
 	ret
 ;--type
-_disktype	call	beradrname
+_disktype:
+	call	beradrname
 	jr	c,_type_sect
 	ld	hl,fcb_work+1
 	ld	bc,11
@@ -1320,15 +1471,46 @@ _disktype	call	beradrname
 _type_sect	call	soortmenu
 	call	jon1
 	jp	diskhoofdprt
+
 ;--Dir
-_diskdir	call	inputpath
+_diskdir:
+	call inidir
+	call	inputpath
+_diskdir_2:
 	call	printdir
 	ld	a,(Aantalfiles)
 	or	a
 	call	nz,filemenu
 	jp	diskhoofd
+
 ;--Mkdir (only comes here in dos2)
-_diskmkdir	ld	hl,pathnamebuf
+creating_msg: db "Creating...",0
+_diskmkdir:
+	call wissaveload
+	ld	hl,14*80+(80-14)/2
+	ld	bc,creating_msg
+	call	PRINTTEKST
+
+	call fcb_to_printable_filename
+
+	ld	b,%10010000
+	xor	a
+	ld	c,_CREATE
+	ld	de,kbuf
+	call	bdos	;Create file handle
+	or a
+	jr	nz,_mkdirerr
+	call wissaveload
+	jp diskhoofd
+_mkdirerr:
+	ld (last_dos_error),a
+
+	call	inidir
+	call	_diskkill2
+	jp diskhoofd
+
+fcb_to_printable_filename:
+	ld	hl,pathnamebuf
 	ld	de,kbuf
 	ld	bc,64
 	ldir
@@ -1350,20 +1532,10 @@ _diskmkdir	ld	hl,pathnamebuf
 	inc	de
 	ld	b,3
 	call	_mkdir_vul
-_diskmkdir1	xor	a
-	ld	(de),a
-	ld	b,%10010000
+_diskmkdir1:
 	xor	a
-	ld	c,#44
-	ld	de,kbuf
-	call	bdos	;Create file handle
-	cp	#cb
-	jp	nz,diskhoofd
-_mkdirerr	call	inidir
-	ld	hl,Dskerrline*80+(80-19)/2
-	ld	bc,Mkdirerr
-	jr	_diskkill2
-Mkdirerr:	defb	"Name already exists",0
+	ld	(de),a
+	ret
 
 _mkdir_vul	ld	a,(hl)
 	inc	hl
@@ -1373,6 +1545,7 @@ _mkdir_vul	ld	a,(hl)
 	inc	de
 _mkdir_vul1	djnz	_mkdir_vul
 	ret
+
 ;--Backup on/asm/asc
 _diskbackup	ld	hl,Backuponoff
 	inc	(hl)
@@ -1381,33 +1554,127 @@ _diskbackup	ld	hl,Backuponoff
 	jp	c,diskhoofdprt
 	ld	(hl),0
 	jp	diskhoofdprt
+
 ;--Kill
-_diskkill	call	inidir
+deleting_msg: db "Deleting...",0
+_diskkill:
+	call	inidir
+	call ask_are_you_sure
+	jp	c,diskhoofdprt
+
+	call wissaveload
+	ld	hl,14*80+(80-14)/2
+	ld	bc,deleting_msg
+	call	PRINTTEKST
+
+	call	setdirectory
+
+	ld a,(dosversion)
+	cp 2
+	jr c,_diskkill_dos1
+
+	;On DOS 2 use _DELETE, so that directories can be deleted too.
+
+	call fcb_to_printable_filename
+
+	ld de,kbuf	;buffer1024
+	ld c,_DELETE
+	jr _diskkill_do
+
+_diskkill_dos1:
+	ld	de,fcb_work
+	ld	c,_FDEL
+
+_diskkill_do:
+	call	bdos
+	or	a
+	jr nz,diskkill_err
+	call wissaveload
+	jp diskhoofd
+diskkill_err:
+	call set_last_dos_error
+	ld	hl,Dskerrline*80+(80-14)/2
+	ld	bc,Filenotfound
+	call _diskkill2
+	jp diskhoofd
+
+_diskkill2:
+	ld a,(dosversion)
+	cp 2
+	jr c,explain_error_done2
+	
+	push hl
+	push bc
+	call flush_disk_buffers
+	pop bc
+	pop hl
+
+	ld a,(last_dos_error)
+	or a
+	jr z,explain_error_done2
+
+	push bc
+	push hl
+
+	ld b,a
+	ld c,_EXPLAIN
+	ld de,buffer1024
+	call bdos
+	xor a
+	ld (last_dos_error),a
+	ld a,b
+	or a
+	jr nz,explain_error_done
+	
+	call get_xcoord_and_bangify
+
+	pop hl
+	ld	hl,Dskerrline*80
+	ld c,a
+	ld b,0
+	add hl,bc
+	pop bc
+	ld bc,buffer1024
+	jr explain_error_done2
+
+explain_error_done:
+	pop hl
+	pop bc
+explain_error_done2:
+
+	call	PRINTTEKST
+	call	beep
+	ret
+Areyousure:	defb	"Are you sure ? (y/n)",0
+
+;Ouput: NC if sure, C if not
+ask_are_you_sure:
+	or a
+	jr _ask_are_you_sure_core
+
+ask_are_you_sure_no_cls:
+	scf
+	
+_ask_are_you_sure_core:
+	push af
 	ld	hl,Dskerrline*80+(80-20)/2
 	ld	bc,Areyousure
 	call	PRINTTEKST
 	call	GETKEY
-	push	af
-	call	inidir
+	ld b,a
+	pop af
+	push	bc
+	call	nc,inidir
 	pop	af
 	or	a
-	jr	z,_diskkill3
+	scf
+	ret z
 	and	%11011111
 	cp	"Y"
-	jp	nz,diskhoofdprt
-_diskkill3	call	setdirectory
-	ld	de,fcb_work
-	ld	c,#13
-	call	bdos
-	or	a
-	jr	nz,_diskkill1
-	jp	diskhoofd
-_diskkill1	ld	hl,Dskerrline*80+(80-14)/2
-	ld	bc,Filenotfound
-_diskkill2	call	PRINTTEKST
-	call	beep
-	jp	diskhoofd
-Areyousure:	defb	"Are you sure ? (y/n)",0
+	ret z
+	scf
+	ret
+
 ;--Format
 Formatdone:	defb	0
 _diskformat	ld	a,1
@@ -1421,9 +1688,27 @@ _diskformat	ld	a,1
 	ld	a,(dosversion)
 	dec	a
 	jr	z,_formdos1
-_formdos2	ld	bc,#0067
+
+	;Disk format, DOS 2 version
+
+_formdos2:
+	ld	bc,0000h+_FORMAT
 	xor	a
 	call	bdos
+	or a
+	jr z,_formdos2_choiceok
+	ld (last_dos_error),a
+	call _diskkill2
+	jp diskhoofd
+_formdos2_choiceok:
+	ld a,h
+	or l
+	jr nz,_formdos2_havechoices
+	call ask_are_you_sure
+	jp c,_formdos2cnt
+	ld a,1	;Single choice, so assume choice num. 1
+	jr _formdos2_do
+_formdos2_havechoices:
 	push	hl
 	ld	a,b
 	ld	h,#40
@@ -1431,23 +1716,36 @@ _formdos2	ld	bc,#0067
 	pop	hl
 	call	formoptie
 	jr	c,_formdos2cnt
+_formdos2_do:
 	call	_form_print
-	ld	bc,#0067
+	ld	bc,0000h+_FORMAT
 	ld	hl,#8100
 	ld	de,#3e00
 	call	bdos
-_formdos2cnt	ld	hl,#8000
+	ld (last_dos_error),a
+_formdos2cnt:
+	ld	hl,#8000
 	ld	de,#8001
 	ld	bc,#3fff
 	ld	(hl),0
 	ldir
+_formdos2_end:
 	call	inidir
 	ld	bc,(slotsubroutin)
 	call	zetslot
+
+	ld a,(last_dos_error)
+	or a
+	call nz,_diskkill2
 	jp	diskhoofd
-_formdos1	ld	hl,#fb21-2
+
+	;Disk format, DOS 1 version
+
+_formdos1:
+	ld	hl,#fb21-2
 	ld	a,(#f1c4)	;current physical drive
-_formjon	inc	hl
+_formjon:
+	inc	hl
 	inc	hl
 	sub	(hl)
 	jr	nc,_formjon
@@ -1457,19 +1755,77 @@ _formjon	inc	hl
 	ld	a,(hl)
 	ld	h,#40
 	call	SLOT
-	call	#4019	;get choice address
+
+	;Get choice string address in HL:
+	;HL=0 means single choice, empty string means can't format.
+	call	#4019	
 	ld	a,h
 	or	l
-	call	nz,formoptie
+	jr nz,_formdos1_maybe_havechoices
+
+	call ask_are_you_sure
+	ld a,1	;Single choice, so assume choice num. 1
+	jr nc,_formdos1_do
+	jr	_formdos2cnt
+
+_formdos1_maybe_havechoices:
+	ld a,(hl)
+	or a
+	jr nz,_formdos1_havechoices
+
+	ld	hl,14*80+(80-26)/2
+	ld bc,err_cannot_format
+	jr _formdos1_showerror
+
+_formdos1_havechoices
+	call	formoptie
 	pop	de
 	jr	c,_formdos2cnt
+_formdos1_do:
 	call	_form_print
 	ld	hl,#8100
 	ld	bc,#3e00
 	call	#401c
-	jr	_formdos2cnt
+	jr	nc,_formdos2cnt
+
+	cp 16+1
+	jr c,_formdos1_okerrcode
+	ld a,16
+_formdos1_okerrcode:
+	ld c,a
+	ld b,0
+	ld hl,format_errors
+	add hl,bc
+	ld a,(hl)
+	inc hl
+	ld h,(hl)
+	ld l,a
+	ld de,buffer1024
+	ld bc,32
+	ldir
+	call get_xcoord_and_bangify
+	ld c,a
+	ld b,0
+	ld	hl,14*80
+	add hl,bc
+	ld bc,buffer1024
+_formdos1_showerror:
+	push hl
+	push bc
+	call	inidir
+	pop bc
+	pop hl
+	call _diskkill2
+	call GETKEY
+	jp _formdos2cnt
+
 Formtxt:	defb	"Format options:",0
-formoptie	push	hl
+
+;This is used in DOS 1 only
+err_cannot_format: db "Cannot format this drive !",0
+
+formoptie:
+	push	hl
 	ld	hl,9*80+2
 	ld	bc,Formtxt
 	call	PRINTTEKST
@@ -1503,7 +1859,8 @@ _formloop2	call	GETKEY
 	sub	"0"
 	or	a
 	ret
-_form_print	push	af
+_form_print:
+	push	af
 	push	de
 	ld	hl,14*80+(80-13)/2
 	ld	bc,Form_txt
@@ -1515,12 +1872,58 @@ Form_txt:	defb	"Formatting...",0
 _foptieesc	scf
 	ret
 
+format_errors:
+	dw formerr_0, formerr_2, formerr_4, formerr_6, formerr_8, formerr_10, formerr_12, formerr_14, formerr_16
+formerr_0:  db "Write protected",0
+formerr_2:  db "Not ready",0
+formerr_4:  db "Data (CRC) error",0
+formerr_6:  db "Seek error",0
+formerr_8:  db "Record not found",0
+formerr_10: db "Write fault",0
+formerr_12: db "Bad parameter",0
+formerr_14: db "Insufficient buffer",0
+formerr_16: db "Format error",0
+
+;Add " !" to the end of the error message in buffer1024,
+;calculate its length, and return (80-length)/2 in A
+get_xcoord_and_bangify:
+	ld hl,buffer1024
+	ld b,1
+get_err_length:
+	ld a,(hl)
+	inc hl
+	inc b
+	or a
+	jr nz,get_err_length
+	dec hl
+	ld (hl),' '
+	inc hl
+	ld (hl),'!'
+	inc hl
+	ld (hl),0
+
+	ld a,80
+	sub b
+	sra a
+	ret
+
+
 ;--Load
 printload	ld	hl,14*80+(80-10)/2
 	ld	bc,Loading
 	jp	PRINTTEKST
 Loading:	defb	"Loading...",0
-_diskload	call	inidir
+Loaded_at:  defb    "Loaded at:",0
+_maybe_diskload:
+	ld a,(Diskasm)
+	or a
+	jp nz,diskhoofd
+_diskload:
+	ld	a,(matrix+6)
+	cpl
+	and	%00000010
+	ld (disk_must_back),a
+	call	inidir
 	ld	de,buffer1024
 	call	set_DTA
 	ld	a,(Diskasm)
@@ -1534,16 +1937,19 @@ _diskload	call	inidir
 	call	fcb_open
 	or	a
 	jr	z,_diskload1
+	call set_last_dos_error
 	ld	hl,Dskerrline*80+(80-14)/2
 	ld	bc,Filenotfound
-	call	PRINTTEKST
+	call _diskkill2
 	jp	diskhoofdprt
-_diskload1	ld	a,(Soort)
+_diskload1:
+	ld	a,(Soort)
 	add	a,a
 	ld	e,a
 	ld	d,0
 	ld	hl,Jp_loads-2
-_diskloadcnt	add	hl,de
+_diskloadcnt:
+	add	hl,de
 	ld	e,(hl)
 	inc	hl
 	ld	d,(hl)
@@ -1554,7 +1960,17 @@ _diskloadcnt	add	hl,de
 	jp	(hl)
 Jp_loads:	defw	_load_asm,_load_asc,_load_bin,_load_data
 	defw	_load_blk,_load_sect
-_disk_asm	ld	a,1
+
+_maybe_disk_asm:
+	ld a,(Diskasm)
+	or a
+	jp z,diskhoofd
+	call	wisdiskbalk
+	ld a,2
+	ld (Diskmenu),a
+	call	zetdiskbalk
+_disk_asm:
+	ld	a,1
 	ld	(Asmbusy),a
 	call	setdirectory
 	call	fcb_create
@@ -1586,7 +2002,8 @@ _load_asc	ld	l,(ix+4)
 _load_blk	ld	l,(ix+8)
 	ld	h,(ix+9)
 	jp	(hl)
-_load_bin	ld	de,Binldheader	;LOAD BINARY FILE
+_load_bin:
+	ld	de,Binldheader	;LOAD BINARY FILE
 	call	set_DTA
 	ld	hl,7
 	call	fcb_read
@@ -1594,12 +2011,18 @@ _load_bin	ld	de,Binldheader	;LOAD BINARY FILE
 	cp	#fe
 	jr	nz,_nobinfile
 	call	printbin
-loadbincont:	;Load call from data file
+loadbincont:
+	;Load call from data file
 	ld	de,buffer1024
 	call	set_DTA
 	ld	hl,(Startldadr)
 	push	hl
-_loadbin_cnt	ld	hl,(Eindldadr)
+_loadbin_cnt:
+	ld hl,15*80+10
+	ld bc,Loading
+	call PRINTTEKST
+
+	ld	hl,(Eindldadr)
 	inc	hl
 	ld	de,(Startldadr)
 	or	a
@@ -1614,7 +2037,8 @@ _loadbin_cnt	ld	hl,(Eindldadr)
 	ex	af,af'
 	jr	c,_loadbin_1	;<=1024
 	ld	hl,1024
-_loadbin_1:	call	fcb_read
+_loadbin_1:	
+	call	fcb_read
 	ld	a,h
 	or	l
 	jr	z,_endloadbin
@@ -1629,10 +2053,16 @@ _loadbin_1:	call	fcb_read
 	add	hl,de
 	ld	(Startldadr),hl	;next address
 	jr	_loadbin_cnt
-_endloadbin	pop	hl
+_endloadbin:
+	ld hl,15*80+10
+	ld bc,Loaded_at
+	call PRINTTEKST
+
+	pop	hl
 	ld	(Startldadr),hl
 	jp	CLOSEFILE
-_nobinfile	ld	bc,Nobinfile
+_nobinfile:
+	ld	bc,Nobinfile
 	ld	hl,15*80+(80-19)/2
 	call	PRINTTEKST
 	call	beep
@@ -1663,7 +2093,9 @@ Binldheader:	defb	0
 Startldadr:	defw	0
 Eindldadr:	defw	0
 Execldadr:	defw	0
-_load_data	call	wissaveload
+
+_load_data:
+	call	wissaveload
 	ld	hl,fcb_work+16
 	ld	e,(hl)
 	inc	hl
@@ -1687,7 +2119,8 @@ _load_data	call	wissaveload
 	ld	(Starttxt),a
 	ld	(Endtxt),a
 	ld	(Exectxt),a
-_dat_again1	call	bininput1
+_dat_again1:
+	call	bininput1
 	ld	hl,(Startsvadr)
 	ld	de,(Lengthfile)
 	add	hl,de
@@ -1706,22 +2139,29 @@ _dat_again1	call	bininput1
 	ld	hl,(Endsvadr)
 	ld	(Eindldadr),hl
 	jp	loadbincont
+
 Lengthfile:	defw	0
+
 _load_sect	call	wissaveload
 	ld	hl,Secttxt
 	call	TEXTTOBLOK
 	call	printinpsect
+
+	ld hl,15*80+10
+	ld bc,Loading
+	call PRINTTEKST
+
 	ld	bc,(Lengthsect)
 	ld	de,(Startsect)
 	ld	hl,(Sectadr)
+
 _load_sect1	push	bc
 	push	de
 	push	hl
-	ld	c,#2f
 	ld	a,(huidigedrive)
 	ld	l,a
 	ld	h,1
-	call	bdos
+	call	do_rdabs
 	pop	hl
 	ld	d,h
 	ld	e,l
@@ -1738,7 +2178,29 @@ _load_sect1	push	bc
 	or	c
 	jr	nz,_load_sect1
 	call	wissaveload
+	ld hl,15*80+10
+	ld bc,Loaded_at
+	call PRINTTEKST
 	jp	diskhoofdprt
+
+do_wrabs:
+	ld bc,_WRDRV*256+_WRABS
+	jr do_rdabs_wrabs
+do_rdabs:
+	ld bc,_RDDRV*256+_RDABS
+do_rdabs_wrabs:
+	ld a,(is_nextor)
+	or a
+	jp z,bdos
+
+	ld c,b	;Function call to use
+	ld a,l	;Drive number
+	ld b,h	;Sector count
+	ld hl,0	;Sector number, high word
+	;DE=Sector number, low word
+	jp bdos
+
+
 Secttxt:	defw	17*80+10
 	defb	"Address:",0
 	defw	18*80+10
@@ -1750,7 +2212,7 @@ Sectadr:	defw	0
 Startsect:	defw	14
 Lengthsect:	defw	1
 Sectsize:	defw	0
-printinpsect	ld	bc,#001b
+printinpsect	ld	bc,_ALLOC
 	call	bdos
 	ld	(Sectsize),bc
 	ld	hl,17*80+19
@@ -1775,24 +2237,45 @@ printinpsect	ld	bc,#001b
 	call	inputsect
 	ld	(Lengthsect),de
 	ret
-inputsect	push	hl
+inputsect:
+	push	hl
 	ld	de,buffer1024
 	call	inputbin
-	jp	c,CLOSEFILE
+	jp	c,bininput_cancel
 	call	BEREKENGETAL
 	pop	hl
 	jr	c,inputsect
 	ret
+
 ;--Disk save
 Saving:	defb	"Saving...",0
-printsave	ld	hl,14*80+(80-10)/2
+Saved_from:  defb    "Saved from:",0
+printsave:
+	push af
+	ld	hl,14*80+(80-10)/2
 	ld	bc,Saving
-	jp	PRINTTEKST
-wissaveload	ld	hl,14*80+(80-10)/2
-	ld	bc,10
+	call	PRINTTEKST
+	pop af
+	ret
+wissaveload:
+	ld a,(Diskasm)
+	or a
+	ret nz
+	ld	hl,14*80+(80-40)/2
+	ld	bc,40
 	xor	a
 	jp	FILLVRAM
-_disksave	ld	de,buffer1024
+
+_maybe_disksave:
+	ld a,(Diskasm)
+	or a
+	jp nz,diskhoofd
+_disksave:
+	ld	a,(matrix+6)
+	cpl
+	and	%00000010
+	ld (disk_must_back),a
+	ld	de,buffer1024
 	call	set_DTA
 	call	inidir
 	call	printsave
@@ -1846,7 +2329,9 @@ _save_asc	push	ix
 _save_blk	ld	l,(ix+10)
 	ld	h,(ix+11)
 	jp	(hl)
-_save_bin	ld	de,Binsvheader
+_save_bin:
+	call wissaveload
+	ld	de,Binsvheader
 	call	set_DTA
 	call	wissaveload
 	ld	hl,Bintext
@@ -1869,15 +2354,21 @@ _bin_again3	ld	hl,19*80+17
 	call	BEREKENGETAL
 	jr	c,_bin_again3
 	ld	(Execsvadr),de
-	call	printsave
+	;call	printsave
 	ld	hl,7
 	call	savefile
-binsavecont:	;save call from data
+binsavecont:
+	;save call from data
 	ld	de,buffer1024
 	call	set_DTA
 	ld	hl,(Startsvadr)
 	push	hl
-_binsave_cnt	ld	hl,(Endsvadr)
+_binsave_cnt:
+	ld hl,15*80+10
+	ld bc,Saving
+	call PRINTTEKST
+
+	ld	hl,(Endsvadr)
 	inc	hl
 	ld	de,(Startsvadr)
 	or	a
@@ -1904,27 +2395,36 @@ _savebin_1:	push	hl
 	pop	hl
 	call	savefile
 	jr	_binsave_cnt
-_endsavebin	pop	hl
+_endsavebin:
+	ld hl,15*80+10
+	ld bc,Saved_from
+	call PRINTTEKST
+
+	pop	hl
 	ld	(Startsvadr),hl
 	jp	CLOSEFILE
-inputbin	push	de
+
+inputbin:
+	push	de
 	ld	b,20
 	ld	a,%11000001
 	call	INPUTTEXT
 	pop	hl
 	ret
-bininput1	ld	hl,17*80+17
+bininput1:
+	ld	hl,17*80+17
 	ld	de,Starttxt
 	call	inputbin
-	jp	c,CLOSEFILE
+	jp	c,bininput_cancel
 	call	BEREKENGETAL
 	jr	c,bininput1
 	ld	(Startsvadr),de
 	ret
-bininput2	ld	hl,18*80+17
+bininput2:
+	ld	hl,18*80+17
 	ld	de,Endtxt
 	call	inputbin
-	jp	c,CLOSEFILE
+	jp	c,bininput_cancel
 	call	BEREKENGETAL
 	jr	c,bininput2
 	ld	(Endsvadr),de
@@ -1933,6 +2433,12 @@ bininput2	ld	hl,18*80+17
 	sbc	hl,de	;is set to [NC]
 	jr	c,bininput2	;end address < start address
 	ret
+bininput_cancel:
+	xor a
+	ld (disk_must_back),a
+	call inidir
+	jp CLOSEFILE
+
 Binsvheader:	db	#fe
 Startsvadr:	dw	0
 Endsvadr:	dw	0
@@ -1940,7 +2446,9 @@ Execsvadr:	dw	0
 Starttxt:	ds	21
 Endtxt:	ds	21
 Exectxt:	ds	21
-_save_data	ld	hl,Bintext1
+_save_data:
+	call wissaveload
+	ld	hl,Bintext1
 	call	TEXTTOBLOK
 	ld	hl,17*80+17
 	ld	bc,Starttxt
@@ -1950,13 +2458,21 @@ _save_data	ld	hl,Bintext1
 	call	PRINTTEKST
 	call	bininput1
 	call	bininput2
-	call	printsave
 	jp	binsavecont
-_save_sect	call	wissaveload
-	call	testharddisk
+_save_sect:
+	call	wissaveload
 	ld	hl,Secttxt
 	call	TEXTTOBLOK
 	call	printinpsect
+	call	ask_sector_write_confirmation
+	jr nc,_save_sect_confirmed
+	call inidir	
+	jp diskhoofdprt
+_save_sect_confirmed:
+	ld hl,15*80+10
+	ld bc,Saving
+	call PRINTTEKST
+
 	ld	bc,(Lengthsect)
 	ld	de,(Startsect)
 	ld	hl,(Sectadr)
@@ -1972,11 +2488,10 @@ _save_sect1	push	bc
 	pop	de
 	push	de
 	push	hl
-	ld	c,#30
 	ld	a,(huidigedrive)
 	ld	l,a
 	ld	h,1
-	call	bdos
+	call	do_wrabs
 	pop	hl
 	pop	de
 	inc	de
@@ -1985,68 +2500,63 @@ _save_sect1	push	bc
 	ld	a,b
 	or	c
 	jr	nz,_save_sect1
+
+	ld hl,15*80+10
+	ld bc,Saved_from
+	call PRINTTEKST
+
 	call	wissaveload
 	jp	diskhoofdprt
-testharddisk	ld	a,(dosversion)
+
+ask_sector_write_confirmation:
+	ld	a,(dosversion)
 	dec	a
-	ret	z
-	ld	c,#31
+	jp z,ask_are_you_sure_no_cls
+	ld	c,_DPARM
 	ld	de,buffer1024
 	ld	l,0
 	call	bdos
 	ld	a,(buffer1024+11)
 	cp	#f8
-	ret	nc
-	ld	hl,15*80+(80-14)/2
+	ld	hl,(Dskerrline-2)*80+(80-19)/2
 	ld	bc,Noflop
-	call	PRINTTEKST
-	jp	diskhoofdprt
-Noflop:	defb	"No diskdrive !",0
+	call	c,PRINTTEKST
+	jp ask_are_you_sure_no_cls
+	
+Noflop:	defb	"Not a floppy disk !",0
 
-jon1	LD	A,(Diskasm)
+jon1:
+	LD	A,(Diskasm)
 	OR	A
 	JR	NZ,_jon12
-	LD	A,(Soort)
-	CP	1
-	JR	Z,_jon11
 	LD	HL,pathname
 	LD	DE,pathnamebuf
 	LD	BC,64
 	LDIR
 	RET
-_jon11	LD	A,(Buffer)
-	LD	B,A
-parse_nam_deb	LD	HL,pathnamebuf
-	LD	DE,name_asm
-	PUSH	HL
-	LD	HL,#400F
-	JP	GOTODEBUGGER
-_jon12	PUSH	AF
-	CALL	_jon11
-	POP	BC
+
+_jon12:
+	ld b,a
 	LD	HL,name_com1
 	LD	DE,11
-_jon13	ADD	HL,DE
+_jon13:
+	ADD	HL,DE
 	DJNZ	_jon13
 	EX	DE,HL
 	LD	HL,name_asm
 	LD	BC,8
 	LDIR
 	RET
-jon2	LD	A,(Soort)
-	CP	1
-	JR	Z,_jon21
+jon2:
 	LD	HL,pathnamebuf
 	LD	DE,pathname
 	LD	BC,64
 	LDIR
 	RET
-_jon21	LD	A,(Buffer)
-	LD	B,A
-	XOR	A
-	JR	parse_nam_deb
+
 ;--input pathname
-inputpath	ld	hl,pathnamebuf
+inputpath:
+	ld	hl,pathnamebuf
 	ld	de,kbuf
 	ld	bc,64
 	ldir
@@ -2083,8 +2593,10 @@ _inputpath1	call	testpath
 	ldir		;Copy name back
 	call	printpath
 _inputpath2	jp	jon2
+
 ;--print directory on screen (including directories with < >)
-printdir	call	inidir
+printdir:
+	call	inidir
 	call	printpath
 	ret	c
 	call	doprintdir
@@ -2093,9 +2605,11 @@ printdir	call	inidir
 	ret	nz
 	ld	hl,Dskerrline*80+(80-14)/2
 	ld	bc,Filenotfound
-	jp	PRINTTEKST
+	call _diskkill2
+	jp diskhoofd
 Filenotfound:	defb	"File not found",0
-inidir	xor	a
+inidir:
+	xor	a
 	ld	(Aantalfiles),a
 	inc	a
 	ld	(X_file),a
@@ -2117,16 +2631,46 @@ _inidir1:	ld	a,0
 	djnz	_inidir2
 	ret
 Vramnaam:	defw	0
+
 ;--print directory on screen
-doprintdir	ld	a,(dosversion)
+
+;In DOS 2 we use the _PARSE function and look at the result
+;of the directory scan for the first result to make adjustments
+;in the supplied path:
+;
+;- If an ambiguous path was passed (contains ? or *),
+;  suppress the last part of the path. So e.g.
+;  entering "A:\DIRNAME\*.COM" will display the
+;  appropriate files, but the resulting path will be
+;  "A:\DIRNAME\".
+;
+;- Otherwise, if the resulting single result is a file,
+;  suppress it from the path, so entering "A:\DIRNAME\FILE.COM"
+;  will list the single file, but the resulting path will be
+;  "A:\DIRNAME\".
+;
+;- Otherwise, the resulting single result is a directory,
+;  so append a "\" at the end and enter it. So e.g.
+;  entering "A:\DIRNAME" will list the contents of the file,
+;  and the resulting path will be "A:\DIRNAME\".
+;
+;- Exception to the above: if CTRL+ENTER is pressed to trigger
+;  the directory scan, a directory will be treated like a file,
+;  so e.g. "A:\DIRNAME" will list that single directory and
+;  the resulting path will be "A:\".
+
+doprintdir:
+	ld	a,(dosversion)
 	dec	a
-	jr	z,_dir_dos1
+	jp	z,_dir_dos1
 _dir_dos2	ld	a,(huidigedrive)
 	ld	e,a
 	call	prtfreedisk
 	call	dos2firstent
+	ld a,(last_dos_error)
 	or	a
 	ret	nz
+	call printpath
 	call	printfile
 _nextdos2dir	call	dos2nextentr
 	or	a
@@ -2139,14 +2683,71 @@ _nextdos2dir	call	dos2nextentr
 	ret	c
 	call	inidir
 	jr	_nextdos2dir
-dos2firstent	ld	de,pathnamebuf
+dos2firstent:
+	ld	de,pathnamebuf
+	ld bc,0000h+_PARSE
+	call bdos
+	or a
+	jr nz,dos2firstent_go	;Error parsing? Skip path processing
+	push hl
+	or a
+	sbc hl,de
+	ld a,h
+	or l
+	pop hl
+	jr z,dos2firstent_go	;No last item in string? Skip path processing
+
+	push hl	;Pointer to last item
+	push de	;Pointer to termination
+	push bc	;Flags
+
+	call dos2firstent_go
+
+	pop bc
+	pop de
+	pop hl
+	or a
+	ret nz
+
+	bit 5,b
+	jr z,dos2firstent_noamb
+
+	ld (hl),0
+	ret
+
+dos2firstent_noamb:
+	ld a,(buffer1024+14)
+	and 10000b
+	jr z,dos2firstent_nodir
+	ld a,(matrix+6)
+	and 2	;If CTRL is pressed, don't automatically enter a dir
+	jr z,dos2firstent_nodir
+	ex de,hl
+	ld (hl),'\'
+	inc hl
+	ld (hl),0
+	jp dos2firstent_go
+
+dos2firstent_nodir:
+	push hl
+	call dos2firstent_go
+	pop hl
+	ld (hl),0
+	ret
+
+dos2firstent_go:
+	ld	de,pathnamebuf
 	ld	hl,(adrsfilepath)
 	ld	b,%00010111
 	ld	ix,buffer1024
-	ld	c,#40
-	jp	bdos
-dos2nextentr	ld	ix,buffer1024
-	ld	c,#41
+	ld	c,_FFIRST
+	call	bdos
+	ld (last_dos_error),a
+	ret
+
+dos2nextentr:
+	ld	ix,buffer1024
+	ld	c,_FNEXT
 	jp	bdos
 _dir_dos1	ld	a,(huidigedrive)
 	ld	e,a
@@ -2179,9 +2780,9 @@ _enddos1dir	ld	hl,Oldfcb
 	ldir
 	ret
 dos1firstent	ld	de,fcb_work
-	ld	c,#11
+	ld	c,_SFIRST
 	jp	bdos
-dos1nextentr	ld	c,#12
+dos1nextentr	ld	c,_SNEXT
 	jp	bdos
 Oldfcb:	defs	11
 vulfcbin	ld	b,11
@@ -2359,7 +2960,9 @@ X_file:	defb	0
 X_file1:	defb	0
 Y_file1:	defb	0
 Filemenu:	defb	0
-filemenu	ld	hl,#0101
+
+filemenu:
+	ld	hl,#0101
 	ld	(X_file1),hl
 	ld	a,h
 	ld	(Filemenu),a
@@ -2382,7 +2985,9 @@ filehoofd	call	GETKEY
 	and	255-32
 	jr	z,_filespace
 	jr	filehoofd
-_fileback	jp	wisfilebalk
+_fileback:
+	call inidir
+	jp	wisfilebalk
 _fileright	ld	a,(Aantalfiles)
 	ld	b,a
 	ld	a,(Filemenu)
@@ -2439,8 +3044,18 @@ _filedown	ld	a,(Filemenu)
 	add	a,5
 	ld	(Filemenu),a
 	jp	filehoofd
-_filespace	call	haalfile
-	jr	c,_file_subdir
+
+_filespace:
+	call	haalfile
+	jr	nc,_filespace_select
+	ld a,(Filename)
+	cp '.'	;Ignore CTRL press for ".."
+	jr z,_file_subdir
+	ld a,(matrix+6)
+	and 2	;CTRL pressed? Treat like a file then
+	scf
+	jr	nz,_file_subdir
+_filespace_select:
 	call	beradrname
 	jr	c,_filespace1
 	ld	hl,Filename
@@ -2449,6 +3064,7 @@ _filespace	call	haalfile
 	call	jon2
 	call	prtfilenaam
 _filespace1	jp	_fileback
+
 ;----- remove file from screen   (empty places become spaces, without ".")
 ;----- OUT: filename in FILENAME+2, [C]=subdirectory
 haalfile	ld	hl,7*80-12+1	;not "["
@@ -2488,7 +3104,9 @@ _haalfile4_1:	ld	(hl),a
 	ret	z
 	scf
 	ret
-_file_subdir	call	wisfilebalk
+
+_file_subdir:
+	call	wisfilebalk
 	ld	hl,(adrsfilepath)
 	ld	de,buffer1024
 	ld	bc,20
@@ -2508,7 +3126,7 @@ _file_subdi1	ld	b,3
 	xor	a
 	ld	(de),a
 	ld	de,pathnamebuf
-	ld	c,#5a
+	ld	c,_CHDIR
 	call	bdos
 	call	haalpath
 	ex	de,hl
@@ -2521,7 +3139,8 @@ _file_subdi1	ld	b,3
 zetfilebalk	call	filebalkadre
 	ld	b,14
 	jp	SETBALK
-wisfilebalk	call	filebalkadre
+wisfilebalk:
+	call	filebalkadre
 	ld	b,14
 	jp	WISBALK
 filebalkadre	ld	a,(X_file1)
@@ -2537,7 +3156,8 @@ _filebalkad1:	add	a,15
 ;--Menu of types of files
 Soortmenvram:	equ	10*80+31
 Soortmenopt:	defb	1
-soortmenu	ld	a,(Bronprog)
+soortmenu:
+	ld	a,(Bronprog)
 	ld	ix,Asmfiles+1
 	dec	a
 	jr	z,_soortmenu1
@@ -2639,12 +3259,14 @@ Datf	defb	" Data file "
 Blkf	defb	"Block file "
 Sect	defb	"  Sector   "
 ;--Print info from disk on screen
-prtdskinfo	call	printtype
+prtdskinfo:
+	call	printtype
 	call	printboven
 	call	printpath
 	call	prtfilenaam
 	ret
-printtype	ld	a,(Diskasm)
+printtype:
+	ld	a,(Diskasm)
 	or	a
 	ld	hl,Asmdiskf-11
 	jr	nz,_printtype2
@@ -2683,6 +3305,7 @@ _printboven1:	call	WRITEVRAM
 Off:	defb	"off"
 Asm:	defb	"Asm"
 Asc:	defb	"Asc"
+
 ;--print path and drive on screen
 printpath	ld	hl,6*80+3+10
 	ld	bc,64
@@ -2691,9 +3314,12 @@ printpath	ld	hl,6*80+3+10
 	ld	bc,pathnamebuf
 	ld	hl,6*80+3+10
 	call	PRINTTEKST
-testpath	LD	A,(dosversion)
+testpath:
+	LD	A,(dosversion)
 	DEC	A
 	JR	NZ,_pathdos2
+
+_pathdos1:
 	LD	A,(pathnamebuf+1)
 	CP	":"
 	JR	NZ,_nodrv
@@ -2703,26 +3329,38 @@ testpath	LD	A,(dosversion)
 	SUB	"A"
 	JR	C,_badpath
 	LD	HL,pathnamebuf+2
-jon4	LD	C,A
+jon4:
+	LD	C,A
 	INC	C
 	LD	A,(HL)
 	CP	"\"
 	JR	NZ,_contdrv
 	INC	HL
 	JR	_contdrv
-_nodrv	LD	C,#19	;get defaultdrv
+_nodrv:
+	LD	C,_CURDRV	;get defaultdrv
 	CALL	bdos
 	LD	HL,pathnamebuf
 	jr	jon4
-_pathdos2	LD	DE,pathnamebuf
-	LD	BC,#005B
+
+_pathdos2:
+	LD	DE,pathnamebuf
+	LD	BC,0000h+_PARSE
 	CALL	bdos
+	ld (last_dos_error),a
+	jr nz,printpath_error
 	LD	A,(DE)
 	OR	A
-	JP	NZ,_badpath
-_contdrv	LD	B,C
+	jr z,_contdrv
+	ld a,0D9h	;Invalid pathname
+	ld (last_dos_error),a
+	jp printpath_error
+	
+_contdrv:
+	LD	B,C
 	LD	A,(drives)	;login vector
-schuifdrives	RRCA		;is the drive connected?
+schuifdrives:
+	RRCA		;is the drive connected?
 	DJNZ	schuifdrives
 	JR	NC,_badpath
 	LD	A,C
@@ -2733,22 +3371,24 @@ schuifdrives	RRCA		;is the drive connected?
 	DEC	A
 	LD	(huidigedrive),A
 	LD	E,A	;set default drive
-	LD	C,14
+	LD	C,_SELDSK
 	CALL	bdos
 	OR	A
-	RET
+	ret
 
-_badpath	LD	A,(doinclude)
+_badpath:
+	LD	A,(doinclude)
 	OR	A
 	SCF
 	RET	NZ
 	LD	HL,Dskerrline*80+(80-14)/2
 	LD	BC,txt_badpath
-	CALL	PRINTTEKST
-	CALL	beep
-	SCF
-	RET
-txt_badpath	db	"Bad pathname !",0
+
+printpath_error:
+	call _diskkill2
+	jp diskhoofd
+
+txt_badpath	db	"Invalid drive !",0
 
 doinclude	db	0
 
@@ -2780,7 +3420,8 @@ _prtfilenaa2:	ld	a,(hl)
 	out	(#98),a
 	djnz	_prtfilenaa2
 	ret
-beradrname	ld	a,(Diskasm)
+beradrname:
+	ld	a,(Diskasm)
 	or	a
 	jr	z,_beradrname1
 	ld	hl,Disknames-2
@@ -2801,11 +3442,60 @@ _beradrname2	add	a,a
 	ret
 Names:	dw	name_asm,name_asc,name_bin,name_com1,name_blk
 Disknames:	dw	name_com2,name_tsr,name_rel
+
 ;--Calculate and print kB free on disk    IN: E=disknr (1-8)
-prtfreedisk	ld	c,#1b
+prtfreedisk:
 	inc	e
+	ld a,(is_nextor)
+	or a
+	ld a,"K"
+	jr z,_prtfreedisk_dos
+
+	xor a
+	ld c,_DSPACE
+	call bdos
+
+	ld a,h
+	or l
+	jr nz,_prtfreedisk_is_m
+	bit 7,d
+	jr z,_prtfreedisk_is_k
+
+	;Convert size if KB to size in MB,
+	;the result will be valid up to 64GB.
+_prtfreedisk_is_m:
+	ld e,d
+	ld d,l
+	ld l,h
+	srl l
+	rr d
+	rr e
+	srl l
+	rr d
+	rr e
+
+_prtfreedisk_is_M:
+	ld a,"M"
+	jr _prtfreedisk_doprint
+
+_prtfreedisk_is_k:
+	ld a,"K"
+	jr _prtfreedisk_doprint
+
+_prtfreedisk_dos:
+	ld	c,_ALLOC
 	call	bdos
 	call	ber_kb
+	jr _prtfreedisk_doprint2
+_prtfreedisk_doprint:
+	push af
+	push de
+	ld hl,4*80+76
+	call SETVRAMWRITE
+	pop de
+	pop af
+	out (98h),a
+_prtfreedisk_doprint2:
 	ld	hl,4*80+70
 	ld	b,5
 	jp	PRINTDECIMAAL
@@ -2832,7 +3522,8 @@ _prtfreedis3:	srl	d
 	ex	de,hl
 	ret
 
-setdirectory	LD	A,(dosversion)
+setdirectory:
+	LD	A,(dosversion)
 	DEC	A
 	RET	Z
 	LD	HL,(adrsfilepath)
@@ -2850,15 +3541,15 @@ setdirectory	LD	A,(dosversion)
 	XOR	A
 	LD	(DE),A
 	LD	DE,buffer1024
-	LD	C,#5A	;set directory
+	LD	C,_CHDIR	;set directory
 	JP	bdos
 
-set_DTA	ld	c,26
+set_DTA	ld	c,_SETDTA
 	jp	bdos
 fcb_read	ld	de,fcb_work
-	ld	c,39
+	ld	c,_RDBLK
 	jp	bdos
-fcb_open	LD	C,#0F
+fcb_open	LD	C,_FOPEN
 fcb_open_cont	LD	DE,fcb_work
 	CALL	bdos
 	LD	HL,#0000
@@ -2867,22 +3558,27 @@ fcb_open_cont	LD	DE,fcb_work
 	INC	HL
 	LD	(fcb_work+14),HL
 	RET
-fcb_create	ld	c,22
+fcb_create	ld	c,_FMAKE
 	jr	fcb_open_cont
 savefile	ld	de,fcb_work
-	ld	c,#26
+	ld	c,_WRBLK
 	call	bdos
 	or	a
 	ret	z
-writeerror	ld	de,fcb_work
-	ld	c,#10
+writeerror:
+	call set_last_dos_error
+
+	ld	de,fcb_work
+	ld	c,_FCLOSE
 	call	bdos
 	ld	de,fcb_work
-	ld	c,#13
+	ld	c,_FDEL
 	call	bdos	;delete file
 	ld	hl,14*80+(80-17)/2
 	ld	bc,Writeerror
-	jp	_diskkill2
+	call _diskkill2
+	jp diskhoofd
+
 ;--Back up filename in FCB
 makebackup	ld	hl,fcb_work
 	ld	de,buffer1024
@@ -2895,7 +3591,7 @@ makebackup	ld	hl,fcb_work
 	inc	hl
 	ld	(hl),"K"
 	ld	de,fcb_work
-	ld	c,#13
+	ld	c,_FDEL
 	call	bdos	;delete .bak file
 	ld	hl,fcb_work+1
 	ld	de,fcb_work+17
@@ -2905,7 +3601,7 @@ makebackup	ld	hl,fcb_work
 	ld	de,fcb_work+1
 	ld	bc,11
 	ldir
-	ld	c,#17
+	ld	c,_FREN
 	ld	de,fcb_work
 	call	bdos	;rename .asm/.asc => .bak
 	ld	hl,buffer1024
@@ -2913,55 +3609,22 @@ makebackup	ld	hl,fcb_work
 	ld	bc,1+11+25
 	ldir
 	ret
-Disklines:	defw	Dline1,Dline2,Dline3,Dline4,Dline5,Dline6,Dline6
-	defw	Dline6,Dline6,Dline6,Dline6,Dline6,Dline6,Dline6
-	defw	Dline6,Dline6,Dline6,Dline6,Dline6,Dline6,Dline7
-Disklinesend:	defw	Dline8,Dline9,0
-Dline1:	defb	1,24,19,23,1,18,17,23,1,18,13,23,1,18,10,23,1,18,15,23
-	defb	1,25,0
-Dline2:	defb	1,22,19,0,1,22,17,0,1,22,13,0,1,22,10,0,1,22,15,0
-	defb	1,22,0
-Dline3:	defb	1,20,19,23,1,17,17,23,1,17,13,23,1,17,10,23,1,17,15,23
-	defb	1,19,0
-Dline6:
-Dline4:	defb	1,22,78,0,1,22,0
-Dline5:	defb	1,20,78,23,1,19,0
-Dline7:	defb	1,20,6,23,1,18,6,23,1,18,6,23,1,18,6,23,1,18,6,23,1,18
-	defb	6,23,1,18,6,23,1,18,29,23,1,19,0
-Dline8:	defb	1,22,6,0,1,22,6,0,1,22,6,0,1,22,6,0,1,22,6,0,1,22
-	defb	6,0,1,22,6,0,1,22,29,0,1,22,0
-Dline9:	defb	1,26,6,23,1,17,6,23,1,17,6,23,1,17,6,23,1,17,6,23,1,17
-	defb	6,23,1,17,6,23,1,17,29,23,1,27,0
-Disktext:	defw	6*80+3
-	defb	"Pathname:",0
-	defw	4*80+2
-	defb	"Type:",0
-	defw	4*80+22
-	defb	"Sourcebuffer:",0
-	defw	4*80+40
-	defb	"Backup:",0
-	defw	4*80+65
-	defb	"Free:      kB",0
 
-	defw	24*80+2
-	defb	"Save",0
-	defw	24*80+9
-	defb	"Load",0
-	defw	24*80+16+1
-	defb	"Dir",0
-	defw	24*80+23
-	defb	"Type",0
-	defw	24*80+30
-	defb	"Mkdir",0
-	defw	24*80+37
-	defb	"Kill",0
-	defw	24*80+44-1
-	defb	"Format",0
-	defw	24*80+53
-	defb	"Filename:",0
-	defw	0
 Disktextasm:
 	defb	"  Assemble ",0
+
+set_last_dos_error:
+	ld a,(dosversion)
+	cp 2
+	ld bc,0000h+_ERROR
+	call nc,bdos
+	ld a,b
+	ld (last_dos_error),a
+	or a
+	ret z
+	xor a
+	ld (disk_must_back),a
+	ret
 
 ;in: DE=pointersto text HL=startVRAM
 PRINTBLOK	CALL	SETVRAMWRITE
@@ -3312,8 +3975,9 @@ printspecial	LD	A,(specialchar)
 	LD	A,(specialchar)
 	JP	FILLVRAM
 
-CLOSEFILE	LD	DE,fcb_work
-	LD	C,16
+CLOSEFILE:
+	LD	DE,fcb_work
+	LD	C,_FCLOSE
 	CALL	bdos
 	LD	A,(doinclude)
 	OR	A
@@ -4782,7 +5446,8 @@ GOTOASS	LD	(invul_call1),HL
 	LD	(sub),BC
 	LD	BC,(slotass)
 	JR	goto_cont
-zetslot	PUSH	AF
+zetslot:
+	PUSH	AF
 	PUSH	DE
 	PUSH	HL
 	LD	A,B
@@ -4822,7 +5487,8 @@ oudslot	db	#ff,#ff,#ff,#ff
 stat_getkey	db	0	;input only possible with Left fire button
 GETKEY2	ld	a,1
 	ld	(stat_getkey),a
-GETKEY	PUSH	HL
+GETKEY:
+	PUSH	HL
 	PUSH	DE
 	PUSH	BC
 	LD	A,(cursoronoff)
@@ -4907,7 +5573,8 @@ getkey_back	PUSH	AF
 oldvorm	ds	8,0
 blokvorm	ds	8,0
 
-WAITFORKEY	PUSH	BC
+WAITFORKEY:
+	PUSH	BC
 	CALL	rdmous	;mouse handling
 	CALL	janeetoetsen	;Z80/R800
 	CALL	hertztoetsen	;ctrl+5/6
@@ -5356,13 +6023,42 @@ Protected:	defb	"Write protected !",0
 Offline:	defb	" Disk offline !",0
 Writeerror:	defb	"  Write error !",0
 Ioerror:	defb	"Disk I/O error !",0
+BadFatErr:  defb    "    Bad FAT !   ",0
 Abortretry:	defb	"Abort or retry ? (a/r)",0
 
-olderroradres	defw	0
-Specialerror	defw	Specialerr1
-Sp_disk	defw	0
+olderroradres:	defw	0
+Specialerror:	defw	Specialerr1
+Sp_disk:	defw	0
 
-Specialerr1	push	hl
+;Disk error handler
+;
+;Input:
+;A = drive
+;C = Error:
+;  b7=1 : Bad FAT
+;  b0=0 : Read action
+;  b0=1 : Write action
+;  b3 b2 b1
+;  0  0  0: Write Protected
+;  0  0  1: Not Read (disk offline)
+;  0  1  0: CRC error
+;  0  1  1: Seek error
+;  1  0  0: Record not found (sector not found)
+;  1  0  1: Write error
+;  1  1  0: Other
+;
+;Output: C = action:
+;  0 = ignore
+;  1 = retry
+;  2 = abort
+
+Specialerr1:
+	ld a,(flushing_disk_buffers)
+	or a
+	ld a,1	;Abort if we are in the middle of flushing disk buffers
+	ret nz
+
+	push	hl
 	push	de
 	push	bc
 	ld	a,(Asmbusy)
@@ -5370,6 +6066,32 @@ Specialerr1	push	hl
 	call	z,inidir	;screen blank
 	pop	bc
 	push	bc
+
+	ld	a,(Asmbusy)
+	or	a
+	ld	hl,12*80+(80-17)/2
+	jr	z,_specialer1
+	ld	hl,18*80+(80-17)/2
+_specialer1:
+
+	bit 7,c
+	jr z,_specialerr_nobadfat
+
+	ld	de,2*80
+	add	hl,de
+	push hl
+	ld bc,BadFatErr
+	call	PRINTTEKST
+	pop hl
+	call beep
+	call GETKEY
+	ld a,"A"	;Simulate user choosing "abort"
+	jr _specialerr_after_getkey
+	
+	jp _specialerr_abort
+
+_specialerr_nobadfat
+	push hl
 	ld	a,c
 	and	%00001110
 	ld	e,a
@@ -5379,12 +6101,8 @@ Specialerr1	push	hl
 	ld	c,(hl)
 	inc	hl
 	ld	b,(hl)
-	ld	a,(Asmbusy)
-	or	a
-	ld	hl,12*80+(80-17)/2
-	jr	z,_specialer1
-	ld	hl,18*80+(80-17)/2
-_specialer1	push	hl
+	pop hl
+	push hl
 	call	PRINTTEKST
 	ld	bc,Abortretry
 	pop	hl
@@ -5393,6 +6111,7 @@ _specialer1	push	hl
 	call	PRINTTEKST	;abort or retry
 	call	beep
 	call	GETKEY
+_specialerr_after_getkey:
 	push	af
 	ld	a,(Asmbusy)
 	or	a
@@ -5405,24 +6124,159 @@ _specialer1	push	hl
 	jr	z,_retry
 	cp	"R"
 	jr	z,_retry
+_specialerr_abort:
+	pop bc
+	pop de
+	pop hl
+	ld a,c
+	ld (disk_error_handling_errnum),a
+	ld c,2	;Abort
+	ret
+_retry:	
+	pop	bc
+	pop	de
+	pop	hl
+	ld	c,1	;Retry
+	ret
+
+	if 0
+
+;DOS 2 disk error handler
+;Input: 
+;A = Error code
+;B = Drive
+;C = b0 - set if writing
+;    b1 - set if ignore not recommended
+;    b2 - set if auto-abort suggested
+;
+;Output: A = action:
+; 0 => Call system error routine
+; 1 => Abort
+; 2 => Retry
+; 3 => Ignore
+
+specialerr_dos2:
+	ld b,a
+	ld a,(flushing_disk_buffers)
+	or a
+	jr z,specialerr_noflushing
+	ld a,1	;Abort
+	ret
+specialerr_noflushing:
+	push bc	;Save input flags for later
+
+	ld c,_EXPLAIN
+	ld de,buffer1024
+	call bdos
+
+	ld	a,(Asmbusy)
+	or	a
+	call	z,inidir	;screen blank
+
+	call get_xcoord_and_bangify
+	ld c,a
+	ld b,0
+	ld	a,(Asmbusy)
+	or	a
+	ld	hl,12*80
+	jr	z,_specialer_dos2_1
+	ld	hl,18*80
+_specialer_dos2_1:
+	add hl,bc
+
+	ld bc,buffer1024
+	call PRINTTEKST
+
+	pop bc	;Input flags
+	bit 2,c
+	ld a,1	;Abort if recommended
+	ret
+
+	call ask_abort_retry
+	ld a,1	;Abort
+	ret c
+	inc a	;retry
+	ret
+
+	endif
+
+; Ask "Abort or retry?"
+; Output: Cy = 1 if abort, 0 if retry
+ask_abort_retry:
+	ld	a,(Asmbusy)
+	or	a
+	ld	hl,14*80+(80-17)/2
+	jr	z,_ask_abort_retry_1
+	ld	hl,20*80+(80-17)/2
+_ask_abort_retry_1:
+	ld	bc,Abortretry
+	call	PRINTTEKST
+	call	beep
+	call	GETKEY
+	push	af
+	ld	a,(Asmbusy)
+	or	a
+	call	z,inidir
+	ld	hl,18*80
+	ld	b,3
+	call	inidircont	;LEAVE IT !
+	pop	af
+	and	%11011111
+	ret z
+	cp	"R"
+	ret z
+	scf
+	ret
+
+
+old_abort_handler_address: dw 0
+disk_abort_handler_address: dw disk_abort_handler
+disk_abort_handler:
+	ld a,(flushing_disk_buffers)
+	or a
+	jp nz,flush_disk_buffers_cont
+
 	ld	hl,#ffff
 	ld	(oudslot),hl
 	ld	(oudslot+2),hl
 	ld	bc,(Oldsubrouti)
 	call	zetslot
-	pop	bc
-	ld	a,c
+	ld	bc,(disk_error_handling_errnum)
+	xor a
+	ld (disk_error_handling_errnum),a
+	ld a,c
 	and	%00001100
 	ld	de,fcb_work
-	ld	c,#10
+	ld	c,_FCLOSE
 	call	nz,bdos	;close file (not with offline/protected)
 	ld	sp,(Sp_disk)
 	jp	diskerrcont
-_retry:	pop	bc
-	pop	de
-	pop	hl
-	ld	c,1
+
+flush_disk_buffers:
+	ld a,(dosversion)
+	cp 2
+	ret c
+
+	ld (flushing_disk_buffers_sp),sp
+
+	ld a,1
+	ld (flushing_disk_buffers),a
+
+	ld bc,0000h+_FLUSH
+	ld d,0FFh
+	call bdos
+flush_disk_buffers_cont:
+	xor a
+	ld (flushing_disk_buffers),a
+	ld sp,(flushing_disk_buffers_sp)
 	ret
+
+;Non-zero while flushing disk buffers.
+;Needed for proper error handling if of flushing fails.
+flushing_disk_buffers: db 0
+
+;Stack pointer to restore if flushing disk buffers fails.
+flushing_disk_buffers_sp: dw 0
 
 printhok	LD	B,(IX)
 	dec	b
@@ -6059,9 +6913,42 @@ textbuffer4	ds	33,0
 databuffer4	ds	13,0
 labelbuffer	ds	9,0
 
+;Non-zero if on success load or save operation disk menu must close
+disk_must_back: db 0
+
+;On DOS 2 stores the last disk error code to be _EXPLAIN-ed
+last_dos_error: db 0
+
+;Stores the disk error received by error handler
+;so that it can be examined by abort handler
+disk_error_handling_errnum: db 0
+
+ABOUT	
+	ld bc,ABOUTPROG
+	jr call_in_debugger
+
+redefchars:
+	ld a,(config_flags)
+	ld bc,REDEFCHARS
+
+call_in_debugger:
+	ld (call_in_debugger_address+1),bc
+	LD	BC,(slotsubroutin)
+	LD	(oldslotsub2+1),BC
+	LD	BC,(slotdebugger)
+	LD	(slotsubroutin),BC
+	CALL	zetslot
+call_in_debugger_address:
+	call	#0000
+oldslotsub2:
+	LD	BC,#0000
+	LD	(slotsubroutin),BC
+	CALL	zetslot
+	RET
+
 ;**************************************************************************
 ;everything from here will be erased (one time use routines on startup)
-buffer1024
+buffer1024:
 
 hook	jr	hookcontinue
 	jr hook_hoofd
@@ -6288,6 +7175,17 @@ startcompass:
 	ld	hl,-512
 	add	hl,sp
 	ld	(#8000+reg_sp),hl
+
+	ld a,e
+	cp 2
+	ld b,5Ah
+	ld hl,1234h
+	ld de,0ABCDh
+	ld ix,0
+	ld c,_DOSVER
+	call nc,bdos
+	ld a,ixh
+	ld (8000h+is_nextor),a
 	
 init_mapper_routines:
 	LD	A,(8000h+stat_mem)
@@ -6428,28 +7326,5 @@ set_hook_data:
 	LD	A,(#8000+slothoofdp+1)	;get block num
 	LD	(hook_blok-hook+hookadres),A
 	ret
-
-ABOUT	
-	ld bc,ABOUTPROG
-	jr call_in_debugger
-
-redefchars:
-	ld a,(config_flags)
-	ld bc,REDEFCHARS
-
-call_in_debugger:
-	ld (call_in_debugger_address+1),bc
-	LD	BC,(slotsubroutin)
-	LD	(oldslotsub2+1),BC
-	LD	BC,(slotdebugger)
-	LD	(slotsubroutin),BC
-	CALL	zetslot
-call_in_debugger_address:
-	call	#0000
-oldslotsub2:
-	LD	BC,#0000
-	LD	(slotsubroutin),BC
-	CALL	zetslot
-	RET
 
 	ds	#4000-$,0	;(fill with padding just to be sure)
