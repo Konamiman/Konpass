@@ -1224,18 +1224,14 @@ fcb_inclbkup	ds	37
 GODISKDRIVE:
 	di
 	ld	(Bronprog),a
-	ld	a,c
-	push bc
-	push ix
-	call change_current_buffer
-	pop ix
-	pop bc
 	ld	(Pointer),ix
 	ld	(Sp_disk),sp
 	ld	hl,(slotsubroutin)
 	ld	(Oldsubrouti),hl
 	ld	a,b
 	ld	(Diskasm),a
+	ld a,c
+	call change_current_buffer
 	xor	a
 	ld	(Formatdone),a
 	ld	(doinclude),a
@@ -1251,6 +1247,8 @@ GODISKDRIVE:
 	ld	a,(Diskasm)
 	or	a
 	jr	nz,_diskasm
+	LD	A,#03	;start on 'DIR'
+	LD	(Diskmenu),A
 	call	setsoort
 	jr	_nodiskasm
 _diskasm	ld	hl,23*80+7
