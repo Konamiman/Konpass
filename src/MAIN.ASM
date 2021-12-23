@@ -1247,8 +1247,12 @@ GODISKDRIVE:
 	ld	a,(Diskasm)
 	or	a
 	jr	nz,_diskasm
+	ld a,(Diskmenu)
+	cp 3
+	jr nc,_okmenuid
 	LD	A,#03	;start on 'DIR'
 	LD	(Diskmenu),A
+_okmenuid:
 	call	setsoort
 	jr	_nodiskasm
 _diskasm	ld	hl,23*80+7
