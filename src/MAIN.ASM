@@ -1314,6 +1314,8 @@ diskhoofd:
 	jp  z,_maybe_disksave
 	cp  "L"-"A"+1
 	jp  z,_maybe_diskload
+	cp  "X"-"A"+1
+	jp  z,_maybe_disk_asm
 	cp  "R"-"A"+1
 	jp  z,_diskdir
 	ld	d,a	;ALWAYS LEAVE !!!
@@ -1954,7 +1956,17 @@ _diskloadcnt:
 	jp	(hl)
 Jp_loads:	defw	_load_asm,_load_asc,_load_bin,_load_data
 	defw	_load_blk,_load_sect
-_disk_asm	ld	a,1
+
+_maybe_disk_asm:
+	ld a,(Diskasm)
+	or a
+	jp z,diskhoofd
+	call	wisdiskbalk
+	ld a,2
+	ld (Diskmenu),a
+	call	zetdiskbalk
+_disk_asm:
+	ld	a,1
 	ld	(Asmbusy),a
 	call	setdirectory
 	call	fcb_create
