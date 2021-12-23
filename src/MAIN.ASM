@@ -1311,9 +1311,9 @@ diskhoofd:
 	cp	"T"-"A"+1
 	jp	z,_disktype
 	cp  "S"-"A"+1
-	jp  z,_disksave
+	jp  z,_maybe_disksave
 	cp  "L"-"A"+1
-	jp  z,_diskload
+	jp  z,_maybe_diskload
 	cp  "R"-"A"+1
 	jp  z,_diskdir
 	ld	d,a	;ALWAYS LEAVE !!!
@@ -1908,6 +1908,10 @@ printload	ld	hl,14*80+(80-10)/2
 	jp	PRINTTEKST
 Loading:	defb	"Loading...",0
 Loaded_at:  defb    "Loaded at:",0
+_maybe_diskload:
+	ld a,(Diskasm)
+	or a
+	jp nz,diskhoofd
 _diskload:
 	ld	a,(matrix+6)
 	cpl
@@ -2246,6 +2250,10 @@ wissaveload:
 	xor	a
 	jp	FILLVRAM
 
+_maybe_disksave:
+	ld a,(Diskasm)
+	or a
+	jp nz,diskhoofd
 _disksave:
 	ld	a,(matrix+6)
 	cpl
