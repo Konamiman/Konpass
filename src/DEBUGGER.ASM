@@ -62,14 +62,10 @@ WISBREAK	jp	wisbreak
 INSERTBREAK	jp	insertbreak
 MAININSTPROG	jp	mainconfig
 SETDEBPARS	jp	loadconfig
-;was SETGETPATH: jp filenames
-	ret
-	ret
-	ret
+SETGETPATH: jp filenames
 SETGETADRES	jp	setgetadres
 ABOUTPROG jp doabout
 REDEFCHARS jp doredefchars
-SETNAMEBUFFERS jp change_current_source_buffer
 PRINTDISKLINES jp print_disk_lines
 
 wisbreak	ld	hl,breakbuf
@@ -100,6 +96,47 @@ loadconfig:
 	ld	bc,maxvbouts+1
 	ldir
 	ret
+
+
+;Get or seet path and file name for a given source buffer
+;
+;Input:
+;A = 0 to update buffer data
+;    <>0 to retrieve buffer data
+;B = buffer number
+;C:0 = 0 for Ascii, 1 for Asm
+;HL = address of path name
+;DE = address of file name
+
+filenames:
+	push	de
+	push	hl
+	ld	de,64+11
+	bit 0,c
+	ld	hl,filbuf_asm-(64+11)
+	jr nz,_filenames1
+	ld	hl,filbuf_asc-(64+11)
+_filenames1:
+	add	hl,de
+	djnz	_filenames1
+	ld	bc,64
+	or	a
+	jr	z,_filenames2
+	pop	de
+	ldir
+	pop	de
+_filenames3:
+	ld	bc,11
+	ldir
+	ret
+_filenames2:
+	ex	de,hl
+	pop	hl
+	ldir
+	pop	hl
+	jr	_filenames3
+filbuf_asm:	ds	4*(64+11),0
+filbuf_asc:	ds	4*(64+11),0
 
 realfkeys	ds	10
 
@@ -5961,85 +5998,6 @@ vormen_sq	db	#10,#10,#10,#ff,#00,#00,#00,#00	;17
 	db	#10,#10,#10,#f0,#00,#00,#00,#00	;27
 	db	#00,#0f,#1f,#1f,#1f,#1f,#0f,#00	;28
 	db	#00,#c0,#e0,#e0,#e0,#e0,#c0,#00	;29
-
-
-; Adjust ASM and ASCII file names in the disk menu
-; when changing the current source buffer
-; (moved here due to exhaustion of space in main segment)
-;
-; Input: E = Old source buffer number
-;        D = New source buffer number
-;        IX = Address of name_asm
-
-change_current_source_buffer:
-	ld a,e
-	or a
-	ret z	;Nothing to do if no old buffer number
-	cp d
-	ret z	;Nothing to do if not actually changing the buffer number
-
-	push de
-
-	;First backup the current name_asm and name_asc
-	;into the appropriate entries in names_asm_for_buffers
-	;and names_asc_for_buffers for the old buffer.
-	
-	call get_buffer_name_asm_address
-	push hl
-	ex de,hl
-	push ix
-	pop hl
-	ld bc,11
-	ldir	;HL points now to name_asc
-	ex de,hl
-	pop hl
-	ld bc,4*11
-	add hl,bc	;Entry in asc buffer = entry in asm buffer + 11*4
-	ex de,hl
-	ld bc,11
-	ldir
-
-	;Now set the name from the asm and asc buffers into
-	;the appropriate entries in names_asm_for_buffers
-	;and names_asc_for_buffers for the new buffer.
-
-	pop af
-
-	call get_buffer_name_asm_address
-	push hl
-	push ix
-	pop de
-	ld bc,11
-	ldir	;DE points now to name_asc
-	pop hl
-	ld bc,4*11
-	add hl,bc	;Entry in asc buffer = entry in asm buffer + 11*4
-	ld bc,11
-	ldir
-	ret
-
-;Input:  A = Buffer num, 1-4
-;Output: HL = Address in names_asm_for_buffers
-get_buffer_name_asm_address:
-	ld hl,names_asm_for_buffers-11
-	ld b,a
-	ld de,11
-_get_buf_name_asm_address_loop:
-	add hl,de
-	djnz _get_buf_name_asm_address_loop
-	ret
-
-;ASM and ASCII file names for each source buffer
-names_asm_for_buffers:
-	db "NAME    ASM"
-	db "NAME    ASM"
-	db "NAME    ASM"
-	db "NAME    ASM"
-names_asc_for_buffers:
-	db "NAME    ASC"
-	db "NAME    ASC"
-	db "NAME    ASC"
-	db "NAME    ASC"
 
 
 ;Print the disk menu frame and fixed texts
