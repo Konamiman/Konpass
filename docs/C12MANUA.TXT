@@ -546,21 +546,27 @@ programend
 ASSEMBLE TO TSR:
 Assemble your source directly to a Terminate and Stay Resident program, to be 
 used with MemMan.
+
 In this case assembling will take place in three passes. The actual code will 
 be written to disk during the third pass. For more info on TSR's we suggest 
 that you get a copy of the TSR development kit of MST. See chapter 13 for more 
 info on the .TSRHOOKS directive, needed for assembling a TSR.
 
 ASSEMBLE TO RELOCATEABLE:
-This will compile the code into a relocateable fileformat. This fileformat can 
-be placed anywhere in memory or glued together with other programs using a 
-linker.
+This will compile the code into a relocateable file format. This file format 
+can be placed anywhere in memory or glued together with other programs using 
+a linker.
 
 This can be very useful if you have a greater project. You can split your 
 source in different small modules. If you make a modification to one of these 
 modules, only this small module has to be reassembled instead of the entire 
 source.
+
 For the moment it is still necessary to use an external linkerprogram.
+
+NOTE: when the disk menu is entered via "Assemble to disk/TSR/REL", 
+the keyboard shortcut [CTRL] + [X] is available to trigger the assembly 
+process as if the "Assemble" option had been selected.
 
 REGISTERS:
 This option is used to alter the registers of the Z80/R800 before you use the 
@@ -1251,20 +1257,21 @@ stackspace.
 6. Disk
 -------
 
-The diskmenu can be reached by selecting the option DISK from the SYSTEM 
-menu. Most people prefer to use the short-cut [CTRL] + [D]
+The disk menu can be reached by selecting the option DISK from the SYSTEM 
+menu. Most people will prefer to use the short-cut [CTRL] + [D].
 
 6.1 Disk screen & controls
-The diskmenu replaces the entire desktop. At the top some important settings 
-are displayed like the current sourcebuffer (only if you came from the 
+
+The disk menu replaces the entire desktop. At the top some important settings 
+are displayed like the current source buffer (only if you came from the 
 assembler), backup settings and the currently selected filetype.
-Below this a line is reserved to display the path and most of the desktop is 
-used to display the directory contents. At the bottom the possible options 
+Below there is a line is reserved to display the path and most of the desktop 
+is used to display the directory contents. At the bottom the possible options 
 are displayed respectively SAVE, LOAD, DIR, TYPE, MKDIR, KILL and FORMAT. At 
 the right of these options the filename is displayed that will be used to 
 perform these operations upon.
 
-To enter a filename just start typing the name. If you are entering a name 
+To enter a file name just start typing the name. If you are entering a name 
 you can press [ESC] to undo the modifications, the old name will then 
 reappear. 
 
@@ -1274,24 +1281,29 @@ time you want to overwrite an existing ASM-file this will be backuped to
 using the same name but with the extension BAK. Previous backups of the same 
 file will be lost. The value asc will do the same for ASCII files.
 
-Use the keys [CTRL] + [T] to change the current filetype which you want to 
-handle. See also chapter 6.2 and 6.3.
+Use the keys [CTRL] + [T] to change the current file type which you want to 
+handle. There are also keyboard shortcuts for direct selection of the new 
+file type, see also chapters 6.2 and 6.3.
 
-Use the keys [CTRL] + [1] until [4] to change the current sourcebuffer. This 
-option can be used when you entered the diskmenu from the assembler. This is 
+Use the keys [CTRL] + [1] until [4] to change the current source buffer. This 
+option can be used when you entered the disk menu from the assembler. This is 
 a very useful way to load or save multiple sources without the need to 
-repeatedly switch to the assembler just to switch from one sourcebuffer to 
+repeatedly switch to the assembler just to switch from one source buffer to 
 another.
+
 Each source does have its own name buffer, so there isn't any need to be 
 concerned to accidentally overwrite a file because of forgetting to alter the 
-name when you changed the sourcebuffer.
+name when you changed the sourcebuffer. There are two separate sets of name 
+buffers, one for Assembler files and another one for Ascii files.
 
-Pressing [ESC] ends the diskmenu and takes you back to the Compass part from 
-which you summoned the diskmenu.
+Pressing [ESC] ends the disk menu and takes you back to the Compass part from 
+which you summoned the disk menu.
 
 6.2 File types
+
 Compass gives you to the opportunity to operate on different kind of files. 
 these type are:
+
 Assembler files (only from within the assembler)
 Ascii files     (only from within the assembler)
 Binary files
@@ -1299,15 +1311,28 @@ Data files
 Block files     (only from within the assembler)
 Sector          (not really a file but nevertheless useful)
 
-Notice the fact that if the diskmenu is invoked from within the monitor or 
+Apart from using the TYPE menu or pressing [CTRL] + [T], you can change the 
+current file type via the following keyboard shortcuts:
+
+CTRL + E: Set "Assembler" file type (only from within the assembler)
+CTRL + I: Set "Ascii" file type (only from within the assembler)
+CTRL + D: Set "Data" file type
+CTRL + Y: Set "Binary" file type
+CTRL + K: Set "Block" file type (only from within the assembler)
+CTRL + O: Set "Sector" type
+CTRL + X: Assemble (only from within "Assemble to disk/REL/TSR")
+
+Notice the fact that if the disk menu is invoked from within the monitor or 
 debugger you only have access to 3 of the 6 possibilities.
 
 ASSEMBLER FILES
 One of the most nice things in Compass is its ability to quickly load and 
 save sources. This is possible by using this new type of file, the assembler 
 file.
+
 These files contain the total of all the necessary structures that Compass 
 uses to store sources in memory.
+
 Since this is a memory dump of the source and data buffers no conversion is 
 needed when sources are saved or loaded this way. Of course since all this 
 extra info is saved the files will usually be bigger then the same source 
@@ -1318,22 +1343,23 @@ Of course Compass would be quite useless for most people if the old trusted
 ASCII file couldn't be read (and saved of course). This option, in 
 combination with the AUTO-ALIGN, gives you also the possibility to read and 
 write normal textfiles in the editor. It can be very useful to have a nice 
-reference online in an other sourcebuffer like the BIOS overview text.
+reference online in an other source buffer like the BIOS overview text.
 
 BINARY FILES
 To store and retrieve chunks of memory Compass supports the BASIC bload 
-format. These files contain a seven bytes header (db #FE, dw start, dw end, 
+format. These files contain a seven bytes header (db FEh, dw start, dw end, 
 dw begin_execution) followed by the data itself. When saving you will be 
 prompted to enter the addresses needed for the header. When loading this 
 address will determine the destination address of the block in memory.
 
 DATA FILES
-These are raw datafiles, with no header. Therefore when loading such a block 
+These are raw data files, with no header. Therefore when loading such a block 
 of bytes you will be asked where the file must be placed in memory. The 
 ending address for loading is also asked, this will automatically contain the 
 address where the last byte should be placed if the entire file is read. By 
 changing this address you can stop reading before the end of the file is 
 read.
+
 The begin and end address will be asked when saving and the memory will 
 simply be dumped in a file. 
 
@@ -1346,36 +1372,74 @@ current buffer. This block will be selected when you return to the assembler.
 SECTORS
 Compass is capable of directly working with sectors (very nice if you want to 
 alter the boot record of the disk for example). THIS IS OF COURSE VERY 
-DANGEROUS ! By typing a wrong sector number or by mistake overwriting a wrong 
+DANGEROUS! By typing a wrong sector number or by mistake overwriting a wrong 
 disk you can permanently lose vital data on the disk.
-Be very very cautious. This option is only valid if you want to change data 
-on a floppy. For safety reasons this option will have no effect when trying 
-to write sectors on your harddisk.
+
+Be very very cautious. For safety reasons confirmation will be asked before 
+actually writing sectors. In previous versions of Compass you wouldn't be 
+allowed to write sectors to a hard disk or another non-floppy media (any 
+media with a media id lower than F8h is considered non-floppy), this 
+restriction has been removed but a "Not a floppy disk !" warning message 
+will be shown for these media.
+
+If you run Nextor you'll be able to read and write sectors from/to any media, 
+regardless of the contained filesystem and even when there's no filesystem 
+at all. Note however that currently access is limited to the first 32MB of 
+the device, regardless of its size.
+
 You will be asked for the source address, the first sector on disk and the 
 number of sectors when saving. The same data will be asked when trying to 
 read.
 
-6.3 Diskmenu
-The diskmenu contains the options SAVE, LOAD, DIR, TYPE, MKDIR, KILL, FORMAT. 
-The first two are already handled in the according filetypes.
+6.3 Disk menu
+
+The disk menu contains the options SAVE, LOAD, DIR, TYPE, MKDIR, KILL, FORMAT. 
+
+SAVE
+Use this to save from a source buffer or memory to a file or to disk sectors 
+(depending on the selected file type). If you keep pressed CTRL while 
+triggering the execution of this option the disk menu will close after the 
+operation finishes successfully (but not if there's an error).
+
+You can use the keyboard shortcut [CTRL] + [S] to trigger this action as well 
+(in this case the disk menu will always close on success).
+
+LOAD
+Use this to load from a file or from sectors to the a source buffer or to 
+memory (depending on the selected file type). If you keep pressed CTRL while 
+triggering the execution of this option the disk menu will close after the 
+operation finishes successfully (but not if there's an error).
+
+You can use the keyboard shortcut [CTRL] + [L] to trigger this action as well 
+(in this case the disk menu will always close on success).
 
 DIR
-This is the default option when you enter the diskmenu, this should prevent 
+This is the default option when you enter the disk menu, this should prevent 
 accidentally destroying data.
-If you choose this option you can enter a path in the pathline. When this is 
+
+If you choose this option you can enter a path in the path line. When this is 
 done and the pathname is valid then the contents of this directory is 
-displayed. Use the cursorkeys and space to choose a file in the list. If a 
+displayed. Use the cursor keys and space to choose a file in the list. If a 
 name is surrounded by brackets then this is a directory name.
+
 Choosing a directory will result in the displaying its contents and the 
 modification of the pathname. If a directory has too many entries to display 
 you will be asked if you want to continue to the other names not on screen.
-If you have chosen a name this name will be displayed in the nameselection 
-and the selectionbar will return to the menu options.
+If you have chosen a name this name will be displayed in the name selection 
+and the selection bar will return to the menu options.
+
+If you type a directory name in the path line, keeping pressed CTRL while 
+confirming the path will result in the directory being listed instead of 
+being entered. Also, while navigating the directory entries, keeping pressed 
+CTRL while a directory is selected will select the directory as if it was 
+a file, instead of entering it (except for ".." entries). This may be useful 
+if you want to delete the directory using the KILL option.
 
 TYPE
 This has the same effect as pressing [CTRL]+[T]. The different filetypes are 
 handled in chapter 6.2. Remember the difference between the assembler and the 
-monitor/debugger menu !
+monitor/debugger menu! Also remember that there are direct keyboard shortcuts 
+for file type selection, see section 6.2.
 
 MKDIR
 This makes a new directory in the current subdirectory. The current filename 
@@ -1384,14 +1448,19 @@ course.
 
 KILL
 This option will first ask for confirmation before actually destroying the 
-file.
+file. In MSX-DOS 2 it can be used to delete a directory too, provided that 
+the directory is empty.
 
 FORMAT
 The type of formatting will be asked and the formatting will begin 
-immediately when the choice is made. NO FURTHER CONFIRMATION IS ASKED ! Be 
-sure you have put the right disk in the diskdrive. Also the labelbuffer will 
-be erased for this action so after a format the labelinformation built up 
+immediately when the choice is made. NO FURTHER CONFIRMATION IS ASKED! Be 
+sure you have put the right disk in the diskdrive. Also the label buffer will 
+be erased for this action so after a format the label information built up 
 during assembling is gone.
+
+Some disk controllers allow formatting but don't offer a format type choice 
+(since there's only one format type), in this case a simple "Are you sure?" 
+confirmation message will be shown before the formatting process begins.
 
 
 7. Memory
