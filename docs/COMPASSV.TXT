@@ -1,3 +1,8 @@
+NOTE: This file is not maintained anymore. For the list of changes in 
+Compass 1.2.10 and newer versions, refer to the releases section in the 
+GitHub repository (https://github.com/Konamiman/Compass).
+
+
 File: COMPASSV.TXT - 12/04/2000
 Subject: Compass version history
 By: Compjoetania The Next Generation
