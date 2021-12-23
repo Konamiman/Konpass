@@ -62,7 +62,10 @@ WISBREAK	jp	wisbreak
 INSERTBREAK	jp	insertbreak
 MAININSTPROG	jp	mainconfig
 SETDEBPARS	jp	loadconfig
-SETGETPATH	jp	filenames
+;was SETGETPATH: jp filenames
+	ret
+	ret
+	ret
 SETGETADRES	jp	setgetadres
 ABOUTPROG jp doabout
 REDEFCHARS jp doredefchars
@@ -97,28 +100,6 @@ loadconfig:
 	ld	bc,maxvbouts+1
 	ldir
 	ret
-
-filenames	push	de
-	push	hl
-	ld	hl,filbuf-(64+11)
-	ld	de,64+11
-_filenames1	add	hl,de
-	djnz	_filenames1
-	ld	bc,64
-	or	a
-	jr	z,_filenames2
-	pop	de
-	ldir
-	pop	de
-_filenames3	ld	bc,11
-	ldir
-	ret
-_filenames2	ex	de,hl
-	pop	hl
-	ldir
-	pop	hl
-	jr	_filenames3
-filbuf	ds	4*(64+11),0
 
 realfkeys	ds	10
 

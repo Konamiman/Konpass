@@ -282,17 +282,12 @@ data_2_editor	CALL	getreg
 	PUSH	HL
 	LD	HL,#400F	;parse registers to editor(at 1st time)
 	JP	GOTOEDITOR
-fill_NAMEASM	LD	HL,pathnamebuf	;use max. 64 bytes from the
+fill_NAMEASM:
+	LD	HL,pathnamebuf	;use max. 64 bytes from the
 	LD	DE,pathname	;pathnamebuffer
 	LD	BC,64
 	LDIR
-	LD	B,#04
-nxt_name_deb	PUSH	BC
-	XOR	A	;load 4 filenames+path in debugger
-	CALL	parse_nam_deb	;this routine happens to be in the
-	POP	BC	;debugger segment
-	DJNZ	nxt_name_deb
-	RET
+	ret
 
 chk_comline	LD	A,(#0080)	;is there anything else on the command line?
 	OR	A
@@ -2245,6 +2240,9 @@ printsave:
 	pop af
 	ret
 wissaveload:
+	ld a,(Diskasm)
+	or a
+	ret nz
 	ld	hl,14*80+(80-40)/2
 	ld	bc,40
 	xor	a
@@ -2509,45 +2507,30 @@ jon1:
 	LD	A,(Diskasm)
 	OR	A
 	JR	NZ,_jon12
-	LD	A,(Soort)
-	CP	1
-	JR	Z,_jon11
 	LD	HL,pathname
 	LD	DE,pathnamebuf
 	LD	BC,64
 	LDIR
 	RET
-_jon11	LD	A,(Buffer)
-	LD	B,A
-parse_nam_deb	LD	HL,pathnamebuf
-	LD	DE,name_asm
-	PUSH	HL
-	LD	HL,#400F
-	JP	GOTODEBUGGER
-_jon12	PUSH	AF
-	CALL	_jon11
-	POP	BC
+
+_jon12:
+	ld b,a
 	LD	HL,name_com1
 	LD	DE,11
-_jon13	ADD	HL,DE
+_jon13:
+	ADD	HL,DE
 	DJNZ	_jon13
 	EX	DE,HL
 	LD	HL,name_asm
 	LD	BC,8
 	LDIR
 	RET
-jon2	LD	A,(Soort)
-	CP	1
-	JR	Z,_jon21
+jon2:
 	LD	HL,pathnamebuf
 	LD	DE,pathname
 	LD	BC,64
 	LDIR
 	RET
-_jon21	LD	A,(Buffer)
-	LD	B,A
-	XOR	A
-	JR	parse_nam_deb
 
 ;--input pathname
 inputpath:
@@ -6048,7 +6031,6 @@ Sp_disk:	defw	0
 ;  2 = abort
 
 Specialerr1:
-	;set 7,c
 	ld a,(flushing_disk_buffers)
 	or a
 	ld a,1	;Abort if we are in the middle of flushing disk buffers
