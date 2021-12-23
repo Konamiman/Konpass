@@ -60,8 +60,7 @@ MAININSTPROG	equ	#4009	;in debugger segment
 SETDEBPARS	equ	#400c	;in debugger segment
 ABOUTPROG equ #4015 	;in debugger segment
 REDEFCHARS equ #4018 	;in debugger segment
-SETNAMEBUFFERS equ #401B	;in debugger segment
-PRINTDISKLINES equ #401E	;in debugger segment
+PRINTDISKLINES equ #401B	;in debugger segment
 
 ;--------------------------------------------
 	ORG	#0140
@@ -287,6 +286,27 @@ fill_NAMEASM:
 	LD	DE,pathname	;pathnamebuffer
 	LD	BC,64
 	LDIR
+
+	ld a,(Soort)
+	push af
+	ld a,1
+	ld (Soort),a
+	call init_asm_asc_filename_buffers
+	ld a,2
+	ld (Soort),a
+	call init_asm_asc_filename_buffers
+	pop af
+	ld (Soort),a
+	ret
+
+init_asm_asc_filename_buffers:
+	LD	B,4
+nxt_name_deb:
+	PUSH	BC
+	XOR	A	;load 4 filenames+path in debugger for ASM
+	CALL	parse_nam_deb
+	POP	BC
+	DJNZ	nxt_name_deb
 	ret
 
 chk_comline	LD	A,(#0080)	;is there anything else on the command line?
@@ -554,14 +574,6 @@ slotass	equ	tab_compass+4	;ok
 slotmonitor	equ	tab_compass+4	;ok
 slotdebugger	equ	tab_compass+6	;ok
 slotsubroutin	db	0,2
-
-change_current_buffer:
-	ld de,(Buffer)
-	ld d,a
-	ld (Buffer),a
-	ld ix,name_asm
-	ld bc,SETNAMEBUFFERS
-	jp call_in_debugger
 
 slotregister	PUSH	BC
 	PUSH	DE
@@ -1174,6 +1186,8 @@ set_file_type_no_sector:
 	ld (Soort),a
 	call printtype
 	call prtfilenaam
+	call jon1
+	call printpath
 	scf
 	ret
 
@@ -1231,7 +1245,7 @@ GODISKDRIVE:
 	ld	a,b
 	ld	(Diskasm),a
 	ld a,c
-	call change_current_buffer
+	ld (Buffer),a
 	xor	a
 	ld	(Formatdone),a
 	ld	(doinclude),a
@@ -1434,7 +1448,7 @@ _ctrl1234	call	WISKEYBUFFER
 	pop	bc
 	jp	c,diskhoofd
 	ld	a,b
-	call change_current_buffer
+	ld (Buffer),a
 	call	jon1
 	jp	diskhoofdprt
 _ctrl1234_1	push	hl
@@ -2529,14 +2543,35 @@ jon1:
 	LD	A,(Diskasm)
 	OR	A
 	JR	NZ,_jon12
+	LD	A,(Soort)
+	CP	3
+	JR	C,_jon11
 	LD	HL,pathname
 	LD	DE,pathnamebuf
 	LD	BC,64
 	LDIR
 	RET
-
+_jon11:
+	LD	A,(Buffer)
+	LD	B,A
+parse_nam_deb:
+	ld h,a
+	ld a,(Soort)
+	ld c,a
+	dec a
+	LD	DE,name_asm
+	jr z,parse_nam_deb_2
+	LD	DE,name_asc
+parse_nam_deb_2:
+	ld a,h
+	LD	HL,pathnamebuf
+	PUSH	HL
+	LD	HL,#400F
+	JP	GOTODEBUGGER
 _jon12:
-	ld b,a
+	PUSH	AF
+	CALL	_jon11
+	POP	BC
 	LD	HL,name_com1
 	LD	DE,11
 _jon13:
@@ -2548,11 +2583,19 @@ _jon13:
 	LDIR
 	RET
 jon2:
+	LD	A,(Soort)
+	CP	3
+	JR	C,_jon21
 	LD	HL,pathnamebuf
 	LD	DE,pathname
 	LD	BC,64
 	LDIR
 	RET
+_jon21:
+	LD	A,(Buffer)
+	LD	B,A
+	XOR	A
+	JR	parse_nam_deb
 
 ;--input pathname
 inputpath:
