@@ -1,4 +1,4 @@
-;program to create konpass.dat #1.2.xx
+;program to create konpass.dat #1.3.xx
 ;for dos 1 and 2
 
 	;input
@@ -174,7 +174,7 @@ txt_writing	db	" writing...",13,10,"$"
 txt_info	db	"Program to link all Konpassblocks together.",13,10,"$"
 txt_uitleg	db	"Usage: makedat xx with xx two characters (subversion#)"
 	db	13,10,10,"$"
-header	db	13,"Konpass #1.2."
+header	db	13,"Konpass #1.3."
 versie	db	"xx"
     db    "2022 by Konamiman",13,10
     db 10

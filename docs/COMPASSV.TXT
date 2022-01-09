@@ -1,5 +1,5 @@
 NOTE: This file is not maintained anymore. For the list of changes in 
-Compass 1.2.10 and newer versions, refer to the releases section in the 
+Compass 1.3 and newer versions, refer to the releases section in the 
 GitHub repository (https://github.com/Konamiman/Compass).
 
 

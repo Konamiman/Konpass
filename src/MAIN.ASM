@@ -1,4 +1,4 @@
-;MAIN PROGRAM KONPASS #1.2
+;MAIN PROGRAM KONPASS #1.3
 ;#1.2.09: DOINCLUDE SEPARATE FCB
 
 	.label	13
@@ -364,7 +364,7 @@ setcolors	DI
 	OTIR
 	RET
 txt_bovenaan	dw	1	;vramaddress
-	db	"Konpass #1.2",0
+	db	"Konpass #1.3",0
 	dw	62
 	db	"2022 by Konamiman",0
 	dw	0

@@ -1,4 +1,4 @@
-How to build Konpass 1.2
+How to build Konpass 1.3
 ------------------------
 
 

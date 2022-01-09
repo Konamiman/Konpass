@@ -1,4 +1,4 @@
-;Konpass #1.2 - Editor
+;Konpass #1.3 - Editor
 
 ;compile with 'assemble to disk' (due to doubleusepage)
 

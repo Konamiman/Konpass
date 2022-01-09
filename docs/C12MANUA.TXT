@@ -1,4 +1,4 @@
-Konpass #1.2.10
+Konpass #1.3
 By Konamiman, 2022
 
 Based on Compass 1.2.09
@@ -26,7 +26,7 @@ Compass 1.2.09, was published, I've had plenty of time to notice some small
 quirks/bugs/annoyances on it. And with the source code available for everyone 
 I couldn't resist to put my hands on it and implement all the fixes and 
 improvements I always wanted to see in Compass, and the result was 
-Konpass 1.2.10, a refresh of the good old product. No more, no less.
+Konpass 1.3, a refresh of the good old product. No more, no less.
 
 I hope that I have made Konpass an even better assembler IDE for MSX. Please 
 feel free to suggest further improvements (or even submit pull requests!) in 
@@ -92,7 +92,7 @@ looked at whenever the author has some spare time (but you can always submit
 pull requests yourself, of course!)
 
 And this is the repository for Compass 1.2.09, in whose sources Konpass 
-1.2.10 and later versions is based:
+1.3 and later versions is based:
 
 https://github.com/turbor/compass-1.2-sources
 
