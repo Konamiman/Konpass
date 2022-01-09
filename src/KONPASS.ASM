@@ -13,7 +13,7 @@
 
 header:
     db    13,"Konpass #1.3 DATfile",13,10
-    db    "2022 by Konamiman",13,10
+    db    "(C) 2022 by Konamiman",13,10
     db 10
     db    "Based on Compass #1.2.09, (C)1998 by Compjoetania TNG",13,10,26
 header_end:

@@ -1,10 +1,10 @@
 Konpass #1.3
-By Konamiman, 2022
+(C) Konamiman, 2022
 
 Based on Compass 1.2.09
-(c)1998 Compjoetania The Next Generation
+(C) 1998 Compjoetania The Next Generation
 
-MSX, MSX-DOS and R800 are trademarks of ASCII Corp.
+MSX, MSX-DOS and R800 are trademarks of the MSX Licensing Corporation.
 Z80 is a trademark of ZILOG Corp.
 MemMan is developed by the Msx Software Team
 
@@ -255,7 +255,7 @@ This number will change when a new mainversion is distributed.
 (The complete version number can be obtained by displaying the KONPASS.COM or 
 KONPASS.DAT file in some textviewer, or in the "About" menu.)
 
-On the right side the announcement '2022 Konamiman'. Between these two 
+On the right side the announcement '(C) 2022 Konamiman'. Between these two 
 messages you'll find the name of the currently selected program part of 
 Konpass.
 
