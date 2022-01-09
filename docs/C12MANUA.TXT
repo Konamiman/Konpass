@@ -6,7 +6,7 @@ Based on Compass 1.2.09
 
 MSX, MSX-DOS and R800 are trademarks of the MSX Licensing Corporation.
 Z80 is a trademark of ZILOG Corp.
-MemMan is developed by the Msx Software Team
+MemMan is developed by the Msx Software Team.
 
 Despite all the care taken by the production of this text, the author 
 can not be held responsible for any possible damage resulting from errors 
@@ -16,21 +16,22 @@ contained in this document.
 Preface
 -------
 
-In October 2021 Compass, originally a paid product, was published for free 
-including its source code. I've been a huge fan of Compass since version 1.0 
-was published in 1995, and it's my main tool when I'm developing 
-(or debugging) directly on my MSX.
+In October 2021 Compass, the best assembler IDE ever made for MSX and 
+originally a paid product, was published for free including its source code. 
+I've been a huge fan of Compass since version 1.0 was published in 1995, 
+and it's my main tool when I'm developing (or debugging) directly on my MSX.
 
 In the more than 20 years that have passed since the last version, 
 Compass 1.2.09, was published, I've had plenty of time to notice some small 
 quirks/bugs/annoyances on it. And with the source code available for everyone 
 I couldn't resist to put my hands on it and implement all the fixes and 
-improvements I always wanted to see in Compass, and the result was 
+improvements I always wanted to see in Compass. So I did and the result was 
 Konpass 1.3, a refresh of the good old product. No more, no less.
 
-I hope that I have made Konpass an even better assembler IDE for MSX. Please 
-feel free to suggest further improvements (or even submit pull requests!) in 
-the Konpass repository I have created (address in section 1.1).
+I hope that I have made Konpass an even better assembler IDE for MSX than the 
+awesome Compass. Please feel free to suggest further improvements (or even 
+submit pull requests!) in the Konpass repository I have created (address is in 
+section 1.1).
 
 January 2022, Konamiman
 
@@ -87,31 +88,31 @@ The latest version of Konpass is available in its GitHub repository:
 https://github.com/Konamiman/Konpass
 
 This is also the place to report bugs and suggest improvements. Please note 
-that Konpass is now a hobbyist project, so bugs/suggestions will be 
-looked at whenever the author has some spare time (but you can always submit 
+that Konpass is a hobbyist project, so bugs/suggestions will be looked at 
+whenever the author has some spare time (but you can always submit 
 pull requests yourself, of course!)
 
 And this is the repository for Compass 1.2.09, in whose sources Konpass 
-1.3 and later versions is based:
+is based:
 
 https://github.com/turbor/compass-1.2-sources
 
 See the version of this same file in that repository if you are curious about 
 what were the contact details and the available service options for the 
-original product.
+original product. You can also take a look at the COMPASSV.TXT file for the 
+versions history of the original Compass (that file is no longer maintained 
+for Konpass).
 
 
 1.2 Contents of the release
 
 The Konpass release consists of the following files:
 
-   * The program Konpass:
+   * The Konpass program itself:
      KONPASS.COM
      KONPASS.DAT
-   * This manual in TXT format
+   * This manual in TXT format:
      C12MANUA.TXT
-   * Konpass version history list
-     COMPASSV.TXT
 
 Note: once "Save configuration" is executed, and extra KONPASS.CFG file
 will be created. See chapter 10.
