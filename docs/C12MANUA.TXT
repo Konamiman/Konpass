@@ -1,4 +1,4 @@
-Compass #1.2.10
+Konpass #1.2.10
 By Konamiman, 2022
 
 Based on Compass 1.2.09
@@ -26,11 +26,11 @@ Compass 1.2.09, was published, I've had plenty of time to notice some small
 quirks/bugs/annoyances on it. And with the source code available for everyone 
 I couldn't resist to put my hands on it and implement all the fixes and 
 improvements I always wanted to see in Compass, and the result was 
-Compass 1.2.10, a refresh of the good old product. No more, no less.
+Konpass 1.2.10, a refresh of the good old product. No more, no less.
 
-I hope that I have made Compass an even better assembler IDE for MSX. Please 
+I hope that I have made Konpass an even better assembler IDE for MSX. Please 
 feel free to suggest further improvements (or even submit pull requests!) in 
-the Compass repository I have created (address in section 1.1).
+the Konpass repository I have created (address in section 1.1).
 
 January 2022, Konamiman
 
@@ -80,18 +80,18 @@ important information about the program as a whole and the contents of the
 package.
 
 
-1.1 Getting Compass
+1.1 Getting Konpass
 
-The latest version of Compass is available in its GitHub repository:
+The latest version of Konpass is available in its GitHub repository:
 
-https://github.com/Konamiman/Compass
+https://github.com/Konamiman/Konpass
 
 This is also the place to report bugs and suggest improvements. Please note 
-that Compass is now a hobbyist project, so bugs/suggestions will be 
+that Konpass is now a hobbyist project, so bugs/suggestions will be 
 looked at whenever the author has some spare time (but you can always submit 
 pull requests yourself, of course!)
 
-And this is the repository for Compass 1.2.09, in whose sources Compass 
+And this is the repository for Compass 1.2.09, in whose sources Konpass 
 1.2.10 and later versions is based:
 
 https://github.com/turbor/compass-1.2-sources
@@ -103,17 +103,17 @@ original product.
 
 1.2 Contents of the release
 
-The Compass release consists of the following files:
+The Konpass release consists of the following files:
 
-   * The program Compass:
-     COMPASS.COM
-     COMPASS.DAT
+   * The program Konpass:
+     KONPASS.COM
+     KONPASS.DAT
    * This manual in TXT format
      C12MANUA.TXT
-   * Compass version history list
+   * Konpass version history list
      COMPASSV.TXT
 
-Note: once "Save configuration" is executed, and extra COMPASS.CFG file
+Note: once "Save configuration" is executed, and extra KONPASS.CFG file
 will be created. See chapter 10.
 
 Originally Compass was distributed on a floppy disk that contained additional 
@@ -123,25 +123,25 @@ visit the GitHub repository for Compass 1.2.09 (see section 1.1).
 
 1.3 Configuration
 
-Compass runs on every MSX2, MSX2+ and MSX Turbo R computer with a memory 
+Konpass runs on every MSX2, MSX2+ and MSX Turbo R computer with a memory 
 mapper of at least 128KB Ram, though for convenient use, we recommend a 
 memory capacity of at least 256KB. 'Fixed' rammodules (this is: not 
 mapped ram) are not supported. (And you'll need a double-sided disk drive 
 for the original floppy disk to work of course.)
 
-Compass supports the following configurations :
+Konpass supports the following configurations :
 
 * MSX-DOS 2.xx: If you have DOS 2.xx you are able to browse through
   subdirectories and you can take advantage of the DOS 2.xx Ramdisk.
-* MEMORY MAPPER: Compass supports multiple memory mappers.
-* MSX TURBO-R:  If you run Compass on an MSX Turbo R you are able to switch
+* MEMORY MAPPER: Konpass supports multiple memory mappers.
+* MSX TURBO-R:  If you run Konpass on an MSX Turbo R you are able to switch
   between the Z80 and R800 (ROM/DRAM) processor.
-* HARDDISK: You are able to install Compass on your harddisk, just place
-  the COMPASS.COM and COMPASS.DAT files in the same directory.
-* MemMan 2.42: Compass uses -if already installed- the memory management
+* HARDDISK: You are able to install Konpass on your harddisk, just place
+  the KONPASS.COM and KONPASS.DAT files in the same directory.
+* MemMan 2.42: Konpass uses -if already installed- the memory management
   routines provided by MemMan. This allows you to use TSR's while
-  you are using Compass. If you don't use MemMan then Compass will use the
-  routines provided by DOS 2.xx . If you don't use either of them, Compass will
+  you are using Konpass. If you don't use MemMan then Konpass will use the
+  routines provided by DOS 2.xx . If you don't use either of them, Konpass will
   resort to its own memory routines. You can find MemMan 2.42 and the
   accompanying programs in a packed archive on the disk.
 * Nextor: If you run Nextor you have a couple of extra perks. Currently these 
@@ -149,14 +149,14 @@ Compass supports the following configurations :
   filesystem it contains, and seeing the real free disk space in drives with 
   a capacity of more than 32MB.
 
-Compass uses screen 0 in 80 columns mode. This mode is slightly altered to
-display 26.5 lines and 4 colors. The assembler in Compass also uses some Vram,
+Konpass uses screen 0 in 80 columns mode. This mode is slightly altered to
+display 26.5 lines and 4 colors. The assembler in Konpass also uses some Vram,
 but this amount will never exceed the address space from #00000 up to #07FFF.
 
 
-1.4 Booting Compass
+1.4 Booting Konpass
 
-The version of Compass that you'll find on the disk is a COM file which has 
+The version of Konpass that you'll find on the disk is a COM file which has 
 to be launched using MSX-DOS or Nextor. The two files that make up MSX-DOS are:
 
 * MSXDOS.SYS and COMMAND.COM for MSX-DOS 1.xx
@@ -164,27 +164,27 @@ to be launched using MSX-DOS or Nextor. The two files that make up MSX-DOS are:
 * NEXTOR.SYS (or MSXDOS2.SYS) and COMMAND2.COM for Nextor
 
 These files are available in the original repository for Compass 1.2.09 (see 
-section 1.1). You can copy the files COMPASS.COM and COMPASS.DAT to a disk 
+section 1.1). You can copy the files KONPASS.COM and KONPASS.DAT to a disk 
 containing these MSX-DOS files, or just launch MSX-DOS and swap the disks. 
-Alternatively you can copy the Compass files to a directory on your hard disk. 
+Alternatively you can copy the Konpass files to a directory on your hard disk. 
 When you have started MSX-DOS just type :
 
-        A>COMPASS [RETURN]
+        A>KONPASS [RETURN]
 
-Compass will first perform some hardware checks on your computer. 
+Konpass will first perform some hardware checks on your computer. 
 If your computer crashes here, then there is something wrong with your 
 hardware. (For example: random memory errors when working on a 7MHz MSX2. 
 These hardware problems are very difficult to trace.) If everything went 
-fine, you'll see the amount of mapped memory Compass has detected. 
-Also what kind of memory management that will be used. Compass can 
+fine, you'll see the amount of mapped memory Konpass has detected. 
+Also what kind of memory management that will be used. Konpass can 
 run in four memory management conditions:
 
-* DOS1: no memory management, Compass will use its own routines.
-* DOS1+MemMan: MemMan will take care of Compass memory management. Due to some 
+* DOS1: no memory management, Konpass will use its own routines.
+* DOS1+MemMan: MemMan will take care of Konpass memory management. Due to some 
   unknown problems (probably MemMan) this setting will cause the computer to 
   crash. So we do not recommend to use MemMan in DOS1 environment.
 * DOS1 + mapper support routines: if mapper support routines are installed 
-  in DOS1 Compass will use these as if it was running in DOS2.
+  in DOS1 Konpass will use these as if it was running in DOS2.
   The mapper support routines can be installed in DOS1 using the MSR.COM tool 
   available at Konamiman's MSX page (http://www.konamiman.com).
 * DOS2: memory management performed by the DOS2 mapper support routines.
@@ -193,31 +193,31 @@ run in four memory management conditions:
 If you use MemMan, we recommend to use the latest version of MemMan, version 
 2.42.
 
-If it is the first time you start Compass, the program will search for 
-available memory. Compass needs at least five free pages of mapperram. And 
+If it is the first time you start Konpass, the program will search for 
+available memory. Konpass needs at least five free pages of mapperram. And 
 two of them should be situated in the Primary Mapper. Four of them may not be 
 segments in the TPA because the Compas sprogram data will be stored there.
-If one of these conditions is not met, the installation of Compass will 
+If one of these conditions is not met, the installation of Konpass will 
 abort, otherwise the program will allocate a maximum of 1536kB and make this 
 memory unreachable for other programs. Of course if you don't use any 
 memory manager, this memory is not unreachable for other programs and your 
-Compass program and/or data may be overwritten by these programs.
-Compass will preferably allocate memory in other mappers than the Primary 
+Konpass program and/or data may be overwritten by these programs.
+Konpass will preferably allocate memory in other mappers than the Primary 
 Mapper. This might help to prevent the previous problem, although this will 
 make the program somewhat slower.
 
 In some cases it can be useful not to use all available memory. You can limit 
-the memory allocation of Compass by pressing the SHIFT key when you start 
-Compass. Currently this limitation is set to 9 segments. In future versions 
-of Compass this number will be changeable.
+the memory allocation of Konpass by pressing the SHIFT key when you start 
+Konpass. Currently this limitation is set to 9 segments. In future versions 
+of Konpass this number will be changeable.
 
-If you have performed a 'Main config' (see chapter 10) Compass will try to 
+If you have performed a 'Main config' (see chapter 10) Konpass will try to 
 reinstall your saved memory configuration. If all used segments in this 
 memory configuration are not free, or when the Primary Mapper slot has changed 
 (for example: when you've placed an extra memory mapper into your MSX), 
-Compass will try to allocate segments described as above.
+Konpass will try to allocate segments described as above.
 
-Finally the Compass program is loaded from (hard)disk and is launched. On 
+Finally the Konpass program is loaded from (hard)disk and is launched. On 
 fast MSX systems startupmessages may disappear too fast. Hold down STOP 
 during loading if you want to pause these messages. Press this key again 
 to continue.
@@ -225,16 +225,16 @@ to continue.
 It is also possible to load an assemblerfile (ASM) from the command line. 
 Example:
 
-        A>COMPASS KY.ASM
+        A>KONPASS KY.ASM
 
-The file KY.ASM will be loaded when Compass is launched.
+The file KY.ASM will be loaded when Konpass is launched.
 
 Note:
 
-Compass frequently uses Kbuf (#F41F: 318 bytes long). Make sure this part of 
+Konpass frequently uses Kbuf (#F41F: 318 bytes long). Make sure this part of 
 your memory is free and that your programs and/or TSRs don't affect this 
 memory. The printer buffer PB.TSR for instance can't be used because of this.
-Also some Compass code is stored in PLAYq ueues for channel B and C. 
+Also some Konpass code is stored in PLAYq ueues for channel B and C. 
 (#F9F5-#FAF4). Make sure these queues are not overwritten by other programs 
 or by executing a PLAY statement in BASIC for channel B or C.
 
@@ -244,20 +244,20 @@ or by executing a PLAY statement in BASIC for channel B or C.
 
 2.1 General screen layout
 
-All parts of Compass use a common screen layout to have a general look and 
+All parts of Konpass use a common screen layout to have a general look and 
 feel throughout the entire program.
 
 * Status bar:
 
 The upperline of the screen always contains the status bar. On the left of 
-this bar you will find the name Compass followed by the main version number. 
+this bar you will find the name Konpass followed by the main version number. 
 This number will change when a new mainversion is distributed. 
-(The complete version number can be obtained by displaying the COMPASS.COM or 
-COMPASS.DAT file in some textviewer, or in the "About" menu.)
+(The complete version number can be obtained by displaying the KONPASS.COM or 
+KONPASS.DAT file in some textviewer, or in the "About" menu.)
 
 On the right side the announcement '2022 Konamiman'. Between these two 
 messages you'll find the name of the currently selected program part of 
-Compass.
+Konpass.
 
 * The empty line:
 
@@ -277,13 +277,13 @@ This occupies most of the screen. Here the real action takes place.
 
 Below the desktop you'll find a status bar. This bar is only present in the 
 assembler and contains important information about the current source and 
-settings. In the other parts of Compass this function bar is suppressed and 
+settings. In the other parts of Konpass this function bar is suppressed and 
 the extra lines are used to extend the desktop.
 
 
 2.2 Controls
 
-Almost all functions in Compass can be selected by means of the keyboard, the 
+Almost all functions in Konpass can be selected by means of the keyboard, the 
 mouse or the so-called shortcuts.
 
 The menu bar contains the menus which can be activated using the function 
@@ -297,7 +297,7 @@ Your current choice will be indicated in a bar that uses the alternative
 colors. Use the space bar to activate a choice. Pressing [ESC] will leave the 
 menus and bring you back in the active program part.
 
-For your convenience a standard order is used throughout all parts of Compass. 
+For your convenience a standard order is used throughout all parts of Konpass. 
 The function key [F1] will always activate the SYSTEM menu (see chapter 2.3) 
 and the second menu (use [F2]) will always be the CONFIGURATION menu. The 
 contents of these menus will of course be slightly altered depending on the 
@@ -306,7 +306,7 @@ are different for each part and may even be absent.
 
 * Mouse control
 
-A great effort has gone into enabling mouse support for Compass. A lot of 
+A great effort has gone into enabling mouse support for Konpass. A lot of 
 options can be reached using the mouse without the need for keyboard 
 interaction. Of course a lot of actions, like searching, need keyboard input, 
 but a lot can be done without it.
@@ -324,7 +324,7 @@ chapter 10).
 
 Shortcuts are key combinations which allow you to reach certain options in a 
 very fast way without using the regular menu selection which can be time 
-consuming if used a lot. In Compass a shortcut consists in most of the cases 
+consuming if used a lot. In Konpass a shortcut consists in most of the cases 
 of the [CTRL] key combined with another key. All the shortcuts are listed 
 in appendix A. Most shortcuts are mentioned after the option in the menu. For 
 example: in the SYSTEM menu the disk option will be followed by ^D indicating 
@@ -350,30 +350,30 @@ below accompanied by the chapter number which deals with the topic.
         Slotview    chapter 9
         Shell       see below
         Quit        see below
-        About       Display information about Compass
+        About       Display information about Konpass
 
 The options SHELL and QUIT are closely related. The shortcut for SHELL is 
 [SHIFT]+[ESC]. The shortcut for QUIT is [CTRL]+[Q].
 
-With SHELL you can leave the Compass program and go back to the shell from 
-where you've last activated Compass. You can return to Compass by typing CMD 
-COMPASS [RETURN] from the MSX-BASIC prompt, by pressing [SHIFT]+[ESC] (DOS 
-and MSX-BASIC), and by running COMPASS.COM again.
+With SHELL you can leave the Konpass program and go back to the shell from 
+where you've last activated Konpass. You can return to Konpass by typing CMD 
+KONPASS [RETURN] from the MSX-BASIC prompt, by pressing [SHIFT]+[ESC] (DOS 
+and MSX-BASIC), and by running KONPASS.COM again.
 
-If you return to Compass, all settings are still preserved and if everything 
+If you return to Konpass, all settings are still preserved and if everything 
 went well you can just continue where you left. Neverthelesss certain 
 precautions should to be taken. When using DOS2 and/or MemMan the memory 
-blocks used by Compass are reserved by these respective memory managers. 
+blocks used by Konpass are reserved by these respective memory managers. 
 So if all other programs, started during this 'shell', use these 
 memory managers, there is no problem.
 
 If you use a program that does its own memory management, then you can easily 
-destroy the data used by Compass. If this happens your source can be destroyed 
-or Compass can be become unstable. A simple trick that most of the time works, 
+destroy the data used by Konpass. If this happens your source can be destroyed 
+or Konpass can be become unstable. A simple trick that most of the time works, 
 is placing all the important memory blocks (sources) in the highly numbered 
 blocks and the less important (label buffers) in the lower memory blocks.
 
-QUIT will terminate the Compass program completely. All used memory will be 
+QUIT will terminate the Konpass program completely. All used memory will be 
 freed and you will return to the last activated shell. Make sure you save your 
 work before quitting! Otherwise there is no way to recover it.
 
@@ -408,7 +408,7 @@ need recalculation.
 Most powerful feature of an assembler is the use of labels. These labels can 
 be used for different purposes and they help to make the sources more 
 comprehensible. They are mostly used to give constants a name and to help 
-calculating addresses when assembling. The length of these labels in Compass 
+calculating addresses when assembling. The length of these labels in Konpass 
 can vary between 6 and 20 characters. The following characters are allowed in 
 a label name:
 
@@ -421,7 +421,7 @@ reserved words may be used as a label. An overview of these reserved words
 can be found in Appendix C.
 
 Programmers are used to place a colon behind a label when this label is 
-declared, but there is no need to do this in Compass. If a label ends with two 
+declared, but there is no need to do this in Konpass. If a label ends with two 
 colons then this label is declared public (see chapter 14).
 
 
@@ -482,7 +482,7 @@ pressing [F2].
 * SOURCEBUFFER:
 
 Use this option to switch between the different available source buffers. 
-Compass can use a maximum of four source buffers, each containig a maximum of 
+Konpass can use a maximum of four source buffers, each containig a maximum of 
 256 KB of text. This allows you to work with four sources at the same time! 
 Or  you can use some source buffers to hold a text with technical reference 
 material etc. The number and size of the source buffers can be controlled 
@@ -491,9 +491,9 @@ screen the currently active buffernumber is displayed.
 
 * CPU:
 
-If you're running Compass on a Turbo-R you can use this option to choose the 
+If you're running Konpass on a Turbo-R you can use this option to choose the 
 desired CPU mode: Z80-mode, R800 ROM mode and R800 DRAM mode. There isn't any 
-difference in speed between the R800 ROM and R800 DRAM mode since Compass 
+difference in speed between the R800 ROM and R800 DRAM mode since Konpass 
 doesn't use bios calls. Therefore we suggest to choose for the R800 ROM mode 
 since the DRAM mode uses 64kB of memory.
 
@@ -529,7 +529,7 @@ to re-read some old code or someone else has to maintain your code.
 
 * MAIN INSTALL:
 
-This affects the general setting for Compass. For more info see chapter 10.
+This affects the general setting for Konpass. For more info see chapter 10.
 
 
 3.2.2 Options menu
@@ -605,7 +605,7 @@ accessible using [F4].
 * ASSEMBLE:
 
 Activate this to assemble the source in the current source buffer. Assembling 
-in Compass is a so-called two-pass-assembling. First the entire source is 
+in Konpass is a so-called two-pass-assembling. First the entire source is 
 evaluated to find the values of all the labels and in a second pass the source 
 is assembled to memory.
 
@@ -681,7 +681,7 @@ Use this to execute a program somewhere in memory. It uses the
 register/interrupt settings as set with the REGISTERS menu. When activated 
 you will be asked for an address to 'call to'. Before the code is actually 
 executed the screen is placed in regular 24 line screen 0 mode and cleared.
-When the program returns Compass will reinitialize the VDP in 'Compass mode'. 
+When the program returns Konpass will reinitialize the VDP in 'Konpass mode'. 
 Be aware: your MSX may crash if the program to run is not stable! So make sure 
 you have saved the source before trying this option!
 
@@ -745,7 +745,7 @@ position.
 
 3.3 Special commands
 
-The Compass assembler contains a lot of extra commands for several purposes:
+The Konpass assembler contains a lot of extra commands for several purposes:
 
 
 3.3.1 Exceptions
@@ -777,7 +777,7 @@ LD A,char ;only character with an ASCII code below 128 are allowed
 3.3.2 The R800 processor
 
 A Turbo-R is equipped with a R800 processor in addition to the Z80. Almost all 
-mnemonics on this R800 were renamed, but the opcodes have remained. Compass 
+mnemonics on this R800 were renamed, but the opcodes have remained. Konpass 
 only recognizes the old Z80 mnemonics, but does recognize the new mnemonics of 
 the new instructions. You're allowed to use these new instructions on MSX2, 
 but they won't work on Z80.
@@ -995,7 +995,7 @@ an address on the fly like label+4*7. You can leave this window by pressing
 
 * CPU:
 
-If you're running Compass on a Turbo-R you can use this option to switch 
+If you're running Konpass on a Turbo-R you can use this option to switch 
 between CPU mode: Z80, R800 ROM and R800 DRAM mode. Of course only Z80 mode 
 is present on non-Turbo-R computers.
 
@@ -1007,7 +1007,7 @@ debuggeraddress will be kept equal.
 
 * MAIN INSTALL:
 
-Use this to change Compass global settings. For more info refer to chapter 10.
+Use this to change Konpass global settings. For more info refer to chapter 10.
 
 
 4.2.2 Options Menu
@@ -1145,7 +1145,7 @@ of the cursor to the PC or vice versa.
 
 * Safety
 
-The debugger of Compass is made with a lot of detail for security; great 
+The debugger of Konpass is made with a lot of detail for security; great 
 effort has gone into the separation of the debugger and the program to be 
 debugged. All instructions are executed in the program's environment. This 
 means: all registers (including SP), interrupt state (DI or EI) and memory 
@@ -1167,10 +1167,10 @@ are disabled you'll receive a warning because under normal circumstances the
 MSX should completely block itself waiting for an interrupt that can never 
 occur.
 
-To separate Compass and the debugged program even further, the memory 
+To separate Konpass and the debugged program even further, the memory 
 management of a normal MSX is also diverted to own routines. This means that 
 instructions who read/write port #A8, #FF, #FE, #FD, #FC or subslot registers 
-#FFFF are handled by the memory management of Compass. (Except for INIR, 
+#FFFF are handled by the memory management of Konpass. (Except for INIR, 
 INDR, INI and IND)
 
 For the subslot registers (address #FFFF) the following instructions are 
@@ -1182,7 +1182,7 @@ LD (HL),value
 LD A,(#FFFF)
 LD (#FFFF),A
 
-If a program uses a more exotic way of changing address #FFFF then Compass 
+If a program uses a more exotic way of changing address #FFFF then Konpass 
 won't be able to automatically divert the instruction. So the (new) 
 memory selection will have to be done manually by the person who is debugging 
 without execution of the instruction. For example a LD IX,#FFFE followed by 
@@ -1222,7 +1222,7 @@ Reachable by pressing [F2].
 
 * CPU:
 
-If you're running Compass on a Turbo-R you can use this option to switch 
+If you're running Konpass on a Turbo-R you can use this option to switch 
 between CPU mode.
 
 * MSX RST:
@@ -1255,7 +1255,7 @@ off.
 
 * MAIN INSTALL:
 
-Use this to change Compass global settings. For more info refer to chapter 10.
+Use this to change Konpass global settings. For more info refer to chapter 10.
 
 
 5.2.2 Options menu
@@ -1425,7 +1425,7 @@ returnaddress is PUSHed onto the stack and the debugger jumps to the new
 address.
 
 Executing a CALL as a single instruction is of course a lot faster but in such 
-a case Compass isn't capable of checking the instructions in the subroutine.
+a case Konpass isn't capable of checking the instructions in the subroutine.
 If this subroutine directly changes the memory banks, VDP registers or VRAM 
 contents then your MSX may crash!
 
@@ -1446,7 +1446,7 @@ the PC-register is indicating.
 
 [CTRL] + [I] or [I]
 
-This sets the SP register back to its initial value (when Compass was entered 
+This sets the SP register back to its initial value (when Konpass was entered 
 from the MSX-DOS command prompt minus 512 bytes). In most cases this is a 
 safe stackspace.
 
@@ -1495,12 +1495,12 @@ concerned to accidentally overwrite a file because of forgetting to alter the
 name when you changed the source buffer. There are two separate sets of name 
 buffers, one for Assembler files and another one for Ascii files.
 
-Pressing [ESC] ends the disk menu and takes you back to the Compass part from 
+Pressing [ESC] ends the disk menu and takes you back to the Konpass part from 
 which you summoned the disk menu.
 
 6.2 File types
 
-Compass gives you to the opportunity to operate on different kind of files. 
+Konpass gives you to the opportunity to operate on different kind of files. 
 these type are:
 
 Assembler files (only from within the assembler)
@@ -1526,11 +1526,11 @@ debugger you only have access to 3 of the 6 possibilities.
 
 * ASSEMBLER FILES
 
-One of the most nice things in Compass is its ability to quickly load and 
+One of the most nice things in Konpass is its ability to quickly load and 
 save sources. This is possible by using this new type of file, the assembler 
 file.
 
-These files contain the total of all the necessary structures that Compass 
+These files contain the total of all the necessary structures that Konpass 
 uses to store sources in memory.
 
 Since this is a memory dump of the source and data buffers no conversion is 
@@ -1540,7 +1540,7 @@ saved in ASCII but the gain of time makes it up.
 
 * ASCII FILES
 
-Of course Compass would be quite useless for most people if the old trusted 
+Of course Konpass would be quite useless for most people if the old trusted 
 ASCII file couldn't be read (and saved of course). This option, in 
 combination with the AUTO-ALIGN, gives you also the possibility to read and 
 write normal textfiles in the editor. It can be very useful to have a nice 
@@ -1548,7 +1548,7 @@ reference online in an other source buffer like the BIOS overview text.
 
 * BINARY FILES
 
-To store and retrieve chunks of memory Compass supports the BASIC bload 
+To store and retrieve chunks of memory Konpass supports the BASIC bload 
 format. These files contain a seven bytes header (db FEh, dw start, dw end, 
 dw begin_execution) followed by the data itself. When saving you will be 
 prompted to enter the addresses needed for the header. When loading this 
@@ -1575,13 +1575,13 @@ current buffer. This block will be selected when you return to the assembler.
 
 * SECTORS
 
-Compass is capable of directly working with sectors (very nice if you want to 
+Konpass is capable of directly working with sectors (very nice if you want to 
 alter the boot record of the disk for example). THIS IS OF COURSE VERY 
 DANGEROUS! By typing a wrong sector number or by mistake overwriting a wrong 
 disk you can permanently lose vital data on the disk.
 
 Be very very cautious. For safety reasons confirmation will be asked before 
-actually writing sectors. In previous versions of Compass you wouldn't be 
+actually writing sectors. In previous versions of Konpass you wouldn't be 
 allowed to write sectors to a hard disk or another non-floppy media (any 
 media with a media id lower than F8h is considered non-floppy), this 
 restriction has been removed but a "Not a floppy disk !" warning message 
@@ -1679,13 +1679,13 @@ confirmation message will be shown before the formatting process begins.
 7. Memory
 ---------
 
-Some of the most powerful features of Compass is the ability to configure 
+Some of the most powerful features of Konpass is the ability to configure 
 your memory. Especially when you make use of a memory manager like DOS2 or 
-MemMan, because memory used by Compass will pe protected by these managers.
-If you don't use a memory manager, memory used by Compass can be corrupted by 
+MemMan, because memory used by Konpass will pe protected by these managers.
+If you don't use a memory manager, memory used by Konpass can be corrupted by 
 other programs.
 
-If Compass is launched for the first time, Compass will automatically 
+If Konpass is launched for the first time, Konpass will automatically 
 configure your memory. Changes you may want to make can be saved by 
 performing a SAVE CONFIGURATION (see chapter 10).
 
@@ -1702,13 +1702,13 @@ Note the following:
 
 Press [SPACE] to change a block. Use cursors to choose a new block or to 
 disable a block. Only unused memoryblocks can be selected. Of course you 
-can't disable the Compass program blocks and the first label buffer block.
+can't disable the Konpass program blocks and the first label buffer block.
 
 Note the following:
-The first label buffer block and the second Compass program block should be 
+The first label buffer block and the second Konpass program block should be 
 situated in the primary mapper.
 
-On the right side of the Compass program blocks you can select the working 
+On the right side of the Konpass program blocks you can select the working 
 memory. This working memory is:
 
 -Used as target memory for assembling
@@ -1718,11 +1718,11 @@ memory. This working memory is:
 You can alter these settings for pages 0, 1 and 2. Not for page 3 because the 
 system variables kept in this page should be reachable at any time.
 
-Make sure you don't select a block that is in use by Compass. Compass will 
+Make sure you don't select a block that is in use by Konpass. Konpass will 
 likely crash if it is (partially) overwritten.
 
 Remark: if you have lots of memory (>6MB) it is possible that not all memory 
-can be paged in due to current limitations of Compass.
+can be paged in due to current limitations of Konpass.
 
 
 8. Calculator
@@ -1737,7 +1737,7 @@ downwards using the cursors. This is useful to look at the information hidden
 
 You can leave the calculator by pressing [ESC].
 
-Compass is equipped with a very powerful calculator. The next enumeration 
+Konpass is equipped with a very powerful calculator. The next enumeration 
 should clearly state this.
 
 * The calculator uses the mathematical priority of operations (raise to
@@ -1786,12 +1786,12 @@ Remark: possible ROM pages or fixed RAM pages in page 3 are not shown.
 10. Main config
 ---------------
 
-This menu is used to change and save the current settings of Compass.
+This menu is used to change and save the current settings of Konpass.
 Use [SPACE] to select the desired parameter.
 
 * HEX-ID:
 
-Use this option to set your favourite hexadecimal ID. Compass uses the 
+Use this option to set your favourite hexadecimal ID. Konpass uses the 
 following IDs by default:
 
 in front: # and &H , example: #FD9F &HFD9F
@@ -1832,27 +1832,27 @@ that you find more visually pleasant.
 * INITIAL FILE TYPE:
 
 Use this option to choose which will be the file type selected when you first
-go to the disk menu from the assembler after starting Compass. You can choose
+go to the disk menu from the assembler after starting Konpass. You can choose
 between Asm and Ascii.
 
 * COLOR 1-4:
 
-You can change Compass' colours with this option. This is done by changing 
+You can change Konpass' colours with this option. This is done by changing 
 the Red, Green and Blue values of the palette.
 
 * SAVE CONFIGURATION:
 
 VERY USEFUL OPTION!
-This option will save your current Compass configuration:
+This option will save your current Konpass configuration:
 
 -Mouse, printer line, ...
 -Memory configuration
 -Editor parameters for each source buffer: Label lenght, Ret ins, Autoalign
 -Backup status of disk menu
 
-Configuration will be saved to a COMPASS.CFG file in the same drive/directory 
-of the COMPASS.COM and COMPASS.DAT files. In previous versions of Compass 
-(1.2.09 and older) configuration was saved into the COMPASS.COM file itself.
+Configuration will be saved to a KONPASS.CFG file in the same drive/directory 
+of the KONPASS.COM and KONPASS.DAT files. In previous versions of Konpass 
+(1.2.09 and older) configuration was saved into the KONPASS.COM file itself.
 
 
 11. Macros
@@ -1869,7 +1869,7 @@ another macros also aid in maintaining the readability of your code. Of
 course you can pass parameters to your little routines which will be inserted 
 in the macro during the assembling.
 
-Compass also supports recursive macros, meaning that one macro can use 
+Konpass also supports recursive macros, meaning that one macro can use 
 another (or its own) macro inside it's definition.
 
 Three assembler directives are preserved for usage with macro's.
@@ -2032,7 +2032,7 @@ Examples:
 
 IF 1               ;true (not equal to zero)
 IF 3<=2            ;false
-IF "Compass">"GPS" ;false (stringsize)
+IF "Konpass">"GPS" ;false (stringsize)
 IF "ABC">"AAA"     ;true (ASCII alphabetical)
 
         ELSE
@@ -2051,12 +2051,12 @@ Example 1:
 label1  equ     1
 
         if      label1=1
-        db      "Compass",0
+        db      "Konpass",0
         else
         db      "Test",0
         endif
 
-Only "Compass" will be assembled.
+Only "Konpass" will be assembled.
 
 Example 2:
 
@@ -2078,7 +2078,7 @@ This Memory Manager does all the necessary memory allocation and hook
 maintenance for all the different TSR's and other MemMan-enabled programs so 
 that we don't have any trouble with programs who, involuntarily, destroy each 
 others address space and therefore make your MSX crash. MemMan 2.4 can 
-be found on the Compass disk (in the Commpass 1.2.09 repository, see 
+be found on the Konpass disk (in the Commpass 1.2.09 repository, see 
 section 1.1).
 
 For more information about TSRs you should get the TSR development kit made 
@@ -2088,7 +2088,7 @@ Previously the only method to make a TSR was to compile the source to a
 Relocatable File (see chapter 14) which could only be done with gen80 from 
 the DOS command line and further be linked with a specially by MST written 
 linker to created the .TSR file. This is definitely a very time consuming and 
-long-winded method. For this reason Compass has built-in TSR compiling. To 
+long-winded method. For this reason Konpass has built-in TSR compiling. To 
 make this possible an extra directive had to be built, namingly:
 
 * TSRHOOKS
@@ -2097,7 +2097,7 @@ This command has to be used before you define the hooks and accompanying
 labels at the end of the source (See the TSR framework in the TSR development 
 kit). Afterwards you can compile your source to a TSR, this is a three-pass 
 assembling. The compiled TSR can be loaded from DOS using the TL program. If 
-the TSR doesn't function properly you can return to Compass using the Compass 
+the TSR doesn't function properly you can return to Konpass using the Konpass 
 hotkey and adapt the source. This ensures an ideal working environment for 
 TSR development.
 
@@ -2184,7 +2184,7 @@ Using .DEPHASE restores the program counter to the old value and segment.
 Appendix A: Shortcuts
 *********************
 
-If you are a frequent Compass user you will certainly appreciate the 
+If you are a frequent Konpass user you will certainly appreciate the 
 shortcuts, these are thousands times faster than going through the regular 
 select-menu-select-option method.
 
@@ -2197,7 +2197,7 @@ Japanese YES    R800-ROM
 CTRL + C        Calculator
 CTRL + D        To disk menu
 CTRL + Q        Quit the program
-SHIFT + ESC     Exit to shell / resume Compass
+SHIFT + ESC     Exit to shell / resume Konpass
 
 
 Assembler shortcuts
@@ -2356,7 +2356,7 @@ SHIFT + H    Edit HL'
 Appendix B: Error messages
 **************************
 
-Here's a list of the messages you may encounter when using Compass
+Here's a list of the messages you may encounter when using Konpass
 
 
 Editor messages
@@ -2389,10 +2389,10 @@ in the current buffer.
 Assembler errors
 ----------------
         Bad instruction
-Compass didn't recognize the given command.
+Konpass didn't recognize the given command.
 
         Bad mnemonic
-The entered registers, labels, values, etc. weren't recognized by Compass.
+The entered registers, labels, values, etc. weren't recognized by Konpass.
 
         Division by zero
 You tried to divide a (label representing a) number by zero.
@@ -2516,7 +2516,7 @@ seem to be of the BIN type.
 
         No diskdrive !
 You try to save a sector on a hard drive. This operation isn't allowed by 
-Compass.
+Konpass.
 
         Write error !
 During writing an error occurred. Try again using another disk (maybe your 

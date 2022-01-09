@@ -1,4 +1,4 @@
-;program to create compass.dat #1.2.xx
+;program to create konpass.dat #1.2.xx
 ;for dos 1 and 2
 
 	;input
@@ -152,12 +152,12 @@ voegtoe	push	hl
 
 lengte	dw	0
 
-txt_add	db	"Writing to COMPASS.DAT: "
+txt_add	db	"Writing to KONPASS.DAT: "
 showname	ds	11
 	db	"$"
 
 fcb	ds	37,0
-fcb_datfile	db	0,"COMPASS DAT"
+fcb_datfile	db	0,"KONPASS DAT"
 	DS	25,0
 
 n_main	db	"MAIN    DAT"
@@ -171,14 +171,14 @@ txt_opening	db	" opening...$"
 txt_reading	db	" reading...$"
 txt_writing	db	" writing...",13,10,"$"
 
-txt_info	db	"Program to link all Compassblocks together.",13,10,"$"
+txt_info	db	"Program to link all Konpassblocks together.",13,10,"$"
 txt_uitleg	db	"Usage: makedat xx with xx two characters (subversion#)"
 	db	13,10,10,"$"
-header	db	13,"Compass #1.2."
+header	db	13,"Konpass #1.2."
 versie	db	"xx"
     db    "2022 by Konamiman",13,10
     db 10
     db    "Based on Compass #1.2.09, (C)1998 by Compjoetania TNG",13,10
     db 10
-    db    "http://www.github.com/Konamiman/Compass",13,10,10,26
+    db    "http://www.github.com/Konamiman/Konpass",13,10,10,26
 	ds	headln,0

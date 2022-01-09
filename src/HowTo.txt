@@ -1,4 +1,4 @@
-How to build Compass 1.2
+How to build Konpass 1.2
 ------------------------
 
 
@@ -6,15 +6,15 @@ How to build Compass 1.2
 
 You need sjasm 0.39i or newer (do NOT use sjasm 0.42), you can get it from https://github.com/Konamiman/Sjasm/releases
 
-Simply run the following and you'll get the COMPASS.COM and COMPASS.DAT files ready to use:
+Simply run the following and you'll get the KONPASS.COM and KONPASS.DAT files ready to use:
 
-sjasm -c compass.asm
+sjasm -c konpass.asm
 
 
-* With Compass itself (or another compatible assembler):
+* With Konpass itself (or another compatible assembler):
 
 COMfile:
-just compile COMFILE.ASM into COMPASS.COM
+just compile COMFILE.ASM into KONPASS.COM
 
 DATfile:
 compile MAIN.ASM  into MAIN.DAT
@@ -24,4 +24,4 @@ compile MONITOR.ASM    into MONITOR.DAT
 compile DEBUGGER.ASM into DEBUGGER.DAT
 compile MAKEDAT.ASM  into MAKEDAT.COM
 run MAKEDAT 09
-This will add all DAT file together with a 128 byte header into COMPASS.DAT
+This will add all DAT file together with a 128 byte header into KONPASS.DAT

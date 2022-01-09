@@ -1,4 +1,4 @@
-	;Compass #1.2 - COM file
+	;Konpass #1.2 - COM file
 	;the logo routine can be improved
 	;based on v1.1, but completely rewritten and reworked
 	;25-10-98 JDS
@@ -35,7 +35,7 @@ env_item_buffer: equ 3F00h
 	ORG	#0100
 
 	jp	skipid
-	db	13,"Compass #1.2.10 COMfile",13,10
+	db	13,"Konpass #1.2.10 COMfile",13,10
     db  "2022 by Konamiman",13,10
     db 10
     db  "Based on Compass #1.2.09 by Compjoetania TNG",13,10,26
@@ -264,7 +264,7 @@ okidoki	ld	de,txt_okused
 	JR	c,go_load
 
 go_load_dos2:
-	LD	HL,env_compass	;fill COMPASS with the contents of
+	LD	HL,env_compass	;fill KONPASS with the contents of
 	LD	DE,env_item_buffer	;the PROGRAM env item
 	LD	C,_SENV
 	CALL	bdos
@@ -274,7 +274,7 @@ go_load_dos2:
 	LD	BC,_PARSE
 	CALL	bdos
 	EX	DE,HL
-	LD	A,'.'	;DE pointing at 'c' of compass
+	LD	A,'.'	;DE pointing at 'k' of konpass
 	LD	(fcb_compass+8),A
 	LD	HL,fcb_compass+1
 	LD	BC,12	;also copy terminating zero
@@ -1548,14 +1548,14 @@ skipmap1:
 	RET
 
 ;*********************************************************data area
-compass_ID	db	"COMPASS",0
-txt_inmem	db	"Compass already in memory, resuming... $"
+compass_ID	db	"KONPASS",0
+txt_inmem	db	"Konpass already in memory, resuming... $"
 txt_msx1	db	"Minimal MSX 2 required !",13,10,"$"
 startpalet	db	#00,#00,#00,#00,#77,#07,#04,#00
 	db	#17,#01,#27,#03,#51,#01,#27,#06
 	db	#71,#01,#73,#03,#61,#06,#63,#06
 	db	#11,#04,#65,#02,#55,#05,#77,#07
-txt_intro	db	"Compass #1.2.10, 2022 by Konamiman",13,10
+txt_intro	db	"Konpass #1.2.10, 2022 by Konamiman",13,10
 	db  "Based on Compass #1.2.09, (C)1998 by Compjoetania TNG",13,10,10,"$"
 txt_old	db	7,"Notice: You are using a version of Memman older "
 	db	"than version 2.40 .",13,10
@@ -1581,15 +1581,15 @@ txt_notfree	db	"Not free or different memory configuration !",13,10,"$"
 txt_okused	db	"Ok, used $"
 txt_search	db	"Searching free memory: $"
 txt_nofree	db	"Insufficient free memory !",13,10,"$"
-txt_load	db	"Loading Compass: $"
+txt_load	db	"Loading Konpass: $"
 txt_err_env	db	"aborted",13,10,10,"Not enough memory to create the "
-	db	"COMPASS environment item!",13,10,"$"
+	db	"KONPASS environment item!",13,10,"$"
 txt_lderr	db	"Load error !",13,10,10,"$"
 txt_lddone	db	"done",13,10,10,"All engines ready.",13,10,"$"
-txt_launch	db	"Launching Compass...",13,10,"$"
+txt_launch	db	"Launching Konpass...",13,10,"$"
 txt_noprog: db "aborted",13,10,10,"The PROGRAM environment item "
 	db	"does not exist!",13,10,"$"
-txt_nocfg:  db "COMPASS.CFG not found, will use default config",13,10,10,"$"
+txt_nocfg:  db "KONPASS.CFG not found, will use default config",13,10,10,"$"
 
 nr_max	dw	14*256	;default: search as much as possible
 stat_dos	db	0
@@ -1615,12 +1615,12 @@ compass_3	dw	0
 tab_TPA	db	3,2,1,0	;default TPAsegments for page 0,1,2 and 3
 decstr	ds	6,0
 env_program	db	"PROGRAM",0
-env_compass	db	"COMPASS",0
+env_compass	db	"KONPASS",0
 fcb_compass:
-	db	0,"COMPASS DAT"
+	db	0,"KONPASS DAT"
 	ds	25,0
 fcb_cfg:
-	db	0,"COMPASS CFG"
+	db	0,"KONPASS CFG"
 	ds	25,0
 new_handle	db	0
 curr_DTA	dw	0

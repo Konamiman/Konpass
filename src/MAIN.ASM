@@ -1,4 +1,4 @@
-;MAIN PROGRAM COMPASS #1.2
+;MAIN PROGRAM KONPASS #1.2
 ;#1.2.09: DOINCLUDE SEPARATE FCB
 
 	.label	13
@@ -364,7 +364,7 @@ setcolors	DI
 	OTIR
 	RET
 txt_bovenaan	dw	1	;vramaddress
-	db	"Compass #1.2",0
+	db	"Konpass #1.2",0
 	dw	62
 	db	"2022 by Konamiman",0
 	dw	0
@@ -5214,7 +5214,7 @@ memtxtdoel	defw	4*80+(80-13)/2,Mt0
 Mt0:	defb	"Memory layout",0
 Mt1:	defb	"Source1",0
 Mt2:	defb	"Data1",0
-Mt3:	defb	"Labels  ",22," Compass",0
+Mt3:	defb	"Labels  ",22," Konpass",0
 Mt4:	defb	"Memory",0
 Mt5:	defb	"Page 0:",0
 Mt_1:	defb	"1",0
@@ -5756,7 +5756,7 @@ SAVECONFIG	LD	A,(Backuponoff)	;backup status
 	LD	HL,compasscfg
 	LD	DE,buffer1024+750
 	LD	BC,#FF00+_GENV
-	CALL	bdos	;get envitem COMPASS (gives a null string if not exists)
+	CALL	bdos	;get envitem KONPASS (gives a null string if not exists)
 	LD	DE,buffer1024+750
 	ld a,(de)
 	or a
@@ -5831,7 +5831,7 @@ save_dos1:
 	POP	DE
 	LD	C,_FCLOSE	;and close
 	JP	bdos
-compasscfg:	db "COMPASS "
+compasscfg:	db "KONPASS "
 cfg_ext:	db "CFG",0
 
 GETPAGES	ld	hl,page0	;(2 times ld de,nn)
@@ -6954,7 +6954,7 @@ hook	jr	hookcontinue
 	jr hook_hoofd
 hook_slot	db	0
 hook_blok	db	0
-cmd_id	db	"COMPASS",0	;ID
+cmd_id	db	"KONPASS",0	;ID
 hook_tab_tpa	db	0,0,0,0	;is filled in by start compass
 tab_tpa	equ	hook_tab_tpa-hook+hookadres
 hook_tab_cur	db	0,0,0,0	;idem
@@ -7031,7 +7031,7 @@ _hook_feda2	LD	A,(HL)
 _hook_feda1	POP	BC
 	POP	HL
 	RET
-hook_text	db	10,"Press [SHIFT] + [ESC] or type CMD COMPASS "
+hook_text	db	10,"Press [SHIFT] + [ESC] or type CMD KONPASS "
 	db	"to return.",10,0
 
 getpage0_dos2:
