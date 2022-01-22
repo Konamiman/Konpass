@@ -1,4 +1,4 @@
-;Compass #1.2 - Monitor
+;Konpass #1.3 - Monitor
 
 kbuf:	equ	#f41f	;318 byte buffer
 

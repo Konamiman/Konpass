@@ -1,4 +1,4 @@
-;Compass #1.2 - Debugger
+;Konpass #1.3 - Debugger
 
 	.label	15
 
@@ -5933,17 +5933,17 @@ doabout:
 
 abouttxt:
 	defw	(Main_y+1)*80+33
-	defb	"About Compass",0
-	defw	(Main_y+4)*80+32
-	defb	"Compass #1.2.10",0
-	defw	(Main_y+6)*80+31
-	defb	"2022 by Konamiman",0
+	defb	"About Konpass",0
+	defw	(Main_y+4)*80+33
+	defb	"Konpass #1.3.0",0
+	defw	(Main_y+6)*80+29
+	defb	"(C) 2022 by Konamiman",0
 	defw	(Main_y+8)*80+28
 	defb	"Based on Compass #1.2.09",0
 	defw	(Main_y+9)*80+26
 	defb	"(C) 1998 by Compjoetania TNG",0
 	defw	(Main_y+11)*80+22
-	defb	"https://github.com/Konamiman/Compass",0
+	defb	"https://github.com/Konamiman/Konpass",0
 	defw	0
 
 aboutlines:	defw	Ah1,Ah2,Ah3,Ah2,Ah2,Ah2,Ah2,Ah2

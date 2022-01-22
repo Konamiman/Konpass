@@ -1,6 +1,7 @@
-NOTE: This file is not maintained anymore. For the list of changes in 
-Compass 1.2.10 and newer versions, refer to the releases section in the 
-GitHub repository (https://github.com/Konamiman/Compass).
+NOTE: This file contains historical information referred to the development 
+of Compass, the product in which Konpass is based. For the list of changes in 
+Konpass, refer to the releases section in its GitHub repository 
+(https://github.com/Konamiman/Konpass).
 
 
 File: COMPASSV.TXT - 12/04/2000

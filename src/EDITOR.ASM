@@ -1,4 +1,4 @@
-;Compass #1.2 - Editor
+;Konpass #1.3 - Editor
 
 ;compile with 'assemble to disk' (due to doubleusepage)
 
@@ -6695,7 +6695,7 @@ Sp_memory:	defw	0
 Memory_x:	defb	1
 Memory_y:	defb	1
 Memory_oldy:	defb	1
-Memory_chg:	defb	0	;0=normal, 1=Compass slot
+Memory_chg:	defb	0	;0=normal, 1=Konpass slot
 
 domemory:
 	ld	(Sp_memory),sp
@@ -6932,7 +6932,7 @@ mem_compass:
 	ld	hl,(Compassadres)
 	add	hl,de
 	ld	(Chgbuffer),hl
-	ld	(iy+3),1	;Compass slot
+	ld	(iy+3),1	;Konpass slot
 _changehoof1:
 	ld	a,(hl)
 	ld	(Oldvalue),a

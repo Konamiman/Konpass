@@ -1,4 +1,4 @@
-;Compass #1.2 - Assembly module
+;Konpass #1.3 - Assembly module
 
 ;if the msx crashes while assembling it is the ds #7000-$,0
 ;at the end of the source (the source is then too big)
