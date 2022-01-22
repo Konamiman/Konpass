@@ -112,7 +112,7 @@ The Konpass release consists of the following files:
      KONPASS.COM
      KONPASS.DAT
    * This manual in TXT format:
-     C12MANUA.TXT
+     K13MANUA.TXT
 
 Note: once "Save configuration" is executed, and extra KONPASS.CFG file
 will be created. See chapter 10.
