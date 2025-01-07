@@ -16,13 +16,11 @@
 
 ;Info: ld a,""" and ld a,"" are not allowed !
 
-	.label	13
-
 Doubleadres:	equ	#3f40	;address double-use data
 bdos:	equ	#f37d
 kbuf:	equ	#f41f	;318 byte buffer
-startbuf	equ	1	;source buffer to start with
-tab_tpa	equ	#fa01
+startbuf: 	equ	1	;source buffer to start with
+tab_tpa: 	equ	#fa01
 
 setvramwrite:	equ	#80
 ;setvramread:  equ     #83
@@ -127,7 +125,7 @@ prterrlines:	equ	#4009
 ;test label: equ #400c  ;***********    ;for calculator/calculation number
 geeflabdata:	equ	#400f
 relocatable:	equ	#4012
-asstsr	equ	#4015
+asstsr: 	equ	#4015
 
 	org	#4000
 
@@ -146,7 +144,7 @@ asstsr	equ	#4015
 	RET
 	JP	geefalvrij	;#401b
 
-startassemb	LD	(entryA),A
+startassemb: 	LD	(entryA),A
 	push	hl
 	LD	(entryDE),DE
 	ld	hl,Doubleusepg1
@@ -192,21 +190,21 @@ _niet1ekeer:	call	tekenscherm	;delsource1)************************
 	JP	editor
 Sp_back:	defw	0
 Keer:	defb	0	;0=1st time
-entryA	db	0
+entryA: 	db	0
 
-transbufp02p1	exx
+transbufp02p1: 	exx
 	LD	HL,(entryDE)
 	ld	de,Textbuffer1	;on page 1
-	ld	bc,(33+13)*4
+	ld	bc,+(33+13)*4
 	ldir
 	ld	de,Aantallabelb	;in page 0
 	ld	bc,9
 	ldir
 	exx
 	ret
-entryDE	dw	0
+entryDE: 	dw	0
 
-getinst2kbuf	CALL	putinst
+getinst2kbuf: 	CALL	putinst
 	LD	HL,Inst1
 	LD	DE,kbuf+#f4
 	LD	A,4
@@ -229,7 +227,7 @@ linedebugger:
 	CALL	transbufp02p1
 	CALL	delsource1
 
-J40CB	pop	hl
+J40CB: 	pop	hl
 	ld	de,Zin
 	ld	bc,50	;************************
 	ldir
@@ -244,7 +242,7 @@ J40CB	pop	hl
 	JR	NZ,J40EE
 	CALL	inishowlab
 	LD	HL,#0000
-J40EE	inc	hl
+J40EE: 	inc	hl
 	ld	(Regelnr),hl
 	call	putinst
 	xor	a
@@ -282,12 +280,12 @@ _changefkey1:
 Oldfkey:	ds	10
 
 ;----- Restore function keys
-oldfkey:
+oldfkey_:
 	ld	hl,#f87f
 	ld	de,16-1
 	ld	ix,Oldfkey
 	ld	b,5
-_oldfkey1:
+_oldfkey_1:
 	ld	a,(ix)
 	inc	ix
 	ld	(hl),a
@@ -296,7 +294,7 @@ _oldfkey1:
 	inc	ix
 	ld	(hl),a
 	add	hl,de
-	djnz	_oldfkey1
+	djnz	_oldfkey_1
 	ret
 
 ;--------------- Menus
@@ -338,8 +336,8 @@ gotodisk:
 
 ;******************* MENU 1
 
-Menu1optie:	defb	1
-Menu1blink:	defw	#0204
+Menu1_optie:	defb	1
+Menu1_blink:	defw	#0204
 Plmenu1:	equ	3*80
 
 tomenu1:
@@ -348,18 +346,18 @@ menu1:
 	ld	a,1
 	ld	(Lastmenu),a
 	ld	hl,Plmenu1
-	ld	ix,Menu1
+	ld	ix,Menu1_
 	call	printmenu
 _menu1_2:
-	ld	ix,Menu1
-_menu1_1:	ld	a,(Menu1optie)
+	ld	ix,Menu1_
+_menu1_1:	ld	a,(Menu1_optie)
 	ld	c,a
-	ld	hl,(Menu1blink)
+	ld	hl,(Menu1_blink)
 	call	kiesoptie
 	ld	b,a
-	ld	(Menu1blink),hl
+	ld	(Menu1_blink),hl
 	ld	a,c
-	ld	(Menu1optie),a
+	ld	(Menu1_optie),a
 	ld	a,b
 	cp	Left
 	jr	z,_menu1_1
@@ -379,10 +377,10 @@ _menu1_1:	ld	a,(Menu1optie)
 	and	255-32
 	jr	nz,menu1
 _menu1_space:
-	ld	hl,Menu1opties
+	ld	hl,Menu1_opties
 	jp	menuoptie
 
-Menu1opties:	defw	__mon,__deb,__disk,__mem,__calc,__slot,__shell,__quit,__about
+Menu1_opties:	defw	__mon,__deb,__disk,__mem,__calc,__slot,__shell,__quit,__about
 
 ;##### Monitor
 __mon:
@@ -412,7 +410,7 @@ Pointerdisk:
 __mem:
 	call	memory
 	ld	de,Textbuffer1	;in page1
-	ld	bc,(33+13)*4
+	ld	bc,+(33+13)*4
 	ldir
 	ld	de,Aantallabelb	;in page0
 	ld	bc,9
@@ -438,7 +436,7 @@ __slot:
 	call	memview
 	jr	_mem1
 
-__shell	ld	a,4
+__shell: 	ld	a,4
 	jr	backtohoofd
 
 ;##### Quit
@@ -452,7 +450,7 @@ __quit:
 
 backtohoofd:
 	push	af
-	call	oldfkey
+	call	oldfkey_
 	call	putinst
 	ld	hl,Doubleadres
 	ld	de,Doubleusepg1
@@ -471,7 +469,7 @@ __about:
 	call	tekenscherm
 	jp	editor_cont
 
-Menu1:
+Menu1_:
 	defb	9,15,0	;height, width text, place background
 	defb	"Monitor      ST"
 	defb	"Debugger     SL"
@@ -485,13 +483,13 @@ Menu1:
 
 ;************************ MENU 2
 
-Menu2optie:	defb	1
-Menu2blink:	defw	#0f04
+Menu2_optie:	defb	1
+Menu2_blink:	defw	#0f04
 menu2:
 	ld	a,2
 	ld	(Lastmenu),a
 	ld	hl,3*80+13
-	ld	ix,Menu2
+	ld	ix,Menu2_
 	call	printmenu
 _menu2_2:
 	call	printtextbuf
@@ -500,15 +498,15 @@ _menu2_2:
 	call	printretins
 	call	printtabs
 	call	printupper
-_menu2_1:	ld	ix,Menu2
-	ld	a,(Menu2optie)
+_menu2_1:	ld	ix,Menu2_
+	ld	a,(Menu2_optie)
 	ld	c,a
-	ld	hl,(Menu2blink)
+	ld	hl,(Menu2_blink)
 	call	kiesoptie
 	ld	b,a
-	ld	(Menu2blink),hl
+	ld	(Menu2_blink),hl
 	ld	a,c
-	ld	(Menu2optie),a
+	ld	(Menu2_optie),a
 	ld	hl,3*80+13
 	call	testfkey
 	jp	nc,menu2tomenu
@@ -687,7 +685,7 @@ printlablng:
 	ld	d,0
 	ld	b,2
 	jp	printdecimaa
-Menu2:
+Menu2_:
 	defb	7,16,0
 	defb	"Sourcebuffer:   "
 	defb	"CPU:            "
@@ -698,8 +696,8 @@ Menu2:
 	defb	"Main config     "
 ;************************ MENU 3
 
-Menu3optie:	defb	1
-Menu3blink:	defw	#2104
+Menu3_optie:	defb	1
+Menu3_blink:	defw	#2104
 Plmenu3:	equ	3*80+31
 
 tomenu3:
@@ -708,18 +706,18 @@ menu3:
 	ld	a,3
 	ld	(Lastmenu),a
 	ld	hl,Plmenu3
-	ld	ix,Menu3
+	ld	ix,Menu3_
 	call	printmenu
 _menu3_2:
-	ld	ix,Menu3
-_menu3_1:	ld	a,(Menu3optie)
+	ld	ix,Menu3_
+_menu3_1:	ld	a,(Menu3_optie)
 	ld	c,a
-	ld	hl,(Menu3blink)
+	ld	hl,(Menu3_blink)
 	call	kiesoptie
 	ld	b,a
-	ld	(Menu3blink),hl
+	ld	(Menu3_blink),hl
 	ld	a,c
-	ld	(Menu3optie),a
+	ld	(Menu3_optie),a
 	ld	hl,Plmenu3
 	push	bc
 	call	wisoudmenu
@@ -738,10 +736,10 @@ _menu3_1:	ld	a,(Menu3optie)
 	and	255-32
 	jr	nz,menu3
 _menu3_space:
-	ld	hl,Menu3opties
+	ld	hl,Menu3_opties
 	jp	menuoptie
 
-Menu3opties:	defw	__errors,__labels
+Menu3_opties:	defw	__errors,__labels
 	defw	__search,__searchnext,__jmpline,__delsource
 
 ;##### Search
@@ -873,13 +871,13 @@ notfound:
 	xor	a
 	ld	(Searchnext),a
 	ld	hl,80*Commline+(80-16)/2
-	ld	bc,Notfound
+	ld	bc,Notfound_
 	call	txttocomm
 	call	beep
 	call	getkey
 	call	wiscommline
 	jp	editor_cont
-Notfound:	defb	"Text not found !",0
+Notfound_:	defb	"Text not found !",0
 
 searchkey:
 	call	getkey
@@ -993,7 +991,7 @@ delsource1:
 	ld	(#8000),a	;end of data buffer
 	jp	ini_variabel
 
-Menu3:
+Menu3_:
 	defb	6,16,0
 	defb	"Show errors   ^R"
 	defb	"Show labels   ^B"
@@ -1004,26 +1002,26 @@ Menu3:
 
 ;********************* MENU 4
 
-Menu4optie:	defb	1
-Menu4blink:	defw	#2f04
+Menu4_optie:	defb	1
+Menu4_blink:	defw	#2f04
 Plmenu4:	equ	3*80+45
 
 menu4:
 	ld	a,4
 	ld	(Lastmenu),a
 	ld	hl,Plmenu4
-	ld	ix,Menu4
+	ld	ix,Menu4_
 	call	printmenu
 _menu4_2:
-	ld	ix,Menu4
-_menu4_1:	ld	a,(Menu4optie)
+	ld	ix,Menu4_
+_menu4_1:	ld	a,(Menu4_optie)
 	ld	c,a
-	ld	hl,(Menu4blink)
+	ld	hl,(Menu4_blink)
 	call	kiesoptie
 	ld	b,a
-	ld	(Menu4blink),hl
+	ld	(Menu4_blink),hl
 	ld	a,c
-	ld	(Menu4optie),a
+	ld	(Menu4_optie),a
 	ld	hl,Plmenu4
 	push	bc
 	call	wisoudmenu
@@ -1042,10 +1040,10 @@ _menu4_1:	ld	a,(Menu4optie)
 	and	255-32
 	jr	nz,menu4
 _menu4_space:
-	ld	hl,Menu4opties
+	ld	hl,Menu4_opties
 	jp	menuoptie
 
-Menu4opties:	defw	__assemble,__assdisk,__asstsr,__assrel,__reg,__go
+Menu4_opties:	defw	__assemble,__assdisk,__asstsr,__assrel,__reg,__go
 
 ;##### Assemble
 __assemble:
@@ -1563,7 +1561,7 @@ __go:
 	ld	h,d
 	ld	l,e	;start address
 	ld	(Startadres),hl
-	call	oldfkey
+	call	oldfkey_
 	call	oldscreen
 	ld	hl,Data
 	call	startprogram
@@ -1581,7 +1579,7 @@ Go:	defb	"Go "
 Gotxt:	defs	30+1
 
 
-Menu4:
+Menu4_:
 	defb	6,19,0
 	defb	"Assemble         ^A"
 	defb	"Assemble to disk ^Y"
@@ -1593,26 +1591,26 @@ Menu4:
 
 ;************************** MENU 5
 
-Menu5optie:	defb	1
-Menu5blink:	defw	#3b04
+Menu5_optie:	defb	1
+Menu5_blink:	defw	#3b04
 Plmenu5:	equ	3*80+57
 
 menu5:
 	ld	a,5
 	ld	(Lastmenu),a
 	ld	hl,Plmenu5
-	ld	ix,Menu5
+	ld	ix,Menu5_
 	call	printmenu
 _menu5_2:
-	ld	ix,Menu5
-_menu5_1:	ld	a,(Menu5optie)
+	ld	ix,Menu5_
+_menu5_1:	ld	a,(Menu5_optie)
 	ld	c,a
-	ld	hl,(Menu5blink)
+	ld	hl,(Menu5_blink)
 	call	kiesoptie
 	ld	b,a
-	ld	(Menu5blink),hl
+	ld	(Menu5_blink),hl
 	ld	a,c
-	ld	(Menu5optie),a
+	ld	(Menu5_optie),a
 	ld	hl,Plmenu5
 	ld	a,b
 	cp	Right
@@ -1632,13 +1630,13 @@ _menu5_1:	ld	a,(Menu5optie)
 	and	255-32
 	jr	nz,menu5
 _menu5_space:
-	ld	hl,Menu5opties
+	ld	hl,Menu5_opties
 	jp	menuoptie
 
-Menu5opties:	defw	zetstartblok,zeteindeblok,wisstarteind,copyblock
+Menu5_opties:	defw	zetstartblok,zeteindeblok,wisstarteind,copyblock
 	defw	moveblock,delblock,toprinter,copylabel
 
-Menu5:
+Menu5_:
 	defb	8,15,0
 	defb	"Start block  ^S"
 	defb	"End block    ^E"
@@ -1666,7 +1664,7 @@ areyousure:
 	ld	a,1
 	ld	(Cursoronoff),a
 	ld	h,#80
-	ld	bc,Areyousure
+	ld	bc,Areyousure_
 	call	printtekst
 	call	getkey
 	push	af
@@ -1679,7 +1677,7 @@ areyousure:
 	ret	z
 	scf
 	ret
-Areyousure:	defb	"Are you sure ? (y/n)",0
+Areyousure_:	defb	"Are you sure ? (y/n)",0
 
 gobios:	;***************used???***********************************
 	push	iy
@@ -1826,7 +1824,7 @@ wisbuffer:
 	call	zetdatablok
 	ld	a,#ff
 	ld	(#8000),a	;end of data buffer
-	ld	a,(Doinclude)
+	ld	a,(Doinclude_)
 	or	a
 	ret	nz
 	call	inishowlab1
@@ -1877,7 +1875,7 @@ ini_variabel:
 	inc	a
 	ld	(Balkerror),a
 
-;              ld      a,(Doinclude)    ;**********************
+;              ld      a,(Doinclude_)    ;**********************
 ;              or      a
 ;              ret     nz
 ;              ld      (Aantalerrors),a ;=0
@@ -1955,7 +1953,7 @@ J5099:	LD	A,H
 	ld	(Cursorpositi),hl
 	xor	a
 	ld	(Bronerrors),a	;editor errors
-	ld	(Doinclude),a	;FOR SAFETY
+	ld	(Doinclude_),a	;FOR SAFETY
 	ld	(Cursoronoff),a	;cursor on
 	call	printinfoRnr
 
@@ -2207,7 +2205,7 @@ edit_fastdo2:	call	printscherm
 
 editor_down:
 	call	edit_ret1
-editor_djon	call	downnormal
+editor_djon: 	call	downnormal
 	jp	nc,editorbestur
 	call	downschuif
 	call	printscherm
@@ -2419,7 +2417,7 @@ J53F9:	CALL	bervram
 	RET
 
 	;org 540c
-edit_do_ins	CALL	C53DC
+edit_do_ins: 	CALL	C53DC
 	LD	A,(Editor_x)
 	LD	B,A
 	LD	A,161
@@ -2482,7 +2480,7 @@ _edit_tab5:
 	LD	(HL),80
 	JR	NC,_edit_tab6
 	LD	(HL),A
-_edit_tab6	CALL	printscherm
+_edit_tab6: 	CALL	printscherm
 	jp	editorbestur
 
 	;org 547c
@@ -2524,7 +2522,7 @@ edit_ctrlri4:
 	ld	(Editor_x),a
 	LD	B,A
 	LD	HL,afb_offset
-edit_ctrlri6	LD	A,B
+edit_ctrlri6: 	LD	A,B
 	SUB	(HL)
 	CP	79
 	JR	C,edit_ctrlri7
@@ -2535,7 +2533,7 @@ edit_ctrlri6	LD	A,B
 	JR	NC,edit_ctrlri7
 	LD	(HL),A
 	JR	edit_ctrlri6
-edit_ctrlri7	CALL	printscherm
+edit_ctrlri7: 	CALL	printscherm
 	jp	editorbestur
 
 ;----- CTRL+LEFT
@@ -2568,7 +2566,7 @@ edit_ctrlle3:	ld	a,b
 edit_ctrlle1:	ld	a,b
 	ld	(Editor_x),a
 	LD	HL,afb_offset
-edit_ctrlle4	LD	A,B
+edit_ctrlle4: 	LD	A,B
 	DEC	A
 	CP	(HL)
 	CCF
@@ -2579,7 +2577,7 @@ edit_ctrlle4	LD	A,B
 	JR	C,edit_ctrlle5
 	LD	(HL),A
 	JR	edit_ctrlle4
-edit_ctrlle5	CALL	printscherm
+edit_ctrlle5: 	CALL	printscherm
 	jp	editorbestur
 
 ;----- SHIFT + LEFT
@@ -2778,9 +2776,9 @@ _noblockcont:	call	txttocomm
 cursorinblok:
 	call	wiscommline
 	ld	hl,Commline*80+(80-22)/2
-	ld	bc,Cursorinblok
+	ld	bc,Cursorinblok_
 	jr	_noblockcont
-Cursorinblok:	defb	"Destination in block !",0
+Cursorinblok_:	defb	"Destination in block !",0
 
 Printabort:	defb	"Printing aborted !",0
 Printline:	defw	0	;current line when printing
@@ -2853,7 +2851,7 @@ _edit_home2:	push	bc
 	call	downnormal
 	pop	bc
 	djnz	_edit_home2
-_edit_home3
+_edit_home3: 
 	LD	A,(Labellengte)
 	ADD	A,3
 	LD	(Editor_x),A
@@ -2935,8 +2933,8 @@ _editretbac1:
 	XOR	A
 	LD	(afb_offset),A
 	CALL	printscherm
-jpinvul	jp	editor_djon
-nietdown	ld	hl,editor_djon
+jpinvul: 	jp	editor_djon
+nietdown: 	ld	hl,editor_djon
 	ld	(jpinvul+1),hl
 	jp	editorbestur
 
@@ -3094,10 +3092,10 @@ edit_bs:
 	jr	_edit_del1
 ;----- DEL
 
-Edit_bs:	defb	0
+Edit_bs_:	defb	0
 edit_del:
 	xor	a
-_edit_del1:	ld	(Edit_bs),a
+_edit_del1:	ld	(Edit_bs_),a
 	CALL	C53DC
 	ld	hl,0
 	LD	(Labelbuffer+160),HL
@@ -3106,7 +3104,7 @@ _edit_del1:	ld	(Edit_bs),a
 	ld	c,a
 	ld	b,0
 	add	hl,bc
-	ld	a,(Edit_bs)
+	ld	a,(Edit_bs_)
 	or	a
 	jr	z,_edit_del2
 	dec	hl
@@ -3116,7 +3114,7 @@ _edit_del2:	ld	d,h
 	ld	bc,162
 	ldir
 	CALL	J53F9
-	ld	a,(Edit_bs)
+	ld	a,(Edit_bs_)
 	or	a
 	jp	z,editorbestur
 	jp	editor_left
@@ -4186,14 +4184,14 @@ bervram:
 	LD	B,A	;shorter! since Edit_y>=4
 	LD	HL,-80
 	LD	DE,80
-_bervram	ADD	HL,DE
+_bervram: 	ADD	HL,DE
 	DJNZ	_bervram
 	RET
 
 ;----- print info on screen
 
-printinfoRnr	ld	de,(Regelnr)
-printinfoDE	ld	hl,25*80+7
+printinfoRnr: 	ld	de,(Regelnr)
+printinfoDE: 	ld	hl,25*80+7
 	ld	b,5
 	call	printdecimaa
 	ld	hl,25*80+13
@@ -4219,7 +4217,7 @@ printinfoDE	ld	hl,25*80+7
 	ld	bc,Blockon
 	jp	printtekst
 
-printcol	LD	HL,25*80+26
+printcol: 	LD	HL,25*80+26
 	LD	A,(Editor_x)
 	LD	E,A
 	LD	D,#00
@@ -4583,7 +4581,7 @@ loaddisk:
 
 ;----- Load assembler file
 
-Doinclude:	defb	0
+Doinclude_:	defb	0
 
 inclfile:
 	ld	a,1
@@ -4592,7 +4590,7 @@ inclfile:
 loadasmfile:
 	xor	a
 _loadasm1:
-	ld	(Doinclude),a
+	ld	(Doinclude_),a
 	ld	(Used_fcb),de
 	ld	(Sp_asciiload),sp
 	ld	a,1
@@ -4672,7 +4670,7 @@ loadcont1:
 	ld	hl,(Laatstergl)
 	ld	(Laatsteregel),hl
 	ld	sp,(Sp_asciiload)
-	ld	a,(Doinclude)
+	ld	a,(Doinclude_)
 	or	a
 	jp	z,closefile
 	xor	a
@@ -4745,21 +4743,21 @@ _loadasm_end:
 
 _noasmfile:
 	ld	sp,(Sp_asciiload)
-	ld	a,(Doinclude)
+	ld	a,(Doinclude_)
 	or	a
 	scf
 	ret	nz
 	ld	bc,Noasmfile
-_jon_asc_err	ld	hl,15*80+(80-13)/2
+_jon_asc_err: 	ld	hl,15*80+(80-13)/2
 	call	printtekst
 	call	beep
 	jp	closefile
 Noasmfile:	defb	"No asm file !",0
 
-jon_ascii_err	LD	SP,(Sp_asciiload)
+jon_ascii_err: 	LD	SP,(Sp_asciiload)
 	LD	BC,Noasciifile
 	JR	_jon_asc_err
-Noasciifile	db	"No ascii file !",0
+Noasciifile: 	db	"No ascii file !",0
 
 goerror1:
 	ld	hl,error1
@@ -4768,7 +4766,7 @@ goerror2:
 	ld	hl,error2
 _goerror2_1:
 	ld	sp,(Sp_asciiload)
-	ld	a,(Doinclude)
+	ld	a,(Doinclude_)
 	or	a
 	scf
 	ret	nz
@@ -4780,7 +4778,7 @@ _goerror2_1:
 saveasmfile:
 	ld	(Used_fcb),de
 	ld	(Foutadres),iy
-	ld	iy,Saveblok
+	ld	iy,Saveblok_
 	ld	(iy),1
 	ld	de,#8000
 	ld	(iy+1),1
@@ -4966,7 +4964,7 @@ _saveasm_end:
 
 	;would be at 665A**************************************
 
-Saveblok:	defb	0
+Saveblok_:	defb	0
 Lastblok:	defb	0	;iy+1
 
 Headerasm:	defb	#fc
@@ -5295,19 +5293,19 @@ J6851:	LD	HL,v_jon1
 	EI
 	RET
 
-v_jon1	ds	10,0
-v_jon2	db	#80,0,0,0,0,0,0,0,0,#01
+v_jon1: 	ds	10,0
+v_jon2: 	db	#80,0,0,0,0,0,0,0,0,#01
 
 ;the following explanation may not be correct
 ;######################## Get sentence from buffer  IN: DE=line number
 ;             OUT: Sentence, [C] is end of text, A=length sentence (with [NC])
 ;       CHANGES: Everything except IX
 
-_haalzinjon	dw	0
+_haalzinjon: 	dw	0
 
-haalzinzin
+haalzinzin: 
 	LD	HL,Zin
-haalzinHL
+haalzinHL: 
 J6876:	LD	(_haalzinjon),HL
 	CALL	geefadrregel
 	JR	NC,J688D
@@ -5321,7 +5319,7 @@ J6876:	LD	(_haalzinjon),HL
 	SCF
 	RET
 
-J688D	call	zettextblok
+J688D: 	call	zettextblok
 	LD	HL,(_haalzinjon)
 	ld	b,160+1
 _printnext:	call	gettxtbuffer
@@ -5332,7 +5330,7 @@ _printnext:	call	gettxtbuffer
 	ld	(hl),a
 	inc	hl
 _contnatab:	djnz	_printnext
-_contnatab2	ld	a,160
+_contnatab2: 	ld	a,160
 	or	a
 	ret
 _printeinde:
@@ -5504,7 +5502,7 @@ _zetdatablo1:
 	dec	hl
 	ld	a,(hl)
 	ld	(Datslt),a
-_korterjon	ld	h,#80
+_korterjon: 	ld	h,#80
 	call	slot
 	pop	hl
 	ret
@@ -5528,7 +5526,7 @@ puttxtbuffer:
 	inc	(hl)
 	ld	a,(hl)
 	call	zettextblok
-_korterjon2	pop	hl
+_korterjon2: 	pop	hl
 	pop	af
 	res	6,d
 	ret
@@ -5650,7 +5648,7 @@ Bronerrors:	defb	0	;0=editor,1=ascii,2=debuggerline
 error1:	;Text buffer full
 	ld	bc,Txtbuf_full
 _error1_2:
-	ld	hl,(80-20)/2+80*Commline
+	ld	hl,+(80-20)/2+80*Commline
 _error1_1:
 	ld	a,(Bronerrors)
 	dec	a
@@ -5712,7 +5710,7 @@ Oudtest:	equ	kbuf+150	;**************************
 Showlabels:	defb	0	;0=off, 1=on (off after GO)
 
 __labels:
-showlabels:
+showlabels_:
 	ld	hl,3*80+18
 	ld	de,Errorhok
 	call	printblokkle
@@ -5903,7 +5901,7 @@ _showlabsp3:
 	LD	C,#FF
 	JR	Z,J6C3B
 	LD	C,#DF
-J6C3B	call	labeluitzin
+J6C3B: 	call	labeluitzin
 	jr	c,_showlabsp4	;no label
 	ld	hl,Label
 	ld	de,Register2
@@ -6540,7 +6538,7 @@ searchcursor:
 	LD	(HL),40
 	JR	C,J70DE
 	LD	(HL),80
-J70DE	ld	hl,(Searchregel)
+J70DE: 	ld	hl,(Searchregel)
 	ld	(Regelnr),hl
 	ld	a,Bovenaantext
 	ld	(Editor_y),a
@@ -6647,7 +6645,7 @@ copydeel:
 	inc	hl
 	or	a
 	jr	nz,_copydeel1
-J7194	ld	a," "
+J7194: 	ld	a," "
 _copydeel1:
 	ld	(de),a
 	inc	de
@@ -7329,12 +7327,12 @@ _alldos1_7:
 	cp	c
 	ld	a,b
 	jr	z,_alldos1_6
-_alldos1_5	dec	hl
+_alldos1_5: 	dec	hl
 	ld	(ix),c
 	inc	ix
 	ld	(ix),a
 	inc	ix
-_alldos1_6	or	a
+_alldos1_6: 	or	a
 	jr	nz,_alldos1_7
 _alldos1_1:
 	pop	bc
@@ -7572,7 +7570,7 @@ free:
 	cp	2
 	jr	nc,freememman
 	ld	a,c
-_freedos2_1	jp	0
+_freedos2_1: 	jp	0
 freememman:
 	ld	l,b
 	ld	h,c
@@ -7708,7 +7706,7 @@ _zoeken3:
 	ld	a,(Zoekrichting)
 	jr	z,_zoeken5	;cannot be empty
 
-_zoeken2	LD	A,(IY+#02)
+_zoeken2: 	LD	A,(IY+#02)
 	CP	#0B
 	JR	NZ,J78FF
 	LD	A,(IY+#00)
@@ -7716,7 +7714,7 @@ _zoeken2	LD	A,(IY+#02)
 	JR	NZ,J78FF
 	CALL	C7911
 	JR	NZ,_zoeken5
-J78FF
+J78FF: 
 	ld	a,(iy+2)
 	cp	10
 	ret	nz
@@ -7727,7 +7725,7 @@ J78FF
 	jr	nz,_zoeken5	;1st block of labelb. => primary
 	ret
 
-C7911	ld	a,(#f344)
+C7911: 	ld	a,(#f344)
 	cp	b
 	ld	a,(Zoekrichting)
 	ret
@@ -7880,7 +7878,7 @@ parseregist:
 	LD	hl,kbuf+#f4
 	LD	de,Inst1
 	LD	A,4
-_parseregist	LD	BC,4
+_parseregist: 	LD	BC,4
 	LDIR
 	ex	de,hl
 	LD	BC,Inst2-Inst1-4	;!!
@@ -7909,7 +7907,7 @@ Editor_y:	defb	2
 Editor_x:	defb	1
 Regelnr:	defw	1
 Laatsteregel:	defw	1
-afb_offset	dw	0
+afb_offset: 	dw	0
 Labellengte:	defb	12
 Retins:	defb	0	;0=off, 1=on
 Tabsonoff:	defb	1	;0=off, 1=on

@@ -1,8 +1,6 @@
 ;MAIN PROGRAM KONPASS #1.3
 ;#1.2.09: DOINCLUDE SEPARATE FCB
 
-	.label	13
-
 _SELDSK: equ 0Eh
 _FOPEN: equ 0Fh
 _FCLOSE: equ 10h
@@ -40,27 +38,27 @@ _RDDRV: equ 73h
 _WRDRV: equ 74h
 _DSPACE: equ 76h
 
-bdos	equ	#f37d	;!!!
-cursory_x	equ	#f3dc
-trgflg	equ	#f3e8
-msxtype	equ	#002d
-stopvlag	equ	#fc9b
-cursoronoff	equ	#fca9	;0=don't show
-insonoff	equ	#fcaa	;1=inscursor
-kbuf	equ	#f41f
-queuebc	equ	#f9f5	;256 bytes of space in sound queue b and c
-hookadres	equ	queuebc
-matrix	equ	#fbe5
-ctngcode	equ	#ff79
+bdos: 	equ	#f37d	;!!!
+cursory_x: 	equ	#f3dc
+trgflg: 	equ	#f3e8
+msxtype: 	equ	#002d
+stopvlag: 	equ	#fc9b
+cursoronoff: 	equ	#fca9	;0=don't show
+insonoff: 	equ	#fcaa	;1=inscursor
+kbuf: 	equ	#f41f
+queuebc: 	equ	#f9f5	;256 bytes of space in sound queue b and c
+hookadres: 	equ	queuebc
+matrix: 	equ	#fbe5
+ctngcode: 	equ	#ff79
 
-videoramfree	equ	#1a00	;from here videoram is free to use
+videoramfree: 	equ	#1a00	;from here videoram is free to use
 Dskerrline:	equ	14
-Testlabeladr	equ	#400c	;in ass/monitor segment
-MAININSTPROG	equ	#4009	;in debugger segment
-SETDEBPARS	equ	#400c	;in debugger segment
-ABOUTPROG equ #4015 	;in debugger segment
-REDEFCHARS equ #4018 	;in debugger segment
-PRINTDISKLINES equ #401B	;in debugger segment
+Testlabel_adr: 	equ	#400c	;in ass/monitor segment
+MAININSTPROG: 	equ	#4009	;in debugger segment
+SETDEBPARS: 	equ	#400c	;in debugger segment
+ABOUTPROG:  equ #4015 	;in debugger segment
+REDEFCHARS:  equ #4018 	;in debugger segment
+PRINTDISKLINES:  equ #401B	;in debugger segment
 
 ;--------------------------------------------
 	ORG	#0140
@@ -70,7 +68,7 @@ PRINTDISKLINES equ #401B	;in debugger segment
 	db	1,2	;version code (Spain:2,2)
 	dw	0	;was codename
 	JP	#8000+startcompass
-shellentry	DI
+shellentry: 	DI
 	LD	(sp_back_2_dos),SP
 	ld	hl,ctngcode
 	res	0,(hl)
@@ -84,7 +82,7 @@ shellentry	DI
 	ld	a,(#fcc5)
 	and	#0c
 	or	c
-not_expanded	LD	(dosbasic),A	;save result: 0=basic not0=dos
+not_expanded: 	LD	(dosbasic),A	;save result: 0=basic not0=dos
 
 	LD	HL,#FFFF	;on all pages: really switch the slot
 	LD	(oudslot),HL
@@ -99,7 +97,7 @@ not_expanded	LD	(dosbasic),A	;save result: 0=basic not0=dos
 	CALL	sethooks
 	CALL	data_2_editor
 
-noteerstekeer	CALL	clearhooks
+noteerstekeer: 	CALL	clearhooks
 	CALL	inidos
 	LD	A,(keer1e)
 	OR	A
@@ -117,11 +115,11 @@ noteerstekeer	CALL	clearhooks
 	LD	C,A
 	LD	B,#00
 	CALL	VRAMTORAM
-startassembl	LD	BC,(sloteditor)
+startassembl: 	LD	BC,(sloteditor)
 	LD	HL,#4000
 	LD	A,#01
-_startprogr	LD	DE,idhex
-_startprogr1	LD	(oldprog),A
+_startprogr: 	LD	DE,idhex
+_startprogr1: 	LD	(oldprog),A
 	LD	(calladdress),HL
 	LD	(slotsubroutin),BC
 	LD	HL,#FFFF
@@ -136,7 +134,7 @@ _startprogr1	LD	(oldprog),A
 	LD	DE,tab_memtabel
 	LD	A,(comline_nr)
 	db	#cd	;call
-calladdress	dw	0
+calladdress: 	dw	0
 	PUSH	AF
 	XOR	A
 	LD	(comline_nr),A
@@ -146,24 +144,24 @@ calladdress	dw	0
 	JP	Z,goshell
 	OR	A
 	JR	Z,quitcompass
-_gotonextprog	DEC	A
+_gotonextprog: 	DEC	A
 	JR	Z,startassembl	;1
 	DEC	A
 	JR	Z,startdebugger	;2
 	JR	startmonitor
-oldprog	db	0	;must be zero: start assembler 1st time
+oldprog: 	db	0	;must be zero: start assembler 1st time
 
-startdebugger	db	#1e	;better: ld e,n
-debuggerreg	db	0	;special info for debugger
+startdebugger: 	db	#1e	;better: ld e,n
+debuggerreg: 	db	0	;special info for debugger
 	LD	HL,#4000
 	LD	BC,(slotdebugger)
 	LD	A,#02
 	jr	_startprogr1
-startmonitor	LD	HL,#7000
+startmonitor: 	LD	HL,#7000
 	LD	BC,(slotmonitor)
 	LD	A,#03
 	jr	_startprogr
-setscreen1	LD	HL,#181E	;blink off line 3-26, 0,1,2not
+setscreen1: 	LD	HL,#181E	;blink off line 3-26, 0,1,2not
 	LD	BC,24*10
 	XOR	A
 	CALL	FILLVRAM
@@ -173,13 +171,13 @@ setscreen1	LD	HL,#181E	;blink off line 3-26, 0,1,2not
 	CALL	FILLVRAM
 	LD	HL,txt_bovenaan
 	JP	TEXTTOBLOK
-quitvlag	db	0
-quitcompass	LD	BC,(sloteditor)
+quitvlag: 	db	0
+quitcompass: 	LD	BC,(sloteditor)
 	CALL	zetslot
 	CALL	#401B	;release memory
 	ld	hl,(#f349)
 	db	#11	;LD DE,nn
-newf349	dw	0	;under dos2 this remains 0
+newf349: 	dw	0	;under dos2 this remains 0
 	ld	a,h
 	cp	d
 	jr	nz,alleslaten
@@ -187,9 +185,9 @@ newf349	dw	0	;under dos2 this remains 0
 	cp	e
 	jr	nz,alleslaten
 	db	#21	;LD HL,nn
-oldf349	dw	0
+oldf349: 	dw	0
 	ld	(#f349),hl
-alleslaten	XOR	A	;clear compassID
+alleslaten: 	XOR	A	;clear compassID
 	LD	(queuebc+6),A
 	LD	A,(dosversion)	;delete envitem compass under dos2
 	CP	#02
@@ -200,9 +198,9 @@ alleslaten	XOR	A	;clear compassID
 	LD	DE,queuebc+6	;value =0
 	LD	C,_SENV	;set envitem, now remove
 	CALL	bdos
-nietdos2	LD	A,#01
+nietdos2: 	LD	A,#01
 	LD	(quitvlag),A
-goshell	LD	A,(insonoff)
+goshell: 	LD	A,(insonoff)
 	LD	(stat_ins),A
 	XOR	A
 	LD	(cursoronoff),A
@@ -214,23 +212,23 @@ goshell	LD	A,(insonoff)
 	LD	H,#80
 	CALL	SLOT
 	LD	A,(tab_tpa+2)
-	call	SETPAGE2_DOS2
+	call	SETPAGE2_DOS2_
 	ld	a,(tab_tpa+1)
-	call	SETPAGE1_DOS2
+	call	SETPAGE1_DOS2_
 	LD	A,(quitvlag)
 	OR	A
 	JR	Z,shell
 	LD	A,#C9
 	LD	(disable_feda-hook+hookadres),a
 	JR	terminate
-shell	CALL	sethooks
-terminate	LD	A,(dosbasic)
+shell: 	CALL	sethooks
+terminate: 	LD	A,(dosbasic)
 	OR	A
 	JR	Z,uitbasic
 	LD	HL,(#F3F8)
 	LD	DE,dostekst
 	LD	B,8
-dosviabasic	LD	A,(DE)
+dosviabasic: 	LD	A,(DE)
 	INC	DE
 	CALL	putkeybuf
 	DJNZ	dosviabasic
@@ -240,13 +238,13 @@ uitbasic:
 	ld	hl,ctngcode
 	set	0,(hl)
 	JP	hook_back-hook+hookadres
-dostekst	db	"_SYSTEM",13
-stat_ins	db	1	;insstatus 0=block cursor 1=stripe cursor
-sp_back_2_dos	dw	0	;backup dos stack pointer
-keer1e	db	1	;after loading C is set to 1 (test on filename)
-dosbasic	db	0	;flag to see if you are from basic
+dostekst: 	db	"_SYSTEM",13
+stat_ins: 	db	1	;insstatus 0=block cursor 1=stripe cursor
+sp_back_2_dos: 	dw	0	;backup dos stack pointer
+keer1e: 	db	1	;after loading C is set to 1 (test on filename)
+dosbasic: 	db	0	;flag to see if you are from basic
 
-sethooks	CALL	gethookadres
+sethooks: 	CALL	gethookadres
 	LDIR
 	EXX
 	LDIR
@@ -258,7 +256,7 @@ sethooks	CALL	gethookadres
 	LD	HL,hookadres+cmd-hook	;cmdhook
 	LD	(#FE0E),HL
 	RET
-gethookadres	DI
+gethookadres: 	DI
 	LD	HL,#FDC2
 	LD	DE,orighookchget-hook+hookadres
 	LD	BC,5
@@ -267,14 +265,14 @@ gethookadres	DI
 	LD	DE,orighookcmd-hook+hookadres
 	LD	BC,5
 	RET
-clearhooks	CALL	gethookadres
+clearhooks: 	CALL	gethookadres
 	EX	DE,HL
 	LDIR
 	EXX
 	EX	DE,HL
 	LDIR
 	RET
-data_2_editor	CALL	getreg
+data_2_editor: 	CALL	getreg
 	EXX
 	LD	HL,buffer1024	;work area for unpacking codename
 	EXX
@@ -309,14 +307,14 @@ nxt_name_deb:
 	DJNZ	nxt_name_deb
 	ret
 
-chk_comline	LD	A,(#0080)	;is there anything else on the command line?
+chk_comline: 	LD	A,(#0080)	;is there anything else on the command line?
 	OR	A
 	RET	Z	;new
 	LD	(comline_nr),A
 	LD	HL,videoramfree
 	CALL	SETVRAMWRITE
 	LD	HL,#0081
-_chk_comline	LD	A,(HL)
+_chk_comline: 	LD	A,(HL)
 	INC	HL
 	CP	#20
 	JR	Z,_chk_comline	;spaces are ignored
@@ -324,9 +322,9 @@ _chk_comline	LD	A,(HL)
 	OR	A	;the zero byte
 	RET	Z
 	JR	_chk_comline
-comline_nr	db	0	;MUST be zero
+comline_nr: 	db	0	;MUST be zero
 
-SCREENCOMPASS	LD	A,80	;width 80
+SCREENCOMPASS: 	LD	A,80	;width 80
 	LD	(#F3AE),A
 	LD	HL,#0000	;color 15,0,0
 	LD	(#F3EA),HL
@@ -373,8 +371,8 @@ SCREENCOMPASS	LD	A,80	;width 80
 	CALL	FILLVRAM
 	LD	HL,txt_bovenaan
 	CALL	TEXTTOBLOK
-	call redefchars
-setcolors	DI
+	call redefchars_
+setcolors: 	DI
 	XOR	A
 	OUT	(#99),A
 	LD	A,#90
@@ -383,18 +381,18 @@ setcolors	DI
 	LD	BC,#209A
 	OTIR
 	RET
-txt_bovenaan	dw	1	;vramaddress
+txt_bovenaan: 	dw	1	;vramaddress
 	db	"Konpass #1.3",0
 	dw	62
 	db	"2022 by Konamiman",0
 	dw	0
-txt_menu	dw	2*80+4
+txt_menu: 	dw	2*80+4
 	db	" SYSTEM ",0
 	dw	0
-color	db	#00,0,#00,0,#77,7,#04,0,#17,1,#27,3,#51,1,#27,6
+color: 	db	#00,0,#00,0,#77,7,#04,0,#17,1,#27,3,#51,1,#27,6
 	db	#71,1,#73,3,#61,6,#63,6,#11,4,#65,2,#55,5,#77,7
 
-OLDSCREEN	CALL	WISBLINKTABEL
+OLDSCREEN: 	CALL	WISBLINKTABEL
 	CALL	CLS
 	LD	A,#01
 	LD	(cursoronoff),A	;cursor off
@@ -422,8 +420,8 @@ OLDSCREEN	CALL	WISBLINKTABEL
 	LD	IX,#005F
 	JP	gobios
 
-oldblink	db	0
-oldfunkkey	db	0
+oldblink: 	db	0
+oldfunkkey: 	db	0
 
 
 inidos:
@@ -496,9 +494,9 @@ set_abort_hook_dos1:
 	ld  (#F1E6),hl
 	RET
 
-diskhook1	dw	dodiskhook
-dodiskhook	db	#31	;ld sp,nn
-diskhook_sp	dw	0
+diskhook1: 	dw	dodiskhook
+dodiskhook: 	db	#31	;ld sp,nn
+diskhook_sp: 	dw	0
 	LD	HL,#FFFF
 	LD	(oudslot),HL
 	LD	(oudslot+2),HL
@@ -506,9 +504,9 @@ diskhook_sp	dw	0
 	CALL	zetslot
 	SCF
 	db	#c3	;jp nn
-diskhook_jp	dw	0
+diskhook_jp: 	dw	0
 
-haalpath	LD	C,_CURDRV	;get default drive
+haalpath: 	LD	C,_CURDRV	;get default drive
 	CALL	bdos
 	LD	(huidigedrive),A
 	ADD	A,"A"
@@ -540,42 +538,42 @@ haalpath	LD	C,_CURDRV	;get default drive
 	LD	(HL),"\"
 	INC	HL
 	RET
-dosversion	db	0	;dos 1 or 2
+dosversion: 	db	0	;dos 1 or 2
 is_nextor: db 0
-drives	db	0	;login vector
-huidigedrive	db	0	;default drive
-pathname	db	" :\"	;current default directory
+drives: 	db	0	;login vector
+huidigedrive: 	db	0	;default drive
+pathname: 	db	" :\"	;current default directory
 	ds	61,0
-pathnamebuf	ds	93,0
+pathnamebuf: 	ds	93,0
 
 ;Note: name_asc needs to be placed immediately after name_asm!
 names:
-name_asm	db	"NAME    ASM"
-name_asc	db	"NAME    ASC"
-name_bin	db	"NAME    BIN"
-name_blk	db	"NAME    BLK"
-name_com1	db	"NAME    COM"	;probably for that and ass.to disk
-name_com2	db	"NAME    COM"
-name_tsr	db	"NAME    TSR"
-name_rel	db	"NAME    REL"
+name_asm: 	db	"NAME    ASM"
+name_asc: 	db	"NAME    ASC"
+name_bin: 	db	"NAME    BIN"
+name_blk: 	db	"NAME    BLK"
+name_com1: 	db	"NAME    COM"	;probably for that and ass.to disk
+name_com2: 	db	"NAME    COM"
+name_tsr: 	db	"NAME    TSR"
+name_rel: 	db	"NAME    REL"
 
-stat_mem	db	0
-tab_ROMRAM	ds	#60,0	;ROMRAMtable, 3*16*2=#60 bytes
-tab_memory
-page0	db	0,0
-page1	db	0,0
-page2	db	0,0
-page3deb	db	0,0	;i.e. debugger, leave it
-page3	db	0,0
-tab_compass	ds	8,0	;compass blocks, 8 bytes
-sloteditor	equ	tab_compass+0	;ok
-slothoofdp	equ	tab_compass+2	;ok
-slotass	equ	tab_compass+4	;ok
-slotmonitor	equ	tab_compass+4	;ok
-slotdebugger	equ	tab_compass+6	;ok
-slotsubroutin	db	0,2
+stat_mem: 	db	0
+tab_ROMRAM: 	ds	#60,0	;ROMRAMtable, 3*16*2=#60 bytes
+tab_memory: 
+page0: 	db	0,0
+page1: 	db	0,0
+page2: 	db	0,0
+page3deb: 	db	0,0	;i.e. debugger, leave it
+page3: 	db	0,0
+tab_compass: 	ds	8,0	;compass blocks, 8 bytes
+sloteditor: 	equ	tab_compass+0	;ok
+slothoofdp: 	equ	tab_compass+2	;ok
+slotass: 	equ	tab_compass+4	;ok
+slotmonitor: 	equ	tab_compass+4	;ok
+slotdebugger: 	equ	tab_compass+6	;ok
+slotsubroutin: 	db	0,2
 
-slotregister	PUSH	BC
+slotregister: 	PUSH	BC
 	PUSH	DE
 	PUSH	HL
 	CALL	SLOT
@@ -587,7 +585,7 @@ slotregister	PUSH	BC
 ;own routine (in page 2) that turns on slot A on page 0
 ;unchanged: IX,IY,mirror registers
 ;this replaces the slotpage2 routine
-set_slot_p0	push	af
+set_slot_p0: 	push	af
 	ld	a,#ff
 	ld	(#8000+oudslot),a
 	pop	af
@@ -599,7 +597,7 @@ set_slot_p0	push	af
 	OR	B	;note: bits 2-6 are 0 for notexp.slot
 	OUT	(#A8),A
 	RET
-set_exp	rrca
+set_exp: 	rrca
 	rrca
 	ld	l,a
 	and	#c0
@@ -630,18 +628,18 @@ set_exp	rrca
 	ld	a,c
 	jr	set_slot_p0
 
-gobios	PUSH	IY
+gobios: 	PUSH	IY
 	LD	IY,(#FCC0)
 	CALL	#001C
 	POP	IY
 	RET
-prtidhexvoor	ld	a,"#"
+prtidhexvoor: 	ld	a,"#"
 	out	(#98),a
 	ret
-prtidbinvoor	ld	a,"%"
+prtidbinvoor: 	ld	a,"%"
 	out	(#98),a
 	ret
-beep	PUSH	AF
+beep: 	PUSH	AF
 	PUSH	BC
 	PUSH	DE
 	PUSH	HL
@@ -655,8 +653,8 @@ beep	PUSH	AF
 	POP	AF
 	RET
 
-SETVRAMWRITE	LD	A,#40
-setrwmain	LD	(invul_or),A
+SETVRAMWRITE: 	LD	A,#40
+setrwmain: 	LD	(invul_or),A
 	DI
 	BIT	7,H
 	RET	NZ
@@ -673,17 +671,17 @@ setrwmain	LD	(invul_or),A
 	LD	A,H
 	AND	#3F
 	db	#f6	;OR n
-invul_or	db	0
+invul_or: 	db	0
 	OUT	(#99),A
 	RET
-SETVRAMREAD	XOR	A
+SETVRAMREAD: 	XOR	A
 	JR	setrwmain
-RAMTOVRAM	EX	DE,HL
+RAMTOVRAM: 	EX	DE,HL
 	CALL	SETVRAMWRITE
 	LD	A,B
 	OR	A
 	JR	Z,_ramtovram1	;faster 8 bit counter
-_ramtovram3	LD	A,(DE)
+_ramtovram3: 	LD	A,(DE)
 	INC	DE
 	OUT	(#98),A
 	DEC	BC
@@ -691,13 +689,13 @@ _ramtovram3	LD	A,(DE)
 	OR	C
 	jp	NZ,_ramtovram3	;fast jmp
 	RET
-_ramtovram1	LD	B,C
-_ramtovram2	LD	A,(DE)
+_ramtovram1: 	LD	B,C
+_ramtovram2: 	LD	A,(DE)
 	INC	DE
 	OUT	(#98),A
 	DJNZ	_ramtovram2
 	RET
-FILLVRAM	ex	af,af'
+FILLVRAM: 	ex	af,af'
 	CALL	SETVRAMWRITE
 	LD	A,B
 	OR	A
@@ -705,7 +703,7 @@ FILLVRAM	ex	af,af'
 	ld	a,h
 	ex	af,af'
 	ld	h,a
-_fillvram3	LD	A,H
+_fillvram3: 	LD	A,H
 	OUT	(#98),A
 	DEC	BC
 	LD	A,B
@@ -714,41 +712,41 @@ _fillvram3	LD	A,H
 	ex	af,af'
 	ld	h,a
 	RET
-_fillvram1	LD	B,C
+_fillvram1: 	LD	B,C
 	ex	af,af'
-_fillvram2	OUT	(#98),A
+_fillvram2: 	OUT	(#98),A
 	DJNZ	_fillvram2
 	RET
-WISBLINKTABEL	LD	HL,#1800
+WISBLINKTABEL: 	LD	HL,#1800
 	LD	BC,27*10
 	XOR	A
 	JR	FILLVRAM
-CLS	LD	HL,#0000
+CLS: 	LD	HL,#0000
 	LD	BC,27*80
 	XOR	A
 	JR	FILLVRAM
 PRINTTEKST:
 	CALL	SETVRAMWRITE
-_printtekst	LD	A,(BC)
+_printtekst: 	LD	A,(BC)
 	OR	A
 	RET	Z
 	OUT	(#98),A
 	INC	BC
 	JR	_printtekst
-SETCOLOR2
-SETCOLOR1	LD	A,(kleur1)
+SETCOLOR2: 
+SETCOLOR1: 	LD	A,(kleur1)
 	DI
 	OUT	(#99),A
 	LD	A,#8C
 	OUT	(#99),A
 	RET
-kleur1	db	#23
+kleur1: 	db	#23
 	;kleur2 db #45
 
 ;----- Print decimal number  IN: HL=vramaddress, DE=number, B=number of characters
 ;----- Note: HL: bit15=1 => no vram address, B:bit7=1:no leading zeros
 ;----- Changes: AF, BC, DE, HL
-PRINTDECIMAAL	call	SETVRAMWRITE
+PRINTDECIMAAL: 	call	SETVRAMWRITE
 	push	bc
 	ld	hl,0
 	ld	(Decimaal),hl
@@ -779,7 +777,7 @@ oksub:	djnz	divide
 	ld	c,1
 	jr	z,_dec_cont
 	dec	c
-_dec_cont	ld	e,b
+_dec_cont: 	ld	e,b
 	ld	d,0
 	or	a
 	sbc	hl,de
@@ -796,7 +794,7 @@ Decimaal:	defb	0,0,0,0,0
 ;----- Print hexadecimal number  IN: HL=vramaddress, DE=number, B=number of characters
 ;----- Note: HL:bit15=1 => no vram address, B:bit7=1 => no id
 ;----- Changes: AF, BC, DE, HL
-PRINTHEXADECI	call	SETVRAMWRITE
+PRINTHEXADECI: 	call	SETVRAMWRITE
 	ld	hl,0
 	ld	(Decimaal),hl
 	ld	(Decimaal+2),hl
@@ -897,7 +895,7 @@ setbalk3:	rrca
 	djnz	setbalk3
 	ld	d,a
 	ld	b,c
-READVRAM	call	SETVRAMREAD
+READVRAM: 	call	SETVRAMREAD
 	in	a,(#98)
 	ret
 setbalk4:
@@ -912,7 +910,7 @@ wisbalk4:
 	jr	wisbalk6
 
 ;----- put bar on screen: IN: b=length, (h,l)=target
-SETBALK	call	setbalk1	;calculate offset
+SETBALK: 	call	setbalk1	;calculate offset
 setbalk5:	or	d
 	rrc	d
 	jr	c,setbalk4
@@ -920,7 +918,7 @@ setbalk6:	djnz	setbalk5
 	jr	WRITEVRAM
 
 ;----- clear bar from screen: IN: b=length, (h,l)=target
-WISBALK	call	setbalk1	;calculate offset
+WISBALK: 	call	setbalk1	;calculate offset
 	ex	af,af'
 	ld	a,d
 	cpl
@@ -931,7 +929,7 @@ wisbalk5:	and	d
 	jr	nc,wisbalk4
 wisbalk6:	djnz	wisbalk5
 
-WRITEVRAM	ex	af,af'
+WRITEVRAM: 	ex	af,af'
 	call	SETVRAMWRITE
 	ex	af,af'
 	out	(#98),a
@@ -939,7 +937,7 @@ WRITEVRAM	ex	af,af'
 
 ; Copy: from Buffer-->bep. lock+block
 ; ----- IN: DE=Target address (page 0-3), BC=Length
-PUTTORAM	ex	de,hl
+PUTTORAM: 	ex	de,hl
 	ld	a,1	;nasty
 	jr	_getfromram1
 
@@ -950,7 +948,7 @@ Command:	defb	0	;0=from memory, 1=to memory
 ; Copy: from bep. slot+block-->Buffer
 ; ----- IN: HL=Source address (page 0-3), BC=Length
 GETFROMRAM:	xor	a
-_getfromram1	ld	de,buffer1024
+_getfromram1: 	ld	de,buffer1024
 	di
 	ld	(Command),a
 	ld	(Broncopy),hl
@@ -1011,7 +1009,7 @@ _getfrompg3:	push	hl
 	ld	(Bron2),ix
 	ld	ix,_haalpage3
 	ld	iy,_haalpage0
-twopages	ld	(_call1+1),ix
+twopages: 	ld	(_call1+1),ix
 	ld	(_call2+1),iy	;2 call addresses
 	ex	de,hl	;de=source
 	ld	hl,(Bron2)
@@ -1036,12 +1034,12 @@ _call1:	call	0	;copy 1st part
 	ld	hl,(Bron2)
 _call2:	jp	0	;copy 2nd part
 Bron2:	defw	0
-_haalpage1	push	hl
+_haalpage1: 	push	hl
 	ld	a,(page1)
 	ld	h,#40
 	call	slotregister
 	ld	a,(page1+1)
-	call	SETPAGE1_DOS2
+	call	SETPAGE1_DOS2_
 	pop	hl
 	ld	a,(Command)
 	or	a
@@ -1052,13 +1050,13 @@ _haalpage1_1:	ldir
 	ld	h,#40
 	call	SLOT
 	ld	a,(slotsubroutin+1)
-	jp	SETPAGE1_DOS2
-_haalpage2	push	hl
+	jp	SETPAGE1_DOS2_
+_haalpage2: 	push	hl
 	ld	a,(page2)
 	ld	h,#80
 	call	slotregister
 	ld	a,(page2+1)
-	call	SETPAGE2_DOS2
+	call	SETPAGE2_DOS2_
 	pop	hl
 	ld	a,(Command)
 	or	a
@@ -1074,19 +1072,19 @@ _haalpage3:	ld	a,(Command)
 	ex	de,hl
 _haalpage3_1:	ldir
 	ret
-_haalpage0	push	hl
+_haalpage0: 	push	hl
 	push	de
 	push	bc
 	ld	a,(slothoofdp)
 	ld	h,#80
 	call	SLOT
 	ld	a,(slothoofdp+1)
-	call	SETPAGE2_DOS2	;Main program on page 2
+	call	SETPAGE2_DOS2_	;Main program on page 2
 	jp	_haalpage0_1+#8000
 _haalpage0_1:	ld	a,(page0+#8000)
 	call	set_slot_p0+#8000
 	ld	a,(page0+1+#8000)
-	call SETPAGE0_DOS2	;source page on page 0
+	call SETPAGE0_DOS2_	;source page on page 0
 	pop	bc
 	pop	de
 	pop	hl
@@ -1099,12 +1097,12 @@ _haalpage0_2:	ldir
 	ld	a,(slothoofdp+#8000)
 	call	set_slot_p0+#8000
 	ld	a,(slothoofdp+1+#8000)
-	call SETPAGE0_DOS2	;this program back on page 0
+	call SETPAGE0_DOS2_	;this program back on page 0
 	ld	a,(#f343)
 	ld	h,#80
 	jp	SLOT	;automatically return to page 0
 
-DOINCLUDE	LD	(diskhook_sp),SP
+DOINCLUDE: 	LD	(diskhook_sp),SP
 	PUSH	HL
 	LD	HL,(slotsubroutin)
 	LD	(sub),HL
@@ -1112,7 +1110,7 @@ DOINCLUDE	LD	(diskhook_sp),SP
 	LD	(diskhook_jp),HL
 	CALL	setdiskhooks
 	LD	A,#01
-	LD	(doinclude),A
+	LD	(doinclude_),A
 	ld	hl,fcb_work	;backup fcb_work
 	ld	de,fcb_inclbkup
 	ld	bc,37
@@ -1139,7 +1137,7 @@ DOINCLUDE	LD	(diskhook_sp),SP
 	PUSH	AF
 	CALL	CLOSEFILE
 	POP	AF
-_incl_error	PUSH	AF
+_incl_error: 	PUSH	AF
 	CALL	clrdiskhooks
 	ld	hl,fcb_inclbkup	;restore fcb_work
 	ld	de,fcb_work
@@ -1225,15 +1223,15 @@ Diskmenu:	defb	3	;start on 'dir'
 Driveletter:	defb	0
 Aantalfiles:	defb	0
 Asmbusy:	defb	0
-adrsfilepath	dw	0	;start address filename in path
-fcb_work	db	0,"???????????"
+adrsfilepath: 	dw	0	;start address filename in path
+fcb_work: 	db	0,"???????????"
 	ds	25
 	NOP		;0C7A
 	NOP		;0C7B
 	NOP		;0C7C
 	NOP		;0C7D
 	NOP		;0C7E
-fcb_inclbkup	ds	37
+fcb_inclbkup: 	ds	37
 
 GODISKDRIVE:
 	di
@@ -1248,7 +1246,7 @@ GODISKDRIVE:
 	ld (Buffer),a
 	xor	a
 	ld	(Formatdone),a
-	ld	(doinclude),a
+	ld	(doinclude_),a
 	call setdiskhooks_sperr
 	ld	bc,#0503
 	call	OFFSET
@@ -1269,7 +1267,7 @@ GODISKDRIVE:
 _okmenuid:
 	call	setsoort
 	jr	_nodiskasm
-_diskasm	ld	hl,23*80+7
+_diskasm: 	ld	hl,23*80+7
 	ld	a,23
 	call	WRITEVRAM
 	ld	hl,25*80+7
@@ -1286,9 +1284,9 @@ _diskasm	ld	hl,23*80+7
 	ld	b,3
 	jr	z,_diskasm1
 	ld	b,a
-_diskasm1	ld	a,b
+_diskasm1: 	ld	a,b
 	ld	(Diskmenu),a
-_nodiskasm	xor	a
+_nodiskasm: 	xor	a
 	ld	(Aantalfiles),a
 	inc	a
 	ld	(cursoronoff),a
@@ -1345,11 +1343,11 @@ diskhoofd:
 	ld	a,(matrix)
 	ld	bc,#0401
 	rrca
-_disk_no1234	rrca
+_disk_no1234: 	rrca
 	jp	nc,_ctrl1234
 	inc	c
 	djnz	_disk_no1234
-_disk_noctrl	ld	a,d
+_disk_noctrl: 	ld	a,d
 	cp	" "
 	jr	c,diskhoofd
 	jp	inputname
@@ -1367,7 +1365,7 @@ _diskback:
 	ret	z
 	scf
 	ret
-_diskright	ld	hl,Diskmenu
+_diskright: 	ld	hl,Diskmenu
 	ld	a,(hl)
 	cp	7
 	jp	z,diskhoofd
@@ -1382,16 +1380,16 @@ _diskright	ld	hl,Diskmenu
 	cp	4
 	jr	nz,_diskright1
 	inc	(hl)
-_diskright1	ld	a,(dosversion)
+_diskright1: 	ld	a,(dosversion)
 	dec	a
 	jr	nz,_diskright2
 	ld	a,(hl)
 	cp	5
 	jr	nz,_diskright2
 	inc	(hl)
-_diskright2	call	zetdiskbalk
+_diskright2: 	call	zetdiskbalk
 	jp	diskhoofd
-_diskleft	ld	hl,Diskmenu
+_diskleft: 	ld	hl,Diskmenu
 	ld	a,(hl)
 	dec	a
 	jp	z,diskhoofd
@@ -1406,7 +1404,7 @@ _diskleft	ld	hl,Diskmenu
 	cp	5
 	jr	nz,_diskleft3
 	dec	(hl)
-_diskleft3	ld	a,(Diskasm)
+_diskleft3: 	ld	a,(Diskasm)
 	or	a
 	jr	z,_diskleft1
 	ld	a,(hl)
@@ -1417,9 +1415,9 @@ _diskleft3	ld	a,(Diskasm)
 _diskleft2:	cp	1
 	jr	nz,_diskleft1
 	inc	(hl)
-_diskleft1	call	zetdiskbalk
+_diskleft1: 	call	zetdiskbalk
 	jp	diskhoofd
-_diskspace	ld	a,(Diskmenu)
+_diskspace: 	ld	a,(Diskmenu)
 	dec	a
 	jp	z,_disksave
 	dec	a
@@ -1435,7 +1433,7 @@ _diskspace	ld	a,(Diskmenu)
 	dec	a
 	jp	z,_diskformat
 	jp	diskhoofd
-_ctrl1234	call	WISKEYBUFFER
+_ctrl1234: 	call	WISKEYBUFFER
 	ld	a,(Bronprog)
 	dec	a
 	ld	b,a	;this is different in v1.1 compared to v1.0
@@ -1451,14 +1449,14 @@ _ctrl1234	call	WISKEYBUFFER
 	ld (Buffer),a
 	call	jon1
 	jp	diskhoofdprt
-_ctrl1234_1	push	hl
+_ctrl1234_1: 	push	hl
 	ld	hl,#4003
 	jp	GOTOEDITOR
-zetdiskbalk	call	balkadres
+zetdiskbalk: 	call	balkadres
 	jp	SETBALK
-wisdiskbalk	call	balkadres
+wisdiskbalk: 	call	balkadres
 	jp	WISBALK
-balkadres	ld	l,24
+balkadres: 	ld	l,24
 	ld	a,(Diskmenu)
 	ld	b,a
 	cp	2
@@ -1469,7 +1467,7 @@ balkadres	ld	l,24
 	ld	h,1
 	ld	b,13
 	ret
-_balknorm	ld	a,1-7
+_balknorm: 	ld	a,1-7
 _balkadres1:	add	a,7
 	djnz	_balkadres1
 	ld	h,a
@@ -1482,7 +1480,7 @@ _disktype:
 	ld	hl,fcb_work+1
 	ld	bc,11
 	ldir
-_type_sect	call	soortmenu
+_type_sect: 	call	soortmenu
 	call	jon1
 	jp	diskhoofdprt
 
@@ -1494,7 +1492,7 @@ _diskdir_2:
 	call	printdir
 	ld	a,(Aantalfiles)
 	or	a
-	call	nz,filemenu
+	call	nz,filemenu_
 	jp	diskhoofd
 
 ;--Mkdir (only comes here in dos2)
@@ -1551,17 +1549,17 @@ _diskmkdir1:
 	ld	(de),a
 	ret
 
-_mkdir_vul	ld	a,(hl)
+_mkdir_vul: 	ld	a,(hl)
 	inc	hl
 	cp	" "
 	jr	z,_mkdir_vul1
 	ld	(de),a
 	inc	de
-_mkdir_vul1	djnz	_mkdir_vul
+_mkdir_vul1: 	djnz	_mkdir_vul
 	ret
 
 ;--Backup on/asm/asc
-_diskbackup	ld	hl,Backuponoff
+_diskbackup: 	ld	hl,Backuponoff
 	inc	(hl)
 	ld	a,(hl)
 	cp	3
@@ -1691,14 +1689,14 @@ _ask_are_you_sure_core:
 
 ;--Format
 Formatdone:	defb	0
-_diskformat	ld	a,1
+_diskformat: 	ld	a,1
 	ld	(Formatdone),a
 	call	inidir
 	ld	a,(#f344)
 	ld	h,#80
 	call	SLOT
 	ld	a,(labelbuffer+2)
-	call	SETPAGE2_DOS2
+	call	SETPAGE2_DOS2_
 	ld	a,(dosversion)
 	dec	a
 	jr	z,_formdos1
@@ -1791,7 +1789,7 @@ _formdos1_maybe_havechoices:
 	ld bc,err_cannot_format
 	jr _formdos1_showerror
 
-_formdos1_havechoices
+_formdos1_havechoices: 
 	call	formoptie
 	pop	de
 	jr	c,_formdos2cnt
@@ -1845,8 +1843,8 @@ formoptie:
 	call	PRINTTEKST
 	pop	de
 	ld	hl,10*80+2
-_formloop1	push	hl
-_formloop	ld	a,(de)
+_formloop1: 	push	hl
+_formloop: 	ld	a,(de)
 	inc	de
 	or	a
 	jr	z,_formoptie1
@@ -1855,13 +1853,13 @@ _formloop	ld	a,(de)
 	call	WRITEVRAM
 	inc	hl
 	jr	_formloop
-_formoptie2	inc	de
+_formoptie2: 	inc	de
 	pop	hl
 	ld	bc,80
 	add	hl,bc
 	jr	_formloop1
-_formoptie1	pop	hl
-_formloop2	call	GETKEY
+_formoptie1: 	pop	hl
+_formloop2: 	call	GETKEY
 	cp	27
 	jr	z,_foptieesc
 	cp	1
@@ -1883,7 +1881,7 @@ _form_print:
 	pop	af
 	ret
 Form_txt:	defb	"Formatting...",0
-_foptieesc	scf
+_foptieesc: 	scf
 	ret
 
 format_errors:
@@ -1923,7 +1921,7 @@ get_err_length:
 
 
 ;--Load
-printload	ld	hl,14*80+(80-10)/2
+printload: 	ld	hl,14*80+(80-10)/2
 	ld	bc,Loading
 	jp	PRINTTEKST
 Loading:	defb	"Loading...",0
@@ -1999,21 +1997,21 @@ _disk_asm:
 	ld	l,(ix)
 	ld	h,(ix+1)
 	jp	(hl)
-_noasmdisk	dec	a
+_noasmdisk: 	dec	a
 	jr	nz,_noasmtsr
 	ld	l,(ix+2)
 	ld	h,(ix+3)
 	jp	(hl)
-_noasmtsr	ld	l,(ix+4)
+_noasmtsr: 	ld	l,(ix+4)
 	ld	h,(ix+5)
 	jp	(hl)
-_load_asm	ld	l,(ix)
+_load_asm: 	ld	l,(ix)
 	ld	h,(ix+1)
 	jp	(hl)
-_load_asc	ld	l,(ix+4)
+_load_asc: 	ld	l,(ix+4)
 	ld	h,(ix+5)
 	jp	(hl)
-_load_blk	ld	l,(ix+8)
+_load_blk: 	ld	l,(ix+8)
 	ld	h,(ix+9)
 	jp	(hl)
 _load_bin:
@@ -2082,7 +2080,7 @@ _nobinfile:
 	call	beep
 	jp	CLOSEFILE
 Nobinfile:	defb	" No binary file !",0
-printbin	ld	hl,Bintext
+printbin: 	ld	hl,Bintext
 	call	TEXTTOBLOK
 	ld	de,(Startldadr)
 	ld	b,4
@@ -2096,7 +2094,7 @@ printbin	ld	hl,Bintext
 	ld	b,4
 	ld	hl,19*80+17
 	jp	PRINTHEXADECI
-Bintext	defw	19*80+10
+Bintext: 	defw	19*80+10
 	defb	"Exec:",0
 Bintext1:	defw	17*80+10
 	defb	"Start:",0
@@ -2156,7 +2154,7 @@ _dat_again1:
 
 Lengthfile:	defw	0
 
-_load_sect	call	wissaveload
+_load_sect: 	call	wissaveload
 	ld	hl,Secttxt
 	call	TEXTTOBLOK
 	call	printinpsect
@@ -2169,7 +2167,7 @@ _load_sect	call	wissaveload
 	ld	de,(Startsect)
 	ld	hl,(Sectadr)
 
-_load_sect1	push	bc
+_load_sect1: 	push	bc
 	push	de
 	push	hl
 	ld	a,(huidigedrive)
@@ -2226,7 +2224,7 @@ Sectadr:	defw	0
 Startsect:	defw	14
 Lengthsect:	defw	1
 Sectsize:	defw	0
-printinpsect	ld	bc,_ALLOC
+printinpsect: 	ld	bc,_ALLOC
 	call	bdos
 	ld	(Sectsize),bc
 	ld	hl,17*80+19
@@ -2302,7 +2300,7 @@ _disksave:
 	call	fcb_create
 	or	a
 	jp	nz,writeerror
-_disksave1	ld	a,(Soort)
+_disksave1: 	ld	a,(Soort)
 	add	a,a
 	ld	e,a
 	ld	d,0
@@ -2310,7 +2308,7 @@ _disksave1	ld	a,(Soort)
 	jp	_diskloadcnt
 Jp_Saves:	defw	_save_asm,_save_asc,_save_bin,_save_data
 	defw	_save_blk,_save_sect
-_save_asm	push	ix
+_save_asm: 	push	ix
 	push	iy
 	push	de
 	ld	a,(Backuponoff)
@@ -2325,7 +2323,7 @@ _save_asm	push	ix
 	ld	l,(ix+2)
 	ld	h,(ix+3)
 	jp	(hl)
-_save_asc	push	ix
+_save_asc: 	push	ix
 	push	iy
 	push	de
 	ld	a,(Backuponoff)
@@ -2340,7 +2338,7 @@ _save_asc	push	ix
 	ld	l,(ix+6)
 	ld	h,(ix+7)
 	jp	(hl)
-_save_blk	ld	l,(ix+10)
+_save_blk: 	ld	l,(ix+10)
 	ld	h,(ix+11)
 	jp	(hl)
 _save_bin:
@@ -2361,7 +2359,7 @@ _save_bin:
 	call	PRINTTEKST
 	call	bininput1
 	call	bininput2
-_bin_again3	ld	hl,19*80+17
+_bin_again3: 	ld	hl,19*80+17
 	ld	de,Exectxt
 	call	inputbin
 	jp	c,CLOSEFILE
@@ -2490,7 +2488,7 @@ _save_sect_confirmed:
 	ld	bc,(Lengthsect)
 	ld	de,(Startsect)
 	ld	hl,(Sectadr)
-_save_sect1	push	bc
+_save_sect1: 	push	bc
 	push	de
 	ld	bc,(Sectsize)
 	add	hl,bc
@@ -2532,7 +2530,7 @@ ask_sector_write_confirmation:
 	call	bdos
 	ld	a,(buffer1024+11)
 	cp	#f8
-	ld	hl,(Dskerrline-2)*80+(80-19)/2
+	ld	hl,+(Dskerrline-2)*80+(80-19)/2
 	ld	bc,Noflop
 	call	c,PRINTTEKST
 	jp ask_are_you_sure_no_cls
@@ -2608,7 +2606,7 @@ inputpath:
 	ld	bc,63
 	ld	(hl),0
 	ldir		;delete old path
-_inputagain	ld	hl,333+2*80
+_inputagain: 	ld	hl,333+2*80
 	ld	de,pathnamebuf
 	ld	b,63
 	ld	a,%10000001	;[ESC] and start at end
@@ -2619,7 +2617,7 @@ _inputagain	ld	hl,333+2*80
 	ld	bc,64
 	ldir
 	jp	diskhoofdprt
-_inputpath1	call	testpath
+_inputpath1: 	call	testpath
 	jr	c,_inputagain	;BAD PATH
 	ld	a,(dosversion)
 	dec	a
@@ -2635,7 +2633,7 @@ _inputpath1	call	testpath
 	ld	bc,20
 	ldir		;Copy name back
 	call	printpath
-_inputpath2	jp	jon2
+_inputpath2: 	jp	jon2
 
 ;--print directory on screen (including directories with < >)
 printdir:
@@ -2660,7 +2658,7 @@ inidir:
 	ld	(Vramnaam),hl
 	ld	hl,8*80
 	ld	b,15
-inidircont	call	SETVRAMWRITE
+inidircont: 	call	SETVRAMWRITE
 _inidir2:	push	bc
 	ld	a,22
 	out	(#98),a
@@ -2706,7 +2704,7 @@ doprintdir:
 	ld	a,(dosversion)
 	dec	a
 	jp	z,_dir_dos1
-_dir_dos2	ld	a,(huidigedrive)
+_dir_dos2: 	ld	a,(huidigedrive)
 	ld	e,a
 	call	prtfreedisk
 	call	dos2firstent
@@ -2715,7 +2713,7 @@ _dir_dos2	ld	a,(huidigedrive)
 	ret	nz
 	call printpath
 	call	printfile
-_nextdos2dir	call	dos2nextentr
+_nextdos2dir: 	call	dos2nextentr
 	or	a
 	ret	nz
 	call	printfile
@@ -2792,7 +2790,7 @@ dos2nextentr:
 	ld	ix,buffer1024
 	ld	c,_FNEXT
 	jp	bdos
-_dir_dos1	ld	a,(huidigedrive)
+_dir_dos1: 	ld	a,(huidigedrive)
 	ld	e,a
 	call	prtfreedisk
 	ld	de,buffer1024
@@ -2806,7 +2804,7 @@ _dir_dos1	ld	a,(huidigedrive)
 	or	a
 	jr	nz,_enddos1dir
 	call	printfile
-_nextdos1dir	call	dos1nextentr
+_nextdos1dir: 	call	dos1nextentr
 	or	a
 	jr	nz,_enddos1dir
 	call	printfile
@@ -2817,26 +2815,26 @@ _nextdos1dir	call	dos1nextentr
 	jr	c,_enddos1dir
 	call	inidir
 	jr	_nextdos1dir
-_enddos1dir	ld	hl,Oldfcb
+_enddos1dir: 	ld	hl,Oldfcb
 	ld	de,fcb_work+1
 	ld	bc,11
 	ldir
 	ret
-dos1firstent	ld	de,fcb_work
+dos1firstent: 	ld	de,fcb_work
 	ld	c,_SFIRST
 	jp	bdos
-dos1nextentr	ld	c,_SNEXT
+dos1nextentr: 	ld	c,_SNEXT
 	jp	bdos
 Oldfcb:	defs	11
-vulfcbin	ld	b,11
+vulfcbin: 	ld	b,11
 	ld	hl,fcb_work+1
-_dir_dos1_1	ld	(hl)," "
+_dir_dos1_1: 	ld	(hl)," "
 	inc	hl
 	djnz	_dir_dos1_1
 	ld	hl,(adrsfilepath)
 	ld	de,fcb_work+1
 	ld	b,0
-_dir_dos1_2	ld	a,b
+_dir_dos1_2: 	ld	a,b
 	cp	11
 	jr	z,_dir_dos1_en
 	ld	a,(hl)
@@ -2852,41 +2850,41 @@ _dir_dos1_2	ld	a,b
 	ld	(de),a
 	inc	de
 	inc	b
-_dir_dos1_3	jr	_dir_dos1_2
-_dir_dos1_8	ld	a,b
+_dir_dos1_3: 	jr	_dir_dos1_2
+_dir_dos1_8: 	ld	a,b
 	cp	9
 	jr	nc,_dir_dos1_en
 	ld	b,8
 	ld	de,fcb_work+9
 	jr	_dir_dos1_2
-_dir_dos1_5	ld	a,b
+_dir_dos1_5: 	ld	a,b
 	cp	8
 	jr	nc,_dir_dos1_4
 	ld	a,8
 	sub	b
 	ld	b,a
 	ld	a,"?"
-_dir_dos1_6	ld	(de),a
+_dir_dos1_6: 	ld	(de),a
 	inc	de
 	djnz	_dir_dos1_6
 	ld	b,8
 	ld	de,fcb_work+9
 	jr	_dir_dos1_2
-_dir_dos1_4	ld	a,11
+_dir_dos1_4: 	ld	a,11
 	sub	b
 	ld	b,a
-_dir_dos1_9	ld	a,"?"
-_dir_dos1_7	ld	(de),a
+_dir_dos1_9: 	ld	a,"?"
+_dir_dos1_7: 	ld	(de),a
 	inc	de
 	djnz	_dir_dos1_7
 	ld	b,11
-_dir_dos1_en	ld	a,b
+_dir_dos1_en: 	ld	a,b
 	or	a
 	ld	b,11
 	jr	z,_dir_dos1_9	;"*.*" 
 	ret
 ;--print continue (y/n)OUT:[C]=no
-prtcontinue	ld	hl,1680+33+80
+prtcontinue: 	ld	hl,1680+33+80
 	ld	bc,Continue
 	call	PRINTTEKST
 	ld	hl,#2016
@@ -2912,10 +2910,10 @@ prtcontinue	ld	hl,1680+33+80
 Continue:	defb	"Continue (y/n)",0
 ;--print file on screen with < and > for directories
 Filename:	defs	14	;<namename.ext>
-printfile	ld	ix,Filename
+printfile: 	ld	ix,Filename
 	ld	hl,Filename
 	ld	b,14
-_printfile3	ld	(hl),0
+_printfile3: 	ld	(hl),0
 	inc	hl
 	djnz	_printfile3
 	ld	de,Filename+1
@@ -2955,7 +2953,7 @@ _printfile1:	add	hl,de
 	add	hl,de
 	ld	(Vramnaam),hl
 	ret
-_dos2printfi	ld	a,(buffer1024+14)
+_dos2printfi: 	ld	a,(buffer1024+14)
 	and	%00010000
 	jr	z,_dos2printf1
 	ld	(ix),"["
@@ -2973,8 +2971,8 @@ _dos2printfi	ld	a,(buffer1024+14)
 	ret		;".."   
 _dos2printf3:	ld	(ix+1),0
 _dos1printfi:
-_dos2printf1	ld	b,8
-_dos1printf1	ld	a,(hl)
+_dos2printf1: 	ld	b,8
+_dos1printf1: 	ld	a,(hl)
 	inc	hl
 	or	a
 	ret	z
@@ -2983,11 +2981,11 @@ _dos1printf1	ld	a,(hl)
 	ld	(de),a
 	inc	de
 	djnz	_dos1printf1
-_dos2printf2	ld	a,(hl)
+_dos2printf2: 	ld	a,(hl)
 	or	a
 	ret	z
 	ld	(ix+9),"."
-_dos2printf4	ld	a,(hl)
+_dos2printf4: 	ld	a,(hl)
 	inc	hl
 	cp	"."
 	jr	z,_dos2printf4	;ALSO GOOD WITH DOS 2!
@@ -3004,13 +3002,13 @@ X_file1:	defb	0
 Y_file1:	defb	0
 Filemenu:	defb	0
 
-filemenu:
+filemenu_:
 	ld	hl,#0101
 	ld	(X_file1),hl
 	ld	a,h
 	ld	(Filemenu),a
 	call	zetfilebalk
-filehoofd	call	GETKEY
+filehoofd: 	call	GETKEY
 	cp	27
 	jr	z,_fileback
 	cp	1
@@ -3031,7 +3029,7 @@ filehoofd	call	GETKEY
 _fileback:
 	call inidir
 	jp	wisfilebalk
-_fileright	ld	a,(Aantalfiles)
+_fileright: 	ld	a,(Aantalfiles)
 	ld	b,a
 	ld	a,(Filemenu)
 	cp	b
@@ -3048,7 +3046,7 @@ _fileright	ld	a,(Aantalfiles)
 	ld	hl,Filemenu
 	inc	(hl)
 	jr	filehoofd
-_fileleft	ld	hl,X_file1
+_fileleft: 	ld	hl,X_file1
 	ld	a,(hl)
 	cp	1
 	jr	z,filehoofd
@@ -3060,7 +3058,7 @@ _fileleft	ld	hl,X_file1
 	ld	hl,Filemenu
 	dec	(hl)
 	jr	filehoofd
-_fileup	ld	hl,Y_file1
+_fileup: 	ld	hl,Y_file1
 	ld	a,(hl)
 	cp	1
 	jp	z,filehoofd
@@ -3073,7 +3071,7 @@ _fileup	ld	hl,Y_file1
 	sub	5
 	ld	(Filemenu),a
 	jp	filehoofd
-_filedown	ld	a,(Filemenu)
+_filedown: 	ld	a,(Filemenu)
 	add	a,5
 	ld	b,a
 	ld	a,(Aantalfiles)
@@ -3106,11 +3104,11 @@ _filespace_select:
 	ldir
 	call	jon2
 	call	prtfilenaam
-_filespace1	jp	_fileback
+_filespace1: 	jp	_fileback
 
 ;----- remove file from screen   (empty places become spaces, without ".")
 ;----- OUT: filename in FILENAME+2, [C]=subdirectory
-haalfile	ld	hl,7*80-12+1	;not "["
+haalfile: 	ld	hl,7*80-12+1	;not "["
 	ld	a,(Y_file1)
 	ld	b,a
 	ld	de,80
@@ -3164,7 +3162,7 @@ _file_subdir:
 	ld	a,"."
 	ld	(de),a
 	inc	de
-_file_subdi1	ld	b,3
+_file_subdi1: 	ld	b,3
 	call	_mkdir_vul
 	xor	a
 	ld	(de),a
@@ -3178,15 +3176,15 @@ _file_subdi1	ld	b,3
 	ldir		;Copy name back
 	call	printpath
 	call	printdir
-	jp	filemenu
-zetfilebalk	call	filebalkadre
+	jp	filemenu_
+zetfilebalk: 	call	filebalkadre
 	ld	b,14
 	jp	SETBALK
 wisfilebalk:
 	call	filebalkadre
 	ld	b,14
 	jp	WISBALK
-filebalkadre	ld	a,(X_file1)
+filebalkadre: 	ld	a,(X_file1)
 	ld	b,a
 	ld	a,3-15
 _filebalkad1:	add	a,15
@@ -3205,7 +3203,7 @@ soortmenu:
 	dec	a
 	jr	z,_soortmenu1
 	ld	ix,Debfiles+1	;Debugger and Monitor alike
-_soortmenu1	ld	a,(ix-1)
+_soortmenu1: 	ld	a,(ix-1)
 	ld	de,kbuf
 	ld	(de),a	;vertical height
 	inc	de
@@ -3216,7 +3214,7 @@ _soortmenu1	ld	a,(ix-1)
 	ld	(de),a
 	inc	de
 	ld	a,(ix-1)	;Number
-_soortmenu2	ld	l,(ix)
+_soortmenu2: 	ld	l,(ix)
 	inc	ix
 	ld	h,(ix)
 	inc	ix
@@ -3228,7 +3226,7 @@ _soortmenu2	ld	l,(ix)
 	ld	hl,Soortmenvram
 	ld	ix,kbuf
 	call	PRINTMENU
-_soortmenu4	ld	a,(Soortmenopt)
+_soortmenu4: 	ld	a,(Soortmenopt)
 	ld	c,a
 	add	a,10
 	ld	l,a	;MUST !!!
@@ -3249,20 +3247,20 @@ _soortmenu4	ld	a,(Soortmenopt)
 	jr	z,_soortmenu3
 	or	a
 	jr	nz,_soortmenu4
-_soortmenu3	ld	hl,Soortmenvram
+_soortmenu3: 	ld	hl,Soortmenvram
 	ld	ix,kbuf
 	call	WISOUDMENU
 	call	setsoort2
 	jp	prtdskinfo
-_soortmenuba	ld	hl,Soortmenvram
+_soortmenuba: 	ld	hl,Soortmenvram
 	ld	ix,kbuf
 	jp	WISOUDMENU
-setsoort1	ld	a,(Bronprog)
+setsoort1: 	ld	a,(Bronprog)
 	dec	a
 	ld	a,(Soort)
 	ld	b,a
 	jr	z,_soortasm	;assembler
-_soortdeb	cp	3
+_soortdeb: 	cp	3
 	ld	b,1
 	jr	z,_soortasm
 	inc	b
@@ -3272,35 +3270,35 @@ _soortdeb	cp	3
 	cp	6
 	jr	z,_soortasm
 	ld	b,1
-_soortasm	ld	a,b
+_soortasm: 	ld	a,b
 	ld	(Soortmenopt),a
 	ret
-setsoort	call	setsoort1
-setsoort2	ld	a,(Bronprog)
+setsoort: 	call	setsoort1
+setsoort2: 	ld	a,(Bronprog)
 	dec	a
 	ld	a,(Soortmenopt)
 	ld	b,a
 	jr	z,_soortasm1
-_soortdeb1	dec	a
+_soortdeb1: 	dec	a
 	ld	b,3
 	jr	z,_soortasm1
 	inc	b
 	dec	a
 	jr	z,_soortasm1
 	ld	b,6
-_soortasm1	ld	a,b
+_soortasm1: 	ld	a,b
 	ld	(Soort),a
 	ret
 Asmfiles:	defb	6
 	defw	Asmf,Ascf,Binf,Datf,Blkf,Sect
 Debfiles:	defb	3
 	defw	Binf,Datf,Sect
-Asmf	defb	" Asm file  "
-Ascf	defb	" Ascii file"
-Binf	defb	"Binary file"
-Datf	defb	" Data file "
-Blkf	defb	"Block file "
-Sect	defb	"  Sector   "
+Asmf: 	defb	" Asm file  "
+Ascf: 	defb	" Ascii file"
+Binf: 	defb	"Binary file"
+Datf: 	defb	" Data file "
+Blkf: 	defb	"Block file "
+Sect: 	defb	"  Sector   "
 ;--Print info from disk on screen
 prtdskinfo:
 	call	printtype
@@ -3315,9 +3313,9 @@ printtype:
 	jr	nz,_printtype2
 	ld	hl,Asmf-11
 	ld	a,(Soort)
-_printtype2	ld	b,a
+_printtype2: 	ld	b,a
 	ld	de,11
-_printtype1	add	hl,de
+_printtype1: 	add	hl,de
 	djnz	_printtype1
 	ld	de,4*80+8
 	ld	bc,11
@@ -3326,7 +3324,7 @@ _printtype1	add	hl,de
 Asmdiskf:	defb	"Asm to disk"
 AsmTSRf:	defb	"Asm to TSR "
 Asmrel:	defb	"Asm reloc. "
-printboven	ld	hl,4*80+36
+printboven: 	ld	hl,4*80+36
 	ld	a,(Bronprog)
 	dec	a
 	ld	a," "
@@ -3350,7 +3348,7 @@ Asm:	defb	"Asm"
 Asc:	defb	"Asc"
 
 ;--print path and drive on screen
-printpath	ld	hl,6*80+3+10
+printpath: 	ld	hl,6*80+3+10
 	ld	bc,64
 	xor	a
 	call	FILLVRAM	;delete old path
@@ -3420,7 +3418,7 @@ schuifdrives:
 	ret
 
 _badpath:
-	LD	A,(doinclude)
+	LD	A,(doinclude_)
 	OR	A
 	SCF
 	RET	NZ
@@ -3431,12 +3429,12 @@ printpath_error:
 	call _diskkill2
 	jp diskhoofd
 
-txt_badpath	db	"Invalid drive !",0
+txt_badpath: 	db	"Invalid drive !",0
 
-doinclude	db	0
+doinclude_: 	db	0
 
 ;--print file name
-prtfilenaam	ld	hl,24*80+53+10
+prtfilenaam: 	ld	hl,24*80+53+10
 	ld	bc,12
 	xor	a
 	call	FILLVRAM
@@ -3469,12 +3467,12 @@ beradrname:
 	jr	z,_beradrname1
 	ld	hl,Disknames-2
 	jr	_beradrname2
-_beradrname1	ld	hl,Names-2
+_beradrname1: 	ld	hl,Names_-2
 	ld	a,(Soort)
 	cp	6
 	scf
 	ret	z
-_beradrname2	add	a,a
+_beradrname2: 	add	a,a
 	ld	e,a
 	ld	d,0
 	add	hl,de
@@ -3483,7 +3481,7 @@ _beradrname2	add	a,a
 	ld	d,(hl)
 	xor	a
 	ret
-Names:	dw	name_asm,name_asc,name_bin,name_com1,name_blk
+Names_:	dw	name_asm,name_asc,name_bin,name_com1,name_blk
 Disknames:	dw	name_com2,name_tsr,name_rel
 
 ;--Calculate and print kB free on disk    IN: E=disknr (1-8)
@@ -3517,7 +3515,7 @@ _prtfreedisk_is_m:
 	rr d
 	rr e
 
-_prtfreedisk_is_M:
+_prtfreedisk_is_M_:
 	ld a,"M"
 	jr _prtfreedisk_doprint
 
@@ -3542,7 +3540,7 @@ _prtfreedisk_doprint2:
 	ld	hl,4*80+70
 	ld	b,5
 	jp	PRINTDECIMAAL
-ber_kb	push	hl
+ber_kb: 	push	hl
 	ld	e,a
 	ld	d,0
 	call	b16_mu
@@ -3556,7 +3554,7 @@ _prtfreedis2:	srl	b	;/2
 	rl	e
 	rl	d	;*2
 	jr	_prtfreedis2
-_prtfreedis1	ld	b,2
+_prtfreedis1: 	ld	b,2
 _prtfreedis3:	srl	d
 	rr	e
 	rr	h
@@ -3587,13 +3585,13 @@ setdirectory:
 	LD	C,_CHDIR	;set directory
 	JP	bdos
 
-set_DTA	ld	c,_SETDTA
+set_DTA: 	ld	c,_SETDTA
 	jp	bdos
-fcb_read	ld	de,fcb_work
+fcb_read: 	ld	de,fcb_work
 	ld	c,_RDBLK
 	jp	bdos
-fcb_open	LD	C,_FOPEN
-fcb_open_cont	LD	DE,fcb_work
+fcb_open: 	LD	C,_FOPEN
+fcb_open_cont: 	LD	DE,fcb_work
 	CALL	bdos
 	LD	HL,#0000
 	LD	(fcb_work+33),HL
@@ -3601,9 +3599,9 @@ fcb_open_cont	LD	DE,fcb_work
 	INC	HL
 	LD	(fcb_work+14),HL
 	RET
-fcb_create	ld	c,_FMAKE
+fcb_create: 	ld	c,_FMAKE
 	jr	fcb_open_cont
-savefile	ld	de,fcb_work
+savefile: 	ld	de,fcb_work
 	ld	c,_WRBLK
 	call	bdos
 	or	a
@@ -3618,12 +3616,12 @@ writeerror:
 	ld	c,_FDEL
 	call	bdos	;delete file
 	ld	hl,14*80+(80-17)/2
-	ld	bc,Writeerror
+	ld	bc,Writeerror_
 	call _diskkill2
 	jp diskhoofd
 
 ;--Back up filename in FCB
-makebackup	ld	hl,fcb_work
+makebackup: 	ld	hl,fcb_work
 	ld	de,buffer1024
 	ld	bc,1+11+25
 	ldir		;keep
@@ -3670,8 +3668,8 @@ set_last_dos_error:
 	ret
 
 ;in: DE=pointersto text HL=startVRAM
-PRINTBLOK	CALL	SETVRAMWRITE
-nxtpointer	EX	DE,HL	;get pointer to data
+PRINTBLOK: 	CALL	SETVRAMWRITE
+nxtpointer: 	EX	DE,HL	;get pointer to data
 	LD	E,(HL)
 	INC	HL
 	LD	D,(HL)
@@ -3680,19 +3678,19 @@ nxtpointer	EX	DE,HL	;get pointer to data
 	OR	E
 	RET	Z
 	EX	DE,HL
-nxtduo	LD	A,(HL)	;get number
+nxtduo: 	LD	A,(HL)	;get number
 	INC	HL
 	OR	A
 	JR	Z,nxtpointer
 	LD	B,A
 	LD	A,(HL)
 	INC	HL
-send2vdp	NOP
+send2vdp: 	NOP
 	NOP
 	OUT	(#98),A
 	DJNZ	send2vdp
 	JR	nxtduo
-TEXTTOBLOK	LD	E,(HL)
+TEXTTOBLOK: 	LD	E,(HL)
 	INC	HL
 	LD	D,(HL)
 	INC	HL
@@ -3702,7 +3700,7 @@ TEXTTOBLOK	LD	E,(HL)
 	EX	DE,HL
 	CALL	SETVRAMWRITE
 	EX	DE,HL
-_texttoblok	LD	A,(HL)
+_texttoblok: 	LD	A,(HL)
 	INC	HL
 	OR	A
 	JR	Z,TEXTTOBLOK
@@ -3713,18 +3711,18 @@ _texttoblok	LD	A,(HL)
 ;A: bit0=1:start end of sentence bit7=1:escape bit6=1:also lowercase
 ;bit5=1:only numbers bit4=1:also up and down bit3=1:special
 
-vramadrestxt	dw	0	;1f19
-txtdoel	dw	0	;1f1b
-lengtetext	db	0	;1f1d
-position	db	0	;1f1e 1-..
+vramadrestxt: 	dw	0	;1f19
+txtdoel: 	dw	0	;1f1b
+lengtetext: 	db	0	;1f1d
+position: 	db	0	;1f1e 1-..
 	db	0	;1f1f lengte 1-..
-kanescape	db	0	;1f20 0=no esc possible
-kleinelett	db	0	;1f21 0=no lowercase letters possible
-alleencijf	db	0	;1f22 <>0 only numbers possible
-updown	db	0	;1f23 <>0 also up and down
-specialchar	db	0	;1f24 <>0 =special character
+kanescape: 	db	0	;1f20 0=no esc possible
+kleinelett: 	db	0	;1f21 0=no lowercase letters possible
+alleencijf: 	db	0	;1f22 <>0 only numbers possible
+updown: 	db	0	;1f23 <>0 also up and down
+specialchar: 	db	0	;1f24 <>0 =special character
 
-INPUTTEXT	LD	(vramadrestxt),HL
+INPUTTEXT: 	LD	(vramadrestxt),HL
 	LD	(txtdoel),DE
 	PUSH	BC
 	LD	C,A
@@ -3758,14 +3756,14 @@ INPUTTEXT	LD	(vramadrestxt),HL
 	CP	C
 	JR	NC,_startvoor
 	DEC	C
-_startvoor	LD	(IX+#00),C
+_startvoor: 	LD	(IX+#00),C
 	POP	BC
 	LD	A,(specialchar)
 	OR	A
 	JR	Z,texthoofd
 	LD	A,C
 	LD	(specialchar),A
-texthoofd	CALL	printspecial
+texthoofd: 	CALL	printspecial
 	CALL	bercursor
 	LD	(cursory_x),BC
 	XOR	A
@@ -3799,7 +3797,7 @@ texthoofd	CALL	printspecial
 	CP	128
 	JR	C,text_char
 	JR	texthoofd
-textback	LD	A,#01
+textback: 	LD	A,#01
 	LD	(cursoronoff),A
 	LD	HL,(vramadrestxt)
 	LD	DE,(txtdoel)
@@ -3812,13 +3810,13 @@ textback	LD	A,#01
 	CALL	VRAMTORAM
 	XOR	A
 	LD	(HL),A
-jon3	LD	HL,(vramadrestxt)
+jon3: 	LD	HL,(vramadrestxt)
 	LD	C,(IX+#00)
 	LD	B,A
 	ADD	HL,BC
 	DEC	HL
 	RET
-textesc	LD	A,(kanescape)
+textesc: 	LD	A,(kanescape)
 	OR	A
 	JR	Z,texthoofd
 	LD	A,#01
@@ -3826,7 +3824,7 @@ textesc	LD	A,(kanescape)
 	DEC	A
 	SCF
 	RET
-text_updown	SUB	29
+text_updown: 	SUB	29
 	LD	B,A
 	LD	A,(updown)
 	OR	A
@@ -3836,7 +3834,7 @@ text_updown	SUB	29
 	LD	A,B
 	SCF
 	RET
-text_char	LD	B,A
+text_char: 	LD	B,A
 	LD	A,(alleencijf)
 	OR	A
 	JR	Z,_text_alles
@@ -3846,7 +3844,7 @@ text_char	LD	B,A
 	CP	"9"+1
 	JP	NC,texthoofd
 	JR	_text_char1
-_text_alles	LD	A,(kleinelett)
+_text_alles: 	LD	A,(kleinelett)
 	OR	A
 	LD	A,B
 	JR	NZ,_text_char1
@@ -3855,7 +3853,7 @@ _text_alles	LD	A,(kleinelett)
 	CP	"z"+1
 	JR	NC,_text_char1
 	AND	#DF
-_text_char1	LD	B,A
+_text_char1: 	LD	B,A
 	LD	A,(insonoff)
 	OR	A
 	LD	A,B
@@ -3869,15 +3867,15 @@ _text_char1	LD	B,A
 	LD	A,(IX+#00)
 	CP	(IX+#01)
 	JR	Z,_char_inscnt
-text_right	LD	A,(lengtetext)
+text_right: 	LD	A,(lengtetext)
 	CP	(IX+#00)
 	JR	Z,_text_right1
 	LD	A,(IX+#00)
 	CP	(IX+#01)
 	JR	Z,_text_right1
 	INC	(IX+#00)
-_text_right1	JP	texthoofd
-_char_ins	PUSH	AF
+_text_right1: 	JP	texthoofd
+_char_ins: 	PUSH	AF
 	LD	HL,(vramadrestxt)
 	LD	DE,buffer1024+900
 	LD	A,(lengtetext)
@@ -3909,31 +3907,31 @@ _char_ins	PUSH	AF
 	POP	HL
 	POP	DE
 	CALL	RAMTOVRAM
-_char_inscnt	LD	A,(lengtetext)
+_char_inscnt: 	LD	A,(lengtetext)
 	INC	A
 	CP	(IX+#01)
 	JR	Z,_charins1
 	INC	(IX+#01)
-_charins1	JP	text_right
+_charins1: 	JP	text_right
 
-text_left	LD	A,(IX+#00)
+text_left: 	LD	A,(IX+#00)
 	CP	#01
 	JR	Z,_text_right1
 	DEC	(IX+#00)
 	JR	_text_right1
-text_ins	LD	A,(insonoff)
+text_ins: 	LD	A,(insonoff)
 	XOR	#01
 	LD	(insonoff),A
 	JR	_text_right1
 
-text_del	LD	A,(IX+#00)
+text_del: 	LD	A,(IX+#00)
 	CP	(IX+#01)
 	JP	Z,texthoofd
 	XOR	A
 	JR	textbs_cont
-textbsdel	db	0	;0=del 1=bs
-textbs	ld	a,1
-textbs_cont	LD	(textbsdel),A
+textbsdel: 	db	0	;0=del 1=bs
+textbs: 	ld	a,1
+textbs_cont: 	LD	(textbsdel),A
 	LD	HL,(vramadrestxt)
 	LD	DE,buffer1024+900
 	LD	A,(lengtetext)
@@ -3954,7 +3952,7 @@ textbs_cont	LD	(textbsdel),A
 	OR	A
 	JR	Z,_text_del1
 	DEC	HL
-_text_del1	LD	D,H
+_text_del1: 	LD	D,H
 	LD	E,L
 	DEC	DE
 	ld	bc,82	;max length+2
@@ -3966,18 +3964,18 @@ _text_del1	LD	D,H
 	DEC	(IX+#01)
 	JR	NZ,_text_del2
 	INC	(IX+#01)
-_text_del2	LD	A,(textbsdel)
+_text_del2: 	LD	A,(textbsdel)
 	OR	A
 	JP	Z,texthoofd
 	JP	text_left
-bercursor	LD	HL,(vramadrestxt)
+bercursor: 	LD	HL,(vramadrestxt)
 	LD	E,(IX+#00)
 	LD	D,#00
 	DEC	E
 	ADD	HL,DE
 	LD	B,#00
 	LD	DE,80
-_bercursor1	INC	B
+_bercursor1: 	INC	B
 	OR	A
 	SBC	HL,DE
 	JR	NC,_bercursor1
@@ -3986,22 +3984,22 @@ _bercursor1	INC	B
 	LD	B,L
 	INC	B
 	RET
-zoekeindetxt	LD	HL,(vramadrestxt)
+zoekeindetxt: 	LD	HL,(vramadrestxt)
 	LD	A,(lengtetext)
 	LD	B,A
 	LD	E,A
 	LD	D,#00
 	ADD	HL,DE
-_zoekeinde	DEC	HL
+_zoekeinde: 	DEC	HL
 	CALL	READVRAM
 	OR	A
 	JR	NZ,_starteinde
 	DJNZ	_zoekeinde
-_starteinde	INC	B
+_starteinde: 	INC	B
 	INC	HL
 	LD	C,B
 	RET
-printspecial	LD	A,(specialchar)
+printspecial: 	LD	A,(specialchar)
 	OR	A
 	RET	Z
 	LD	E,(IX+#01)
@@ -4022,7 +4020,7 @@ CLOSEFILE:
 	LD	DE,fcb_work
 	LD	C,_FCLOSE
 	CALL	bdos
-	LD	A,(doinclude)
+	LD	A,(doinclude_)
 	OR	A
 	RET	NZ
 	CALL	wissaveload
@@ -4032,7 +4030,7 @@ CLOSEFILE:
 	CALL	GETKEY
 	JP	_diskback
 ;----- IN: HL=vram address, IX=menu info
-PRINTMENU	ld	a,1
+PRINTMENU: 	ld	a,1
 	ld	(cursoronoff),a
 	push	hl
 	ld	a,(ix+2)
@@ -4102,14 +4100,14 @@ kieshoofd:
 	jr	nc,kiesback
 	cp	2
 	jr	nc,kieshoofd
-kiesback	push	af
+kiesback: 	push	af
 	call	kieswisbalk
 	pop	af
 	cp	13
 	ret	nz
 	ld	a,32
 	ret
-kies_up	call	kieswisbalk
+kies_up: 	call	kieswisbalk
 	dec	l
 	dec	c
 	jr	nz,kieshoofd
@@ -4118,7 +4116,7 @@ kies_up	call	kieswisbalk
 	add	a,(ix)
 	ld	l,a
 	jr	kieshoofd
-kies_down	call	kieswisbalk
+kies_down: 	call	kieswisbalk
 	inc	l
 	inc	c
 	ld	a,c
@@ -4130,7 +4128,7 @@ kies_down	call	kieswisbalk
 	sub	(ix)
 	ld	l,a
 	jr	kieshoofd
-kieswisbalk	push	hl
+kieswisbalk: 	push	hl
 	push	bc
 	ld	b,(ix+1)
 	inc	b
@@ -4149,7 +4147,7 @@ kiessetbalk:	push	hl
 	pop	hl
 	ret
 ;----- IN: IX=menu info, HL=address vram
-WISOUDMENU	ld	a,(ix+2)
+WISOUDMENU: 	ld	a,(ix+2)
 	or	a
 	ld	de,buffer1024	;1st buffer
 	jr	z,_wisoudmenu1
@@ -4158,7 +4156,7 @@ _wisoudmenu1:	ld	a,(ix)
 	cp	1
 	jr	nz,_not1_1
 	inc	a
-_not1_1	add	a,2+1	;+edges+shadow
+_not1_1: 	add	a,2+1	;+edges+shadow
 	ld	b,a
 	ld	a,(ix+1)
 	add	a,4+2+2	;+spaces+borders+shadow
@@ -4179,7 +4177,7 @@ _wisoudmenu2:	ld	a,(de)
 ;Calculate number for assembling
 ;In:HL=start address text, DE=assemble address IX=test label address
 ;A=any segment (bit 6-7)
-BERGETALASM	ld	(Testlabel),ix
+BERGETALASM: 	ld	(Testlabel_),ix
 	ld	(Assembladres),de
 	ld	(Segment),a
 	jr	contbergetal
@@ -4187,11 +4185,11 @@ BERGETALASM	ld	(Testlabel),ix
 ;Off: DE=number HL=next address Cf=error,A=error no:
 ;0=no number 1=bad mnemonic 2=wrong hook close 3=delinndoor0
 Assembladres:	defw	0
-BEREKENGETAL	ld	bc,(Result)
+BEREKENGETAL: 	ld	bc,(Result)
 	ld	(Assembladres),bc	;for $
-	ld	bc,Testlabeladr
-	ld	(Testlabel),bc
-contbergetal	ld	(Sp_reken),sp
+	ld	bc,Testlabel_adr
+	ld	(Testlabel_),bc
+contbergetal: 	ld	(Sp_reken),sp
 	ld	iy,Exist1
 	ld	(iy-2),0	;0 brackets open
 	ld	(iy-3),0	;had no numbers
@@ -4202,14 +4200,14 @@ contbergetal	ld	(Sp_reken),sp
 	ld	a,(hl)
 	or	a
 	jp	z,eindereken
-haakstart	exx
+haakstart: 	exx
 	ld	hl,Exist1
 	ld	de,Exist1+1
 	ld	bc,19-1
 	ld	(hl),0
 	ldir
 	exx
-rekenloop	ld	a,(hl)
+rekenloop: 	ld	a,(hl)
 	inc	hl
 	cp	" "
 	jr	z,rekenloop
@@ -4228,8 +4226,8 @@ Doel_sp1:	ld	de,0
 	ld	sp,hl	;new SP
 	exx
 	jp	haakstart
-_reken1	call	haalgetal
-haaksluit	ld	a,(hl)
+_reken1: 	call	haalgetal
+haaksluit: 	ld	a,(hl)
 	inc	hl
 	cp	" "
 	jr	z,haaksluit
@@ -4249,12 +4247,12 @@ no_end:	cp	")"
 	jp	z,eindereken
 	dec	(iy-2)
 	inc	hl
-finishcount	ld	a,(Exist1+4)
+finishcount: 	ld	a,(Exist1+4)
 	or	a
 	jr	z,readycount
 	call	docount
 	jr	finishcount
-readycount	ld	de,(Exist1+1)
+readycount: 	ld	de,(Exist1+1)
 	exx
 	ld	(Doel_sp2+1),sp
 Doel_sp2:	ld	hl,0
@@ -4267,7 +4265,7 @@ Doel_sp2:	ld	hl,0
 	exx
 	call	soortfound	;fill in + calculate if necessary
 	jp	haaksluit
-_reken2	cp	"^"
+_reken2: 	cp	"^"
 	jr	z,operat
 	cp	"*"
 	jr	z,operat
@@ -4289,7 +4287,7 @@ _reken2	cp	"^"
 	dec	hl	;Leave it !!!
 	jp	nz,eindereken
 	inc	hl
-_mod	ld	a,(hl)
+_mod: 	ld	a,(hl)
 	and	%11011111
 	cp	"O"
 	jp	nz,badmnemonic
@@ -4300,7 +4298,7 @@ _mod	ld	a,(hl)
 	jp	nz,badmnemonic
 	ld	a,"M"
 	jp	operat
-_xor	ld	a,(hl)
+_xor: 	ld	a,(hl)
 	and	%11011111
 	cp	"O"
 	jp	nz,badmnemonic
@@ -4311,13 +4309,13 @@ _xor	ld	a,(hl)
 	jp	nz,badmnemonic
 	ld	a,"X"
 	jr	operat
-_or	ld	a,(hl)
+_or: 	ld	a,(hl)
 	and	%11011111
 	cp	"R"
 	jp	nz,badmnemonic
 	ld	a,"O"
 	jr	operat
-_and	ld	a,(hl)
+_and: 	ld	a,(hl)
 	and	%11011111
 	cp	"N"
 	jp	nz,badmnemonic
@@ -4327,15 +4325,15 @@ _and	ld	a,(hl)
 	cp	"D"
 	jp	nz,badmnemonic
 	ld	a,"A"
-operat	ld	(de),a
+operat: 	ld	(de),a
 	inc	hl
 	jp	rekenloop
-haalgetal	ex	af,af'
+haalgetal: 	ex	af,af'
 	xor	a
 	ld	(Newsegment),a
 	ld	(iy-1),0	;sign positive
 	ex	af,af'
-_haalget_cnt	cp	"+"
+_haalget_cnt: 	cp	"+"
 	jp	z,_haalgetal1
 	cp	"-"
 	jp	z,_haalgetal2
@@ -4351,7 +4349,7 @@ _haalget_cnt	cp	"+"
 	jr	nc,soortfound
 	call	testlabel
 	jp	c,badmnemonic
-soortfound	inc	(iy-3)	;number found
+soortfound: 	inc	(iy-3)	;number found
 	ld	a,(iy-1)
 	or	a
 	jr	z,_positief
@@ -4360,7 +4358,7 @@ soortfound	inc	(iy-3)	;number found
 	sbc	hl,de	;make negative, set to [NC]
 	ex	de,hl
 	pop	hl
-_positief	push	hl
+_positief: 	push	hl
 	ld	hl,Exist1
 	ld	bc,4
 _findempty:	ld	a,(hl)
@@ -4368,7 +4366,7 @@ _findempty:	ld	a,(hl)
 	jr	z,_empty
 	add	hl,bc
 	jr	_findempty
-_empty	ld	(hl),1	;number exists
+_empty: 	ld	(hl),1	;number exists
 	inc	hl
 	ld	(hl),e
 	inc	hl
@@ -4376,13 +4374,13 @@ _empty	ld	(hl),1	;number exists
 	inc	hl
 	ex	de,hl	;de=address operation
 	pop	hl
-testifcount	ld	a,(Exist1+4)
+testifcount: 	ld	a,(Exist1+4)
 	or	a
 	call	z,segments	;1st number => Set Fndsegment
 	ld	a,(Exist1+16)
 	or	a
 	ret	z	;not yet full
-docount	push	hl
+docount: 	push	hl
 	ld	a,"^"
 	ld	c,1
 	call	testifexist
@@ -4409,17 +4407,17 @@ docount	push	hl
 	jr	nc,doxor
 	pop	hl
 	ret		;nothing more to count
-doandor	push	hl
+doandor: 	push	hl
 	cp	"A"
 	push	af
 	call	z,b16_and
 	pop	af
 	call	nz,b16_or
 	jr	cont_optel
-doxor	push	hl
+doxor: 	push	hl
 	call	b16_xor
 	jr	cont_optel
-dooptelaftrk	push	hl
+dooptelaftrk: 	push	hl
 	cp	"+"
 	push	af
 	call	z,b16_add
@@ -4443,7 +4441,7 @@ cont_optel:	ex	de,hl
 	ld	bc,4*3
 	ldir		;3 => 2 and 4 => 3 and 5 => 4
 	jr	docount_end
-twee_exist	ld	a,(Exist1+8)
+twee_exist: 	ld	a,(Exist1+8)
 	or	a
 	jr	nz,drie_exist
 	ld	hl,Exist1+11
@@ -4451,33 +4449,33 @@ twee_exist	ld	a,(Exist1+8)
 	ld	bc,4*2
 	ldir		;4 => 3 and 5 => 4
 	jr	docount_end
-drie_exist	ld	a,(Exist1+12)
+drie_exist: 	ld	a,(Exist1+12)
 	or	a
 	jr	nz,docount_end	;4 also exists, so 5 deleted
 	ld	hl,(Exist1+15)
 	ld	(Exist1+11),hl
 	ld	hl,(Exist1+15+2)
 	ld	(Exist1+11+2),hl
-docount_end	ld	hl,0
+docount_end: 	ld	hl,0
 	ld	(Exist1+16-1),hl	;delete 5
 	ld	hl,Exist1
 	ld	bc,4
-_findempty1	ld	a,(hl)
+_findempty1: 	ld	a,(hl)
 	or	a
 	jr	z,_empty1
 	add	hl,bc
 	jr	_findempty1
-_empty1	ex	de,hl
+_empty1: 	ex	de,hl
 	dec	de	;DE=address operation
 	pop	hl	;next address
 	ret
-domaal	push	hl
+domaal: 	push	hl
 	call	b16_mu
 	jr	cont_optel
-domacht	push	hl
+domacht: 	push	hl
 	call	b16_mac
 	jr	cont_optel
-dodeelmod	push	hl
+dodeelmod: 	push	hl
 	cp	"/"
 	push	af
 	call	z,b16_di
@@ -4486,10 +4484,10 @@ dodeelmod	push	hl
 	jr	cont_optel
 ;----- Operation in A or C already found? [C]=no, otherwise: BC and DE are 2
 ;      numbers, A=operation
-testifexist	ld	hl,Exist1+3
+testifexist: 	ld	hl,Exist1+3
 	ld	de,4
 	ld	b,4
-_testifex1	cp	(hl)
+_testifex1: 	cp	(hl)
 	jr	z,_testfound
 	ex	af,af'
 	ld	a,c
@@ -4500,7 +4498,7 @@ _testifex1	cp	(hl)
 	djnz	_testifex1
 	scf
 	ret
-_testfound	dec	hl
+_testfound: 	dec	hl
 	ld	b,(hl)
 	dec	hl
 	ld	c,(hl)
@@ -4514,19 +4512,19 @@ _testfound	dec	hl
 	ld	d,(hl)
 	pop	hl
 	ret
-_haalgetal2	ld	a,(iy-1)
+_haalgetal2: 	ld	a,(iy-1)
 	xor	1
 	ld	(iy-1),a	;+ becomes - and vice versa
-_haalgetal1	inc	hl
+_haalgetal1: 	inc	hl
 	ld	a,(hl)
 	jp	_haalget_cnt
-eindereken	push	hl
-_eindereken1	ld	a,(Exist1+4)
+eindereken: 	push	hl
+_eindereken1: 	ld	a,(Exist1+4)
 	or	a
 	jr	z,_ready
 	call	docount
 	jr	_eindereken1
-_ready	pop	hl
+_ready: 	pop	hl
 	ld	a,(iy-3)
 	or	a
 	jp	z,geengetal
@@ -4542,14 +4540,14 @@ Segment:	defb	0	;current segment when assembling
 Fndsegment:	defb	0	;calculated segment
 Newsegment:	defb	0	;segment, belonging to number
 ;----- FAULTS
-geengetal	xor	a
+geengetal: 	xor	a
 	jr	foutback
-badmnemonic	ld	a,1
+badmnemonic: 	ld	a,1
 	jr	foutback
-mishaaksluit	ld	a,2
+mishaaksluit: 	ld	a,2
 	jr	foutback
-delingdoor0	ld	a,3
-foutback	ld	sp,(Sp_reken)
+delingdoor0: 	ld	a,3
+foutback: 	ld	sp,(Sp_reken)
 	scf
 	ret
 
@@ -4574,16 +4572,16 @@ Oper1_2:	defb	0	;^*/+-            +3
 ; Input:    BC, DE
 ; Output:   HL = BC * DE
 ; Changes:  AF, BC, HL
-b16_mu	ld	hl,0
+b16_mu: 	ld	hl,0
 	ld	a,b
 	ld	b,16
-b16_m1	add	hl,hl
+b16_m1: 	add	hl,hl
 	sla	c
 	adc	a,a
 	jr	nc,b16_m2
 	add	hl,de
-b16_m2	djnz	b16_m1
-segments	ld	a,(Newsegment)
+b16_m2: 	djnz	b16_m1
+segments: 	ld	a,(Newsegment)
 	ld	b,a
 	ld	a,(Fndsegment)
 	or	b
@@ -4594,7 +4592,7 @@ segments	ld	a,(Newsegment)
 ; Output:   HL = BC / DE
 ;          [C]= division by 0
 ; Changes:  AF, BC, DE, HL
-b16_di	ld	a,d
+b16_di: 	ld	a,d
 	or	e
 	jp	z,delingdoor0
 	ld	hl,0
@@ -4604,19 +4602,19 @@ b16_di	ld	a,d
 	ld	d,h
 	ld	e,l
 	jr	segments	;Tlr=0 => res HL=0 and DE=0
-b16_d0	ld	a,b
+b16_d0: 	ld	a,b
 	ld	b,17
-b16_d1	scf
+b16_d1: 	scf
 	rl	c
 	adc	a,a
 	dec	b
 	jr	nc,b16_d1	;Find 1st high bit
 	;Never come here with B < 1 !
-b16_d2	adc	hl,hl
+b16_d2: 	adc	hl,hl
 	sbc	hl,de
 	jr	nc,b16_d3
 	add	hl,de
-b16_d3	rl	c
+b16_d3: 	rl	c
 	adc	a,a
 	djnz	b16_d2
 	ex	de,hl	;DE=rest
@@ -4629,14 +4627,14 @@ b16_d3	rl	c
 ;----- Adding up
 ; Input:  BC, DE
 ; Output: HL = BC + DE
-b16_add	ld	h,b
+b16_add: 	ld	h,b
 	ld	l,c
 	add	hl,de
 	jr	segments	;it said ret**=calculatorbugv1.0*****
 ;----- Substract
 ; Input:  BC, DE
 ; Output: HL = BC - DE
-b16_sub	ld	h,b
+b16_sub: 	ld	h,b
 	ld	l,c
 	or	a
 	sbc	hl,de
@@ -4654,7 +4652,7 @@ b16_sub	ld	h,b
 ; Input:    BC,DE
 ; Output:   HL(=BC^DE)
 ; Changes:  AF, BC, DE and HL
-b16_mac	ld	h,d
+b16_mac: 	ld	h,d
 	ld	l,e	;hl=number of times
 	ld	a,h
 	or	l
@@ -4684,28 +4682,28 @@ _b16m2:	ld	hl,1	;bc^0
 _b16m3:	ld	h,b	;bc^1
 	ld	l,c
 	jr	segments
-b16_or	ld	a,b
+b16_or: 	ld	a,b
 	or	d
 	ld	h,a
 	ld	a,c
 	or	e
 	ld	l,a
 	jp	segments
-b16_and	ld	a,b
+b16_and: 	ld	a,b
 	and	d
 	ld	h,a
 	ld	a,c
 	and	e
 	ld	l,a
 	jp	segments
-b16_xor	ld	a,b
+b16_xor: 	ld	a,b
 	xor	d
 	ld	h,a
 	ld	a,c
 	xor	e
 	ld	l,a
 	jp	segments
-b16_mod	call	b16_di
+b16_mod: 	call	b16_di
 	ex	de,hl	;Mod, so residual value
 	ret		;segments already done
 
@@ -4719,7 +4717,7 @@ testhex:	ld	a,(hl)
 	ld	a,0
 	jr	c,_testhex1
 	inc	a
-_testhex1	ld	(Hexidfound),a
+_testhex1: 	ld	(Hexidfound),a
 	ld	c,0
 	ld	de,0
 _testhex_3:	ld	a,(hl)
@@ -4746,7 +4744,7 @@ _testhex_2:	sla	a
 	djnz	_testhex_2
 	inc	c
 	jr	_testhex_3
-testhex_idna	dec	hl
+testhex_idna: 	dec	hl
 	ld	a,c
 	or	a
 	jr	z,testhex_back	;no hex number
@@ -4759,14 +4757,14 @@ testhex_idna	dec	hl
 testhex_back:	pop	hl
 	scf
 	ret
-Hexidfound	db	0
+Hexidfound: 	db	0
 ;----- Is bin number ?     [C]=no
-testbin	push	hl
+testbin: 	push	hl
 	call	testidbinvoo
 	ld	a,0
 	jr	c,_testbin1
 	inc	a
-_testbin1	ld	(Binidfound),a
+_testbin1: 	ld	(Binidfound),a
 	ld	de,0
 	ld	c,0
 _testbin_1:	ld	a,(hl)
@@ -4783,7 +4781,7 @@ _testbin_1:	ld	a,(hl)
 	rl	d
 	inc	c
 	jr	_testbin_1
-testbin_idna	dec	hl
+testbin_idna: 	dec	hl
 	ld	a,c
 	or	a
 	jr	z,testbin_back	;no bin number
@@ -4796,9 +4794,9 @@ testbin_idna	dec	hl
 testbin_back:	pop	hl
 	scf
 	ret
-Binidfound	db	0
+Binidfound: 	db	0
 ;----- Is dec number ?    [C]=no
-testdec	push	hl
+testdec: 	push	hl
 	ld	de,0
 	exx
 	ld	c,0
@@ -4827,7 +4825,7 @@ _testdec_1:	ld	a,(hl)
 	inc	c
 	exx
 	jr	_testdec_1
-testdec_na	dec	hl
+testdec_na: 	dec	hl
 	exx
 	ld	a,c
 	exx
@@ -4835,11 +4833,11 @@ testdec_na	dec	hl
 	jr	z,testdec_back	;no dec number
 	pop	bc
 	ret
-testdec_back	pop	hl
+testdec_back: 	pop	hl
 	scf
 	ret
 ;----- is $ ?
-test_	ld	a,(hl)
+test_: 	ld	a,(hl)
 	cp	"$"
 	scf
 	ret	nz
@@ -4850,13 +4848,13 @@ test_	ld	a,(hl)
 	or	a
 	ret
 ;----- is "
-testkarakter	push	hl
+testkarakter: 	push	hl
 	ld	a,(hl)
 	cp	34
 	jr	z,_iskar
 	cp	"'"
 	jr	nz,testkar_back
-_iskar	ld	b,a
+_iskar: 	ld	b,a
 	inc	hl
 	ld	a,(hl)
 	cp	b
@@ -4873,18 +4871,18 @@ _iskar	ld	b,a
 	ld	a,(hl)
 	cp	b
 	jp	nz,geengetal
-_2quotes	inc	hl
+_2quotes: 	inc	hl
 	pop	bc
 	or	a
 	ret
-testkar_back	pop	hl
+testkar_back: 	pop	hl
 	scf
 	ret
-testlabel	ld	de,(slotsubroutin)
+testlabel: 	ld	de,(slotsubroutin)
 	push	de
 	ld	bc,(slotass)
 	call	zetslot
-Testlabel:	equ	$+1
+Testlabel_:	equ	$+1
 	call	0
 	ld	(Newsegment),a
 	pop	bc
@@ -4894,13 +4892,13 @@ Testlabel:	equ	$+1
 	pop	af
 	ret
 ;----- test ids binary and hexadecimal
-testidbinvoo	ld	ix,idbin
+testidbinvoo: 	ld	ix,idbin
 	ld	a,(ix+2)
 	or	a
 	jr	nz,_testidbin1
 	call	testspecid
 	ret	nc
-_testidbin1	ld	a,(hl)
+_testidbin1: 	ld	a,(hl)
 	inc	hl
 	cp	"%"
 	ret	z
@@ -4913,13 +4911,13 @@ _testidbin1	ld	a,(hl)
 	inc	hl
 	or	a
 	ret
-testidhexvoo	ld	ix,idhex
+testidhexvoo: 	ld	ix,idhex
 	ld	a,(ix+2)
 	or	a
 	jr	nz,_testidhex1
 	call	testspecid
 	ret	nc
-_testidhex1	ld	a,(hl)
+_testidhex1: 	ld	a,(hl)
 	inc	hl
 	cp	"#"
 	ret	z
@@ -4932,34 +4930,34 @@ _testidhex1	ld	a,(hl)
 	inc	hl
 	or	a
 	ret
-_testidfout	dec	hl
+_testidfout: 	dec	hl
 	scf
 	ret
-testidhexna	ld	ix,idhex
+testidhexna: 	ld	ix,idhex
 	ld	a,(ix+2)
 	or	a
 	jr	z,_testidhexn1
 	call	testspecid
 	ret	nc
-_testidhexn1	ld	a,(hl)
+_testidhexn1: 	ld	a,(hl)
 	inc	hl
 	and	%11011111
 	cp	"H"
 	ret	z
 	jr	_testidfout
-testidbinna	ld	ix,idbin
+testidbinna: 	ld	ix,idbin
 	ld	a,(ix+2)
 	or	a
 	jr	z,_testidbinn1
 	call	testspecid
 	ret	nc
-_testidbinn1	ld	a,(hl)
+_testidbinn1: 	ld	a,(hl)
 	inc	hl
 	and	%11011111
 	cp	"B"
 	ret	z
 	jr	_testidfout
-testspecid	ld	b,(hl)
+testspecid: 	ld	b,(hl)
 	res	5,b
 	ld	a,(ix)
 	and	%11011111
@@ -4982,7 +4980,7 @@ testspecid	ld	b,(hl)
 	scf
 	ret		;no id
 
-MEMVIEW	LD	HL,#1800+3*10	;blink table except menu bar
+MEMVIEW: 	LD	HL,#1800+3*10	;blink table except menu bar
 	LD	BC,24*10
 	XOR	A
 	CALL	FILLVRAM
@@ -4995,7 +4993,7 @@ MEMVIEW	LD	HL,#1800+3*10	;blink table except menu bar
 	LD	HL,memviewtxt2
 	CALL	TEXTTOBLOK
 	CALL	vulrestin
-_memview	CALL	GETKEY
+_memview: 	CALL	GETKEY
 	CP	27
 	RET	Z
 	CP	#01
@@ -5005,19 +5003,19 @@ _memview	CALL	GETKEY
 	AND	255-32
 	RET	Z
 	JR	_memview
-memviewtxt2	dw	5*80+2
+memviewtxt2: 	dw	5*80+2
 	db	"Bios  ",0
 	dw	7*80+2
 	db	"Basic ",0
 	dw	0
 ;CALCULATOR
-Result	dw	0
+Result: 	dw	0
 Poscalc:	defb	10
 Calcdoel:	defw	10*80
 Calcdoelblin:	defw	#1800+10*10
 
-CALCULATOR	xor	a
-_calccontinu	push	af
+CALCULATOR: 	xor	a
+_calccontinu: 	push	af
 	ld	hl,(Calcdoel)
 	ld	de,buffer1024+420
 	ld	bc,5*80
@@ -5050,13 +5048,13 @@ _calccontinu	push	af
 	ex	de,hl
 	call	RAMTOVRAM
 	jr	calccont
-calchoofd	ld	hl,(Calcdoel)
+calchoofd: 	ld	hl,(Calcdoel)
 	ld	de,80+13
 	add	hl,de
 	ld	bc,80-13-1
 	xor	a
 	call	FILLVRAM
-calccont	ld	hl,(Calcdoel)
+calccont: 	ld	hl,(Calcdoel)
 	ld	de,3*80+10
 	add	hl,de
 	push	hl
@@ -5101,7 +5099,7 @@ _8bitbin:	push	de
 	cp	34
 	jr	z,_char1
 	ld	b,34
-_char1	ld	a,b
+_char1: 	ld	a,b
 	out	(#98),a
 	ld	a,d
 	or	e
@@ -5110,7 +5108,7 @@ _char1	ld	a,b
 	or	a
 	jr	nz,_char2
 	ld	a,e
-_char2	out	(#98),a
+_char2: 	out	(#98),a
 	nop
 	nop
 	ld	a,d
@@ -5120,9 +5118,9 @@ _char2	out	(#98),a
 	out	(#98),a
 	nop
 	nop
-_charclose	ld	a,b
+_charclose: 	ld	a,b
 	out	(#98),a
-_calc_cont	ld	hl,(Calcdoel)
+_calc_cont: 	ld	hl,(Calcdoel)
 	ld	de,80+13
 	add	hl,de
 	ld	de,buffer1024
@@ -5140,7 +5138,7 @@ _calc_cont	ld	hl,(Calcdoel)
 	jp	calchoofd
 _calc_error:	call	beep
 	jp	calccont
-_calc_esc	push	af
+_calc_esc: 	push	af
 	call	_calc_back
 	pop	af
 	or	a
@@ -5151,7 +5149,7 @@ _calc_esc	push	af
 	ld	bc,80
 	ld	a,(Poscalc)
 	jr	nz,_calc_down
-_calc_up	cp	3
+_calc_up: 	cp	3
 	jr	z,_calc_down2
 	dec	a
 	sbc	hl,bc
@@ -5159,19 +5157,19 @@ _calc_up	cp	3
 	ld	bc,10
 	sbc	hl,bc
 	jr	_calc_down1
-_calc_down	cp	20
+_calc_down: 	cp	20
 	jr	z,_calc_down2
 	inc	a
 	add	hl,bc
 	ex	de,hl
 	ld	bc,10
 	add	hl,bc
-_calc_down1	ld	(Poscalc),a
+_calc_down1: 	ld	(Poscalc),a
 	ld	(Calcdoel),de
 	ld	(Calcdoelblin),hl
-_calc_down2	scf
+_calc_down2: 	scf
 	jp	_calccontinu
-_calc_back	call	berekencalc
+_calc_back: 	call	berekencalc
 	call	VRAMTORAM
 	ld	hl,buffer1024+420
 	ld	de,(Calcdoel)
@@ -5181,7 +5179,7 @@ _calc_back	call	berekencalc
 	ld	de,(Calcdoelblin)
 	ld	bc,5*10
 	jp	RAMTOVRAM
-printtussen	ld	a," "
+printtussen: 	ld	a," "
 	out	(#98),a
 	nop
 	nop
@@ -5192,7 +5190,7 @@ printtussen	ld	a," "
 	ld	a," "
 	out	(#98),a
 	ret
-berekencalc	ld	hl,(Calcdoel)
+berekencalc: 	ld	hl,(Calcdoel)
 	ld	bc,80
 	add	hl,bc
 	ld	de,kbuf
@@ -5205,7 +5203,7 @@ Calcline3:	defb	1,26,78,23,1,27,0
 Calctext1:	defb	"Calculate:",0
 Calctext2:	defb	"Result:",0
 
-MEMORY	ld	hl,3*80
+MEMORY: 	ld	hl,3*80
 	ld	de,Memorylines
 	call	PRINTBLOK
 	ld	hl,25*80
@@ -5217,7 +5215,7 @@ MEMORY	ld	hl,3*80
 	xor	a
 	call	FILLVRAM
 	ld	ix,memtxtdoel
-_memory2	ld	l,(ix)
+_memory2: 	ld	l,(ix)
 	ld	h,(ix+1)
 	ld	a,h
 	or	l
@@ -5228,14 +5226,14 @@ _memory2	ld	l,(ix)
 	ld	de,4
 	add	ix,de
 	jr	_memory2
-_memory1	call	getreg
+_memory1: 	call	getreg
 	call	gotomemory
 	ld	hl,textbuffer1
 	ret
-gotomemory	push	hl
+gotomemory: 	push	hl
 	ld	hl,#400c
 	jp	GOTOEDITOR
-getreg	LD	IX,tab_memtabel
+getreg: 	LD	IX,tab_memtabel
 	LD	IY,tab_ROMRAM
 	LD	A,(dosversion)
 	LD	B,A
@@ -5244,7 +5242,7 @@ getreg	LD	IX,tab_memtabel
 	LD	HL,tab_memory
 	LD	DE,tab_compass
 	RET
-memtxtdoel	defw	4*80+(80-13)/2,Mt0
+memtxtdoel: 	defw	4*80+(80-13)/2,Mt0
 	defw	6*80+2,Mt1,6*80+12,Mt1,6*80+22,Mt1,6*80+32,Mt1
 	defw	6*80+18,Mt_2,6*80+28,Mt_3,6*80+38,Mt_4
 	defw	6*80+43,Mt2,6*80+53,Mt2,6*80+63,Mt2,6*80+73,Mt2
@@ -5289,11 +5287,11 @@ M12:	defb	1,22,38,0,1,22,0
 M13:	defb	1,26,9,23,1,17,9,23,1,17,9,23,1,17,9,23,1,17,38,23,1,27,0
 
 ;print small block on screen: in:HL=vramadres DE=info-adress
-_printblokkl	POP	HL
+_printblokkl: 	POP	HL
 	EX	DE,HL
 	LD	BC,80
 	ADD	HL,BC
-PRINTBLOKKLEI	CALL	SETVRAMWRITE
+PRINTBLOKKLEI: 	CALL	SETVRAMWRITE
 	EX	DE,HL
 	LD	C,(HL)
 	INC	HL
@@ -5305,20 +5303,20 @@ PRINTBLOKKLEI	CALL	SETVRAMWRITE
 	PUSH	HL
 	LD	H,B
 	LD	L,C
-_printblokk3	LD	A,(HL)
+_printblokk3: 	LD	A,(HL)
 	INC	HL
 	OR	A
 	JR	Z,_printblokkl
 	LD	B,A
 	LD	A,(HL)
 	INC	HL
-_printblokk2	NOP
+_printblokk2: 	NOP
 	OUT	(#98),A
 	DJNZ	_printblokk2
 	JR	_printblokk3
 
 ;in: HL=address data (4bytes)=instruction to execute out:HL:register table
-STARTPROGRAM	LD	DE,data
+STARTPROGRAM: 	LD	DE,data
 	LD	BC,4
 	LDIR
 	LD	A,(#FFFF)
@@ -5336,12 +5334,12 @@ STARTPROGRAM	LD	DE,data
 	LD	H,#80
 	CALL	SLOT
 	LD	A,(page2+1)
-	CALL	SETPAGE2_DOS2
+	CALL	SETPAGE2_DOS2_
 	LD	A,(page1)
 	LD	H,#40
 	CALL	SLOT
 	LD	A,(page1+1)
-	CALL	SETPAGE1_DOS2
+	CALL	SETPAGE1_DOS2_
 	DI
 	LD	HL,(#F38C)	;save original routine
 	LD	(old_f38c+1-new_f38c+kbuf),HL
@@ -5362,14 +5360,14 @@ STARTPROGRAM	LD	DE,data
 	LD	A,(#F343)
 	LD	H,#80
 	CALL	SLOT
-GETREGISTERS	LD	HL,registers
+GETREGISTERS: 	LD	HL,registers
 	RET
-new_f38c	OUT	(#A8),A
-new_blok	LD	A,0	;filled in
-	call	SETPAGE0_DOS2
-old_f38c	LD	HL,0	;filled in: RESTORE F38C
+new_f38c: 	OUT	(#A8),A
+new_blok: 	LD	A,0	;filled in
+	call	SETPAGE0_DOS2_
+old_f38c: 	LD	HL,0	;filled in: RESTORE F38C
 	LD	(#F38C),HL
-old_f38e	LD	HL,0	;filled in
+old_f38e: 	LD	HL,0	;filled in
 	LD	(#F38E),HL
 	POP	AF
 	LD	(old_a8-new_f38c+kbuf+1),A
@@ -5379,7 +5377,7 @@ old_f38e	LD	HL,0	;filled in
 	DI
 	JR	Z,no_ei
 	EI
-no_ei	LD	BC,(reg_bc_-new_f38c+kbuf)	;BC'
+no_ei: 	LD	BC,(reg_bc_-new_f38c+kbuf)	;BC'
 	LD	DE,(reg_de_-new_f38c+kbuf)	;DE'
 	LD	HL,(reg_hl_-new_f38c+kbuf)	;HL'
 	EXX
@@ -5396,7 +5394,7 @@ no_ei	LD	BC,(reg_bc_-new_f38c+kbuf)	;BC'
 	LD	IX,(reg_ix-new_f38c+kbuf)
 	LD	IY,(reg_iy-new_f38c+kbuf)
 	LD	SP,(reg_sp-new_f38c+kbuf)
-data	ds	4,0	;filled in: execute
+data: 	ds	4,0	;filled in: execute
 	LD	(reg_sp-new_f38c+kbuf),SP
 	LD	SP,(old_sp-new_f38c+kbuf)
 	PUSH	AF
@@ -5404,14 +5402,14 @@ data	ds	4,0	;filled in: execute
 	LD	A,#00
 	JP	PO,_eidi-new_f38c+kbuf
 	INC	A
-_eidi	PUSH	AF
+_eidi: 	PUSH	AF
 	DI
-old_a8	LD	A,#00	;filled in
+old_a8: 	LD	A,#00	;filled in
 	OUT	(#A8),A
-old_ffff	LD	A,#00	;filled in
+old_ffff: 	LD	A,#00	;filled in
 	LD	(#FFFF),A
-old_blok	LD	A,#00	;filled in
-	CALL	SETPAGE0_DOS2
+old_blok: 	LD	A,#00	;filled in
+	CALL	SETPAGE0_DOS2_
 	LD	(reg_iy),IY
 	LD	(reg_ix),IX
 	LD	(reg_hl),HL
@@ -5432,25 +5430,25 @@ old_blok	LD	A,#00	;filled in
 	POP	HL
 	LD	(reg_af_),HL
 	RET
-registers
-reg_sp	dw	0	;is filled in by startcompass
-reg_iy	dw	0
-reg_ix	dw	0
-reg_bc_	dw	0
-reg_de_	dw	0
-reg_hl_	dw	0
-reg_af_	dw	0
-reg_bc	dw	0
-reg_de	dw	0
-reg_hl	dw	0
-reg_af	dw	0
-reg_di_ei	db	0	;0=di 1=ei
-old_sp	dw	0
-end_f38c
+registers: 
+reg_sp: 	dw	0	;is filled in by startcompass
+reg_iy: 	dw	0
+reg_ix: 	dw	0
+reg_bc_: 	dw	0
+reg_de_: 	dw	0
+reg_hl_: 	dw	0
+reg_af_: 	dw	0
+reg_bc: 	dw	0
+reg_de: 	dw	0
+reg_hl: 	dw	0
+reg_af: 	dw	0
+reg_di_ei: 	db	0	;0=di 1=ei
+old_sp: 	dw	0
+end_f38c: 
 
-VRAMTORAM	CALL	SETVRAMREAD
+VRAMTORAM: 	CALL	SETVRAMREAD
 	EX	DE,HL
-_vramtoram	IN	A,(#98)
+_vramtoram: 	IN	A,(#98)
 	LD	(HL),A
 	INC	HL
 	DEC	BC
@@ -5459,31 +5457,31 @@ _vramtoram	IN	A,(#98)
 	JR	NZ,_vramtoram
 	RET
 
-GOTOEDITOR	LD	(invul_call1),HL
+GOTOEDITOR: 	LD	(invul_call1),HL
 	PUSH	BC	;B=dosversion C=stat_mem
 	LD	BC,(slotsubroutin)
 	LD	(sub),BC
 	LD	BC,(sloteditor)
-goto_cont	LD	(slotsubroutin),BC
+goto_cont: 	LD	(slotsubroutin),BC
 	CALL	zetslot
 	POP	BC
 	POP	HL	;get tab_memory
 	db	#cd	;call
-invul_call1	dw	0
+invul_call1: 	dw	0
 	PUSH	BC
 	LD	BC,(sub)
 	LD	(slotsubroutin),BC
 	CALL	zetslot
 	POP	BC
 	RET
-sub	dw	0
-GOTODEBUGGER	LD	(invul_call1),HL
+sub: 	dw	0
+GOTODEBUGGER: 	LD	(invul_call1),HL
 	PUSH	BC
 	LD	BC,(slotsubroutin)
 	LD	(sub),BC
 	LD	BC,(slotdebugger)
 	JR	goto_cont
-GOTOASS	LD	(invul_call1),HL
+GOTOASS: 	LD	(invul_call1),HL
 	PUSH	BC
 	LD	BC,(slotsubroutin)
 	LD	(sub),BC
@@ -5494,7 +5492,7 @@ zetslot:
 	PUSH	DE
 	PUSH	HL
 	LD	A,B
-	CALL	SETPAGE1_DOS2
+	CALL	SETPAGE1_DOS2_
 	LD	A,C
 	LD	H,#40
 	CALL	SLOT
@@ -5502,7 +5500,7 @@ zetslot:
 	POP	DE
 	POP	AF
 	RET
-SLOT	PUSH	HL
+SLOT: 	PUSH	HL
 	PUSH	AF
 	LD	A,H
 	LD	HL,oudslot
@@ -5510,10 +5508,10 @@ SLOT	PUSH	HL
 	JR	NC,_slot1
 	INC	HL
 	INC	HL
-_slot1	RLCA
+_slot1: 	RLCA
 	JR	NC,_slot2
 	INC	HL
-_slot2	POP	AF
+_slot2: 	POP	AF
 	CP	(HL)	;was this slot already switched on?
 	LD	(HL),A
 	POP	HL
@@ -5526,9 +5524,9 @@ _slot2	POP	AF
 	POP	BC
 	POP	DE
 	RET
-oudslot	db	#ff,#ff,#ff,#ff
-stat_getkey	db	0	;input only possible with Left fire button
-GETKEY2	ld	a,1
+oudslot: 	db	#ff,#ff,#ff,#ff
+stat_getkey: 	db	0	;input only possible with Left fire button
+GETKEY2: 	ld	a,1
 	ld	(stat_getkey),a
 GETKEY:
 	PUSH	HL
@@ -5537,11 +5535,11 @@ GETKEY:
 	LD	A,(cursoronoff)
 	OR	A
 	JR	Z,not_visible
-wait1	LD	B,#00
+wait1: 	LD	B,#00
 	CALL	WAITFORKEY	;wait for a key and monitor in the meantime
 	JR	C,wait1	;also the ctrl56,R800/Z80
 	JP	getkey_back
-not_visible	LD	BC,(#F3DC)	;get cursor position C=y(1-80) B=x(1-80)
+not_visible: 	LD	BC,(#F3DC)	;get cursor position C=y(1-80) B=x(1-80)
 	CALL	beradresvram
 	CALL	READVRAM
 	PUSH	AF
@@ -5561,14 +5559,14 @@ not_visible	LD	BC,(#F3DC)	;get cursor position C=y(1-80) B=x(1-80)
 	OR	A
 	JR	Z,no_ins
 	LD	B,5
-_getkey1	IN	A,(#98)	;at ins top 5 lines unchanged
+_getkey1: 	IN	A,(#98)	;at ins top 5 lines unchanged
 	LD	(DE),A
 	INC	DE
 	LD	(HL),A
 	INC	HL
 	DJNZ	_getkey1
 	LD	B,#03
-no_ins	IN	A,(#98)	;invert the rest
+no_ins: 	IN	A,(#98)	;invert the rest
 	LD	(DE),A
 	INC	DE
 	XOR	#FC
@@ -5579,11 +5577,11 @@ no_ins	IN	A,(#98)	;invert the rest
 	PUSH	HL
 	LD	A,#FF	;print character 255
 	CALL	WRITEVRAM
-_getkey4	LD	HL,blokvorm
+_getkey4: 	LD	HL,blokvorm
 	LD	DE,#1000+255*8
 	LD	BC,8
 	CALL	RAMTOVRAM
-_getkey3	LD	B,20
+_getkey3: 	LD	B,20
 	CALL	WAITFORKEY
 	JR	NC,_getkey2
 	LD	A,(config_flags)
@@ -5596,7 +5594,7 @@ _getkey3	LD	B,20
 	LD	B,10
 	CALL	WAITFORKEY
 	JR	C,_getkey4
-_getkey2	LD	(invul_lda+1),A	;safe code
+_getkey2: 	LD	(invul_lda+1),A	;safe code
 	POP	HL	;get name table address
 	POP	AF	;get old character
 	CALL	WRITEVRAM
@@ -5604,8 +5602,8 @@ _getkey2	LD	(invul_lda+1),A	;safe code
 	LD	BC,8
 	LD	A,#FC
 	CALL	FILLVRAM
-invul_lda	LD	A,#00
-getkey_back	PUSH	AF
+invul_lda: 	LD	A,#00
+getkey_back: 	PUSH	AF
 	XOR	A
 	LD	(stat_getkey),A
 	POP	AF
@@ -5613,8 +5611,8 @@ getkey_back	PUSH	AF
 	POP	DE
 	POP	HL
 	RET
-oldvorm	ds	8,0
-blokvorm	ds	8,0
+oldvorm: 	ds	8,0
+blokvorm: 	ds	8,0
 
 WAITFORKEY:
 	PUSH	BC
@@ -5629,24 +5627,24 @@ WAITFORKEY:
 	LD	A,(matrix)
 	LD	DE,4*256+241
 	RRCA
-no1234_0	RRCA
+no1234_0: 	RRCA
 	JR	NC,ctrl1234
 	INC	E
 	DEC	D
 	JR	NZ,no1234_0
-no1234_1	LD	HL,(#F3FA)	;pointer first character in buffer
+no1234_1: 	LD	HL,(#F3FA)	;pointer first character in buffer
 	LD	A,(#F3F8)	;pointer for new character
 	CP	L	;equal? (then the buffer is empty)
 	JR	NZ,_waitforkey	;new! just pick up sign
 	LD	A,(matrix+7)	;pressed STOP?
 	AND	#10
 	JR	NZ,_waitforkey2	;new
-_waitforkey3	LD	A,(matrix+7)	;yes, wait till it's out
+_waitforkey3: 	LD	A,(matrix+7)	;yes, wait till it's out
 	AND	#10
 	JR	Z,_waitforkey3
 	LD	A,250	;display code 250, carry cleared
 	RET
-_waitforkey2	LD	A,B	;is up time
+_waitforkey2: 	LD	A,B	;is up time
 	OR	A	;(wait B interrupts)
 	SCF
 	RET	Z
@@ -5654,47 +5652,47 @@ _waitforkey2	LD	A,B	;is up time
 	DJNZ	WAITFORKEY
 	SCF
 	RET
-ctrl1234	ld	a,e
+ctrl1234: 	ld	a,e
 	PUSH	AF
 	CALL	WISKEYBUFFER
 	POP	AF
 	RET		;code in E: 241-244
-_waitforkey	ld	a,(hl)
+_waitforkey: 	ld	a,(hl)
 	INC	HL
 	PUSH	AF
 	LD	A,L
 	CP	#18
 	JR	NZ,_waitforkey1
 	LD	HL,#FBF0
-_waitforkey1	LD	(#F3FA),HL
+_waitforkey1: 	LD	(#F3FA),HL
 	POP	AF
 	OR	A	;clear carry, key in a and buffer smaller
 	RET
 
-LINETOASSEMB	PUSH	HL
+LINETOASSEMB: 	PUSH	HL
 	LD	HL,#4006
 	JP	GOTOEDITOR
 
 ;in: b=x(1-80) c=y(1-27) out:hl=vramaddress,changes: B,DE,HL,F
-beradresvram	LD	H,#00
+beradresvram: 	LD	H,#00
 	LD	L,B
 	DEC	HL
 	LD	DE,80
 	OR	A
 	SBC	HL,DE
 	LD	B,C
-_beradresvram	ADD	HL,DE
+_beradresvram: 	ADD	HL,DE
 	DJNZ	_beradresvram
 	RET
-WISKEYBUFFER	LD	HL,(#F3F8)
+WISKEYBUFFER: 	LD	HL,(#F3F8)
 	LD	(#F3FA),HL
 	RET
 
-PUSHANYKEY	LD	HL,#1800+10*24	;in blink table
+PUSHANYKEY: 	LD	HL,#1800+10*24	;in blink table
 	LD	BC,10	;80 characters! wide
 	LD	A,#FF
 	CALL	FILLVRAM	;bar
-_pushloop1	CALL	wispushany
+_pushloop1: 	CALL	wispushany
 	LD	B,10	;wait 10 interrupts
 	CALL	WAITFORKEY
 	JR	NC,_push_back
@@ -5704,32 +5702,32 @@ _pushloop1	CALL	wispushany
 	LD	B,20	;wait 20 interrupts
 	CALL	WAITFORKEY
 	JR	C,_pushloop1
-_push_back	LD	HL,#1800+10*24
+_push_back: 	LD	HL,#1800+10*24
 	LD	BC,10
 	XOR	A
 	CALL	FILLVRAM
-wispushany	LD	HL,80*24
+wispushany: 	LD	HL,80*24
 	LD	BC,80
 	XOR	A
 	JP	FILLVRAM
-txt_pushany	db	"Push any key",0
+txt_pushany: 	db	"Push any key",0
 
-PRINTINI	LD	IX,#00A5
+PRINTINI: 	LD	IX,#00A5
 	LD	HL,printerline
-_printini0	LD	A,(HL)
+_printini0: 	LD	A,(HL)
 	INC	HL
 	OR	A
 	RET	Z
 	CP	"^"
 	JR	NZ,_printini1
 	LD	A,27
-_printini1	ld	b,0	;try 256 times
-_retrysend	CALL	gobios
+_printini1: 	ld	b,0	;try 256 times
+_retrysend: 	CALL	gobios
 	jr	nc,_printini0
 	djnz	_retrysend
 	JR	_printini0	;try the following characters
 
-MAINCONFIG	LD	BC,(slotsubroutin)
+MAINCONFIG: 	LD	BC,(slotsubroutin)
 	LD	(oldslotsub+1),BC
 	LD	BC,(slotdebugger)
 	LD	(slotsubroutin),BC
@@ -5740,22 +5738,22 @@ MAINCONFIG	LD	BC,(slotsubroutin)
 	ld	de,tab_inst
 	ld	bc,tab_inst_end-tab_inst
 	ldir
-oldslotsub	LD	BC,#0000
+oldslotsub: 	LD	BC,#0000
 	LD	(slotsubroutin),BC
 	CALL	zetslot
 	LD	HL,tab_inst
 	RET
 
 tab_inst:
-idhex	db	"#",0,0
-idbin	db	"%",0,0
-printerline	ds	16,0
-config_flags db 1000b	;See M_Flags in debugger.asm
+idhex: 	db	"#",0,0
+idbin: 	db	"%",0,0
+printerline: 	ds	16,0
+config_flags:  db 1000b	;See M_Flags in debugger.asm
     	db	0	;Two unused bytes, were "mouse" and "cursor blink"
     	db	0
 tab_inst_end:
 
-SAVECONFIG	LD	A,(Backuponoff)	;backup status
+SAVECONFIG: 	LD	A,(Backuponoff)	;backup status
 	LD	(kbuf+#0104),A
 	LD	HL,#0101	;notnew+notsrcem
 	LD	(kbuf),HL
@@ -5842,11 +5840,11 @@ si_lenght:	dw	#011C
 	JR	skip_save_err
 _saveerror:
 	LD	HL,23*80+31
-	LD	BC,Writeerror
+	LD	BC,Writeerror_
 	CALL	PRINTTEKST
 	CALL	beep
 	CALL	GETKEY
-skip_save_err	CALL	clrdiskhooks
+skip_save_err: 	CALL	clrdiskhooks
 	LD	HL,23*80	;ev delete error text?
 	LD	BC,80	;clear line 23
 	XOR	A
@@ -5877,10 +5875,10 @@ save_dos1:
 compasscfg:	db "KONPASS "
 cfg_ext:	db "CFG",0
 
-GETPAGES	ld	hl,page0	;(2 times ld de,nn)
+GETPAGES: 	ld	hl,page0	;(2 times ld de,nn)
 	ret
 ;moved compassblock:c=oldslot B=old block (THUS REVERSE),HL=pointer2new
-MOVEPROG	LD	DE,#FFFF
+MOVEPROG: 	LD	DE,#FFFF
 	LD	(oudslot+1),DE
 	LD	E,(HL)
 	INC	HL
@@ -5893,13 +5891,13 @@ MOVEPROG	LD	DE,#FFFF
 	LD	(slotsubroutin),HL
 	PUSH	DE	;ED contains the new, BC the old
 	LD	A,B	;enable old page on page1
-	CALL	SETPAGE1_DOS2
+	CALL	SETPAGE1_DOS2_
 	LD	A,C
 	LD	H,#40
 	CALL	SLOT
 	POP	BC	;enable new ones on page2
 	LD	A,B
-	CALL	SETPAGE2_DOS2
+	CALL	SETPAGE2_DOS2_
 	LD	A,C
 	LD	H,#80
 	CALL	SLOT
@@ -5910,28 +5908,28 @@ MOVEPROG	LD	DE,#FFFF
 	LDIR
 	LD	HL,(slotsubroutin)
 	LD	A,H
-	CALL	SETPAGE1_DOS2
+	CALL	SETPAGE1_DOS2_
 	LD	A,L
 	LD	H,#40
 	CALL	SLOT
 	LD	HL,(slothoofdp)
 	PUSH	HL
 	LD	A,H
-	CALL	SETPAGE2_DOS2
+	CALL	SETPAGE2_DOS2_
 	LD	A,L
 	LD	H,#80
 	CALL	SLOT
 	POP	HL
 	JP	#8000+_moveprog
-_moveprog	DI
+_moveprog: 	DI
 	LD	A,H
 	LD	(hook_blok-hook+hookadres),A
-	call	SETPAGE0_DOS2
+	call	SETPAGE0_DOS2_
 	LD	A,L
 	LD	(hook_slot-hook+hookadres),A
 	LD	(oudslot+#8000),A
 	jp	#8000+set_slot_p0
-testmove	ld	a,h
+testmove: 	ld	a,h
 	cp	b
 	ret	nz
 	ld	a,l
@@ -5945,11 +5943,11 @@ testmove	ld	a,h
 Nameadres:	defw	0
 Posname:	defb	0
 
-inputname	push	af
+inputname: 	push	af
 	ld	hl,fcb_work+1
 	ld	de,buffer1024
 	ld	b,11
-_inputloop1	ld	a,(hl)
+_inputloop1: 	ld	a,(hl)
 	ld	(hl)," "
 	inc	hl
 	ld	(de),a
@@ -5964,12 +5962,12 @@ _inputloop1	ld	a,(hl)
 	ld	(ix),1
 	pop	af
 	jr	input_char
-inputhoofd	call	_prtfilenaam
+inputhoofd: 	call	_prtfilenaam
 	ld	a,(ix)
 	cp	9
 	jr	c,_inputhoofd1
 	inc	a
-_inputhoofd1	add	a,#3f
+_inputhoofd1: 	add	a,#3f
 	ld	h,a
 	ld	l,#19
 	ld	(cursory_x),hl
@@ -5986,9 +5984,9 @@ _inputhoofd1	add	a,#3f
 	jp	z,_input_punt
 	cp	" "+1
 	jr	c,inputhoofd
-input_char	ld	hl,Foutchar
+input_char: 	ld	hl,Foutchar
 	ld	b,14
-_input_char1	cp	(hl)
+_input_char1: 	cp	(hl)
 	jr	z,inputhoofd
 	inc	hl
 	djnz	_input_char1
@@ -6012,7 +6010,7 @@ _input_char2:	ld	c,(ix)
 	jp	inputhoofd
 Foutchar:	defb	34,",/\[];:'+*?()"
 
-_input_bs	ld	hl,fcb_work+1
+_input_bs: 	ld	hl,fcb_work+1
 	ld	c,(ix)
 	dec	c
 	jp	z,inputhoofd
@@ -6033,26 +6031,26 @@ _input_bs1:	ld	a,(ix)
 	jp	inputhoofd
 _input_bs2:	ld	(ix),9
 	jp	inputhoofd
-_input_punt	ld	a,(ix)
+_input_punt: 	ld	a,(ix)
 	cp	9
 	jp	nc,inputhoofd
 	ld	(ix),9
 	jp	inputhoofd
-_input_ret	ld	a,(ix)
+_input_ret: 	ld	a,(ix)
 	cp	1
 	jr	nz,_quitinput1
-quitinput	ld	hl,buffer1024
+quitinput: 	ld	hl,buffer1024
 	ld	de,fcb_work+1
 	ld	bc,11
 	ldir
-_quitinput1	call	beradrname
+_quitinput1: 	call	beradrname
 	jr	c,_quitinput2
 	ld	hl,fcb_work+1
 	ld	bc,11
 	ldir		;filename to FCB
 	call	jon2
 	call	prtfilenaam
-_quitinput2	ld	a,1
+_quitinput2: 	ld	a,1
 	ld	(cursoronoff),a
 	ld	hl,#3e18
 	ld	b,14
@@ -6060,11 +6058,11 @@ _quitinput2	ld	a,1
 	jp	diskhoofdprt
 
 ;------ special errors
-Errors:	defw	Protected,Offline,Ioerror,Ioerror,Ioerror,Writeerror
+Errors:	defw	Protected,Offline,Ioerror,Ioerror,Ioerror,Writeerror_
 	defw	Ioerror,Ioerror
 Protected:	defb	"Write protected !",0
 Offline:	defb	" Disk offline !",0
-Writeerror:	defb	"  Write error !",0
+Writeerror_:	defb	"  Write error !",0
 Ioerror:	defb	"Disk I/O error !",0
 BadFatErr:  defb    "    Bad FAT !   ",0
 Abortretry:	defb	"Abort or retry ? (a/r)",0
@@ -6133,7 +6131,7 @@ _specialer1:
 	
 	jp _specialerr_abort
 
-_specialerr_nobadfat
+_specialerr_nobadfat: 
 	push hl
 	ld	a,c
 	and	%00001110
@@ -6321,7 +6319,7 @@ flushing_disk_buffers: db 0
 ;Stack pointer to restore if flushing disk buffers fails.
 flushing_disk_buffers_sp: dw 0
 
-printhok	LD	B,(IX)
+printhok: 	LD	B,(IX)
 	dec	b
 	inc	ix
 	inc	ix
@@ -6333,15 +6331,15 @@ printhok	LD	B,(IX)
 	ld	a,b
 	or	a
 	jr	z,_printhok2
-_printhok1	push	bc
+_printhok1: 	push	bc
 	push	iy
 	call	printlinehok
 	pop	iy
 	pop	bc
 	djnz	_printhok1
-_printhok2	ld	iy,Menuhokcont
+_printhok2: 	ld	iy,Menuhokcont
 	call	printlinehok
-printlinehok	call	SETVRAMWRITE
+printlinehok: 	call	SETVRAMWRITE
 	ld	de,80
 	add	hl,de
 _printlineh2:	ld	a,(iy)
@@ -6358,7 +6356,7 @@ _printlineh1:	nop
 	out	(#98),a
 	djnz	_printlineh1
 	jr	_printlineh2
-_printhoktxt	ld	a,b
+_printhoktxt: 	ld	a,b
 	cp	3
 	ld	a,0
 	jr	c,_printlineh1	;anyway huh
@@ -6380,15 +6378,15 @@ _printhoktx1:	ld	a,(ix)
 	out	(#98),a
 	jr	_printlineh2
 
-Menuhok	defb	1,24,0,23,1,25,0	;above
+Menuhok: 	defb	1,24,0,23,1,25,0	;above
 	defb	1,22,0, 0,1,20,1,23,1,25,0	;1st line
 	defb	1,22,0, 0,1,22,1,0,1,22,0	;middle part
-Menuhokcont	defb	1,26,1,23,1,18,0,23,1,27,1,0,1,22,0	;1st under menu
+Menuhokcont: 	defb	1,26,1,23,1,18,0,23,1,27,1,0,1,22,0	;1st under menu
 	defb	2,0,1,26, 0,23,1,27,0
-printmemview	ld	ix,#fcc1
+printmemview: 	ld	ix,#fcc1
 	ld	iy,Doelhokken
 	ld	b,4
-_memview3	push	bc
+_memview3: 	push	bc
 	ld	a,4+"0"
 	sub	b
 	ld	(Primairslot),a
@@ -6398,7 +6396,7 @@ _memview3	push	bc
 	ld	b,4
 	jr	nz,_memview1
 	ld	b,1
-_memview1	push	bc
+_memview1: 	push	bc
 	push	hl
 	call	printslot
 	pop	hl
@@ -6429,10 +6427,10 @@ _memview2:	push	bc
 	djnz	_memview3	;all primary slots
 	ld	hl,4*80+37
 	ld	b,2
-_memviewget1	push	bc
+_memviewget1: 	push	bc
 	ld	ix,Memviewtxt1
 	ld	b,5
-_memviewget2	push	bc
+_memviewget2: 	push	bc
 	push	hl
 	ld	e,(ix)
 	inc	ix
@@ -6450,23 +6448,23 @@ _memviewget2	push	bc
 	pop	bc
 	djnz	_memviewget1
 	ret
-Memviewtxt1	defw	0,#4000,#8000,#c000,#ffff
-vultabelin	ld	ix,tab_ROMRAM
+Memviewtxt1: 	defw	0,#4000,#8000,#c000,#ffff
+vultabelin: 	ld	ix,tab_ROMRAM
 	ld	iy,Memadressen
 	ld	b,4
-_vultabel1	push	bc
+_vultabel1: 	push	bc
 	ld	l,(iy)
 	inc	iy
 	ld	h,(iy)
 	inc	iy
 	ld	b,4
-_vultabel3	push	bc
+_vultabel3: 	push	bc
 	push	hl
 	push	ix
 	ld	de,0
 	ld	(Grootteram),de
 	ld	b,3
-_vultabel2	push	bc
+_vultabel2: 	push	bc
 	push	hl
 	ld	a,(ix)
 	or	a
@@ -6484,7 +6482,7 @@ _vultabel2	push	bc
 	ex	de,hl
 	ld	bc,Ram
 	jr	_ram
-mapper	ld	a,b
+mapper: 	ld	a,b
 	cp	2
 	ld	bc,Ram
 	jr	nz,_ram	;Ram, .... kB, Ram, Ram
@@ -6507,8 +6505,8 @@ mapper	ld	a,b
 	ld	a,"B"
 	out	(#98),a
 	jr	_leeg
-_rom	ld	bc,Rom
-_ram	call	PRINTTEKST
+_rom: 	ld	bc,Rom
+_ram: 	call	PRINTTEKST
 _leeg:	ld	de,16*2
 	add	ix,de
 	pop	hl
@@ -6540,7 +6538,7 @@ Rom:	defb	" Rom  ",0
 Ram:	defb	" Ram  ",0
 Memadressen:	defw	5*80+2,5*80+46,16*80+2,16*80+46
 Grootteram:	defw	0
-vulrestin	ld	a,(#faf8)
+vulrestin: 	ld	a,(#faf8)
 	ld	c,0
 	ld	hl,Memviewtxt3
 	call	printinblok	;Sub-rom in page 0
@@ -6585,7 +6583,7 @@ Memviewtxt3:	defb	"Sub-rom",0
 Memviewtxt4:	defb	"D-rom:",0
 Memviewtxt5:	defb	" Music",0
 Memviewtxt6:	defb	" Audio",0
-zoekinmem	ld	c,#80
+zoekinmem: 	ld	c,#80
 	ld	b,16
 _nextcomp1:	push	hl
 	push	de
@@ -6610,13 +6608,13 @@ _nextcomp:	ld	a,(de)
 	djnz	_nextcomp1
 	scf
 	ret
-_foundit	pop	de
+_foundit: 	pop	de
 	pop	hl
 	ret
 Opll:	defb	"OPLL",0
 Musicbox:	defb	"MUSICBOX",0
 ;---- IN: A=slot, C=page, HL=text
-printinblok	push	hl
+printinblok: 	push	hl
 	ld	b,c
 	inc	b
 	ld	hl,5*80+1-160-9
@@ -6641,7 +6639,7 @@ _printinblk3:	add	hl,de
 	djnz	_printinblk3
 	pop	bc
 	jp	PRINTTEKST
-printslot	ld	de,3
+printslot: 	ld	de,3
 	add	hl,de
 	bit	7,(ix)
 	jr	nz,_printprse
@@ -6657,7 +6655,7 @@ _printprse:	ld	a,(Primairslot)
 	out	(#98),a
 	ret
 Primairslot:	defb	0
-onelinehok	ld	bc,80
+onelinehok: 	ld	bc,80
 	add	hl,bc
 	call	SETVRAMWRITE
 	ld	a,d
@@ -6677,8 +6675,8 @@ _onelinehok1:	out	(#98),a
 Doelhokken:	defw	3*80,3*80+44,14*80,14*80+44
 
 ;********************** MOUSE CONTROL*************************************
-mseprt	equ	#fc82	;mouse port number, 0=not found
-OFFSET	LD	A,B	;mouse offsets
+mseprt: 	equ	#fc82	;mouse port number, 0=not found
+OFFSET: 	LD	A,B	;mouse offsets
 	LD	(MAXOFF),A
 	SRL	A
 	LD	(OFFST),A
@@ -6687,7 +6685,7 @@ OFFSET	LD	A,B	;mouse offsets
 	SRL	A
 	LD	(OFFS1),A
 	RET
-rdmous	LD	A,(config_flags)
+rdmous: 	LD	A,(config_flags)
 	and 100b
 	RET	Z
 	DI
@@ -6700,7 +6698,7 @@ rdmous	LD	A,(config_flags)
 	LD	(mseprt),A
 	CALL	chms0
 	RET	C	;no mouse connected
-found	PUSH	IX
+found: 	PUSH	IX
 	LD	A,(stat_getkey)	;1=check mouse fire buttons only
 	OR	A
 	JR	Z,_found
@@ -6708,7 +6706,7 @@ found	PUSH	IX
 	AND	#50	;get 1st fire buttons port1 and port2
 	CP	#50	;1 of the two pressed?
 	JR	Z,no_fire1	;no, neither of them pressed
-_found	PUSH	HL	;save mouse offsets
+_found: 	PUSH	HL	;save mouse offsets
 	LD	IX,OFFSTX
 	LD	A,L
 	LD	DE,28*256+29
@@ -6720,12 +6718,12 @@ _found	PUSH	HL	;save mouse offsets
 	LD	A,H
 	LD	DE,31*256+30
 	CALL	count	;put U/D characters in keybuffer
-no_fire1	ld	ix,frfake
+no_fire1: 	ld	ix,frfake
 	CALL	fire1
 	CALL	fire2
 	POP	IX
 	RET
-fire1	LD	A,(fr1)
+fire1: 	LD	A,(fr1)
 	LD	B,A
 	ld	a,(trgflg)
 	AND	#50
@@ -6735,10 +6733,10 @@ fire1	LD	A,(fr1)
 	CP	#50
 	RET	Z	;fire button1 not pushed
 	LD	D,#00	;put character zero in keybuf
-_fire1	LD	B,#01
+_fire1: 	LD	B,#01
 	JP	cntend
-fr1	db	0
-fire2	LD	A,(fr2)
+fr1: 	db	0
+fire2: 	LD	A,(fr2)
 	LD	B,A
 	LD	A,(trgflg)
 	AND	#A0
@@ -6749,10 +6747,10 @@ fire2	LD	A,(fr2)
 	RET	Z
 	LD	D,#01	;put character 1 in keyboard buffer
 	JR	_fire1
-fr2	db	0
-frfake	db	0,0,1
-chms0	ld	b,8	;check 8 times
-chms1	CALL	getpad
+fr2: 	db	0
+frfake: 	db	0,0,1
+chms0: 	ld	b,8	;check 8 times
+chms1: 	CALL	getpad
 	LD	A,H
 	CP	#01
 	JR	NZ,chms2
@@ -6762,10 +6760,10 @@ chms1	CALL	getpad
 	DJNZ	chms1
 	SCF
 	RET
-chms2	AND	A	;clear carry
+chms2: 	AND	A	;clear carry
 	RET
 
-count	BIT	7,A	;offset negative?
+count: 	BIT	7,A	;offset negative?
 	JR	NZ,_cntdown
 	ADD	A,(IX+#00)
 	LD	B,A
@@ -6775,25 +6773,25 @@ count	BIT	7,A	;offset negative?
 	SRL	B
 	SRL	B
 	RET	Z	;number of fully moved courses in B
-cntend	LD	HL,(#F3F8)	;this place needs a new sign
-cntu_skip	INC	(IX+#01)	;every (ix+2) characters put a byte
+cntend: 	LD	HL,(#F3F8)	;this place needs a new sign
+cntu_skip: 	INC	(IX+#01)	;every (ix+2) characters put a byte
 	LD	A,(IX+#02)	;in the key buffer
 	CP	(IX+#01)	;serves to slow down the mouse a bit
 	JR	NZ,skip_ureset
 	LD	(IX+#01),#00	;counter back to zero
 	LD	A,D
 	CALL	putkeybuf
-skip_ureset	DJNZ	cntu_skip
+skip_ureset: 	DJNZ	cntu_skip
 	LD	(#F3F8),HL
 	RET
-putkeybuf	LD	(HL),A
+putkeybuf: 	LD	(HL),A
 	INC	HL
 	LD	A,L
 	CP	#18
 	RET	NZ
 	LD	HL,#FBF0
 	RET
-_cntdown	NEG		;make positive
+_cntdown: 	NEG		;make positive
 	LD	L,A	;l=number of pixels to subtract
 	LD	A,(IX+#00)
 	LD	H,A	;h and a=number of remaining pixels
@@ -6809,7 +6807,7 @@ _cntdown	NEG		;make positive
 	RET	Z
 	LD	B,A
 	LD	HL,(#F3F8)
-cntd_skip	DEC	(IX+#01)
+cntd_skip: 	DEC	(IX+#01)
 	BIT	7,(IX+#01)
 	JR	Z,skip_dreset
 	LD	A,(IX+#02)
@@ -6817,19 +6815,19 @@ cntd_skip	DEC	(IX+#01)
 	LD	(IX+#01),A
 	LD	A,E
 	CALL	putkeybuf
-skip_dreset	DJNZ	cntd_skip
+skip_dreset: 	DJNZ	cntd_skip
 	LD	(#F3F8),HL
 	RET
 
-OFFSTX	db	0
-OFFST	db	0
-MAXOFF	db	1
-OFFSTY	db	0
-OFFS1	db	0
-MAXOF1	db	1
+OFFSTX: 	db	0
+OFFST: 	db	0
+MAXOFF: 	db	1
+OFFSTY: 	db	0
+OFFS1: 	db	0
+MAXOF1: 	db	1
 
 ;get paddle data offsets:out: HL #yyxx offsets  in: mseprt
-getpad	PUSH	BC
+getpad: 	PUSH	BC
 	PUSH	DE
 	LD	DE,(mseprt)
 	LD	A,#0F	;read psg r15 port B
@@ -6851,7 +6849,7 @@ getpad	PUSH	BC
 	POP	DE
 	POP	BC
 	RET
-gpad0	RLCA		;do read value *16
+gpad0: 	RLCA		;do read value *16
 	RLCA
 	RLCA
 	RLCA
@@ -6860,8 +6858,8 @@ gpad0	RLCA		;do read value *16
 	OR	D
 	NEG		;correct
 	RET
-gpad1	LD	BC,#0708	;short delay
-gpad2	LD	A,#0F
+gpad1: 	LD	BC,#0708	;short delay
+gpad2: 	LD	A,#0F
 	OUT	(#A0),A
 	LD	A,E
 	OUT	(#A1),A
@@ -6869,7 +6867,7 @@ gpad2	LD	A,#0F
 	AND	#30	;get input: #20=2 #10=1
 	XOR	E	;invert the pin8bit
 	LD	E,A
-invul_delay	CALL	0
+invul_delay: 	CALL	0
 	LD	A,#0E
 	OUT	(#A0),A
 	NOP
@@ -6877,16 +6875,16 @@ invul_delay	CALL	0
 	IN	A,(#A2)
 	AND	#0F
 	RET
-delay_Z80	DJNZ	delay_Z80
+delay_Z80: 	DJNZ	delay_Z80
 	RET
-delay_R800	IN	A,(#E6)	;get lowbyte TurboR system timer
+delay_R800: 	IN	A,(#E6)	;get lowbyte TurboR system timer
 	LD	B,A
-_delay_R800	IN	A,(#E6)
+_delay_R800: 	IN	A,(#E6)
 	SUB	B	;how much is the counter already higher?
 	CP	C	;even less than we need?
 	JR	C,_delay_R800	;yes, still waiting
 	RET
-fill_delay	LD	HL,delay_Z80
+fill_delay: 	LD	HL,delay_Z80
 	LD	A,(msxtype)
 	CP	#03
 	JR	C,_fill_delay
@@ -6896,10 +6894,10 @@ fill_delay	LD	HL,delay_Z80
 	CP	#60
 	JR	Z,_fill_delay
 	LD	HL,delay_R800
-_fill_delay	LD	(invul_delay+1),HL
+_fill_delay: 	LD	(invul_delay+1),HL
 	RET
 
-janeetoetsen	LD	A,(msxtype)	;only turboR
+janeetoetsen: 	LD	A,(msxtype)	;only turboR
 	CP	#03
 	RET	NZ
 	DI
@@ -6918,13 +6916,13 @@ janeetoetsen	LD	A,(msxtype)	;only turboR
 	bit	3,a
 	jr	nz,zetcpu	;no test
 	inc	b	;yes test
-zetcpu	ld	a,b
+zetcpu: 	ld	a,b
 	PUSH	IX
 	LD	IX,#0180
 	CALL	gobios
 	POP	IX
 	RET
-hertztoetsen	LD	A,(matrix+6)
+hertztoetsen: 	LD	A,(matrix+6)
 	AND	#02
 	RET	NZ	;ctrl not pressed
 	LD	A,(matrix)
@@ -6935,7 +6933,7 @@ hertztoetsen	LD	A,(matrix+6)
 	RLCA
 	RET	C	;5key not pressed
 	LD	B,#82
-zetspeed	DI
+zetspeed: 	DI
 	LD	A,(#FFE8)	;read vdp10
 	AND	#7D
 	OR	B	;set bit 2 sorted, bit7 high (212)
@@ -6945,16 +6943,16 @@ zetspeed	DI
 	OUT	(#99),A
 	JP	WISKEYBUFFER
 
-tab_memtabel
-textbuffer1	ds	33,0
-databuffer1	ds	13,0
-textbuffer2	ds	33,0
-databuffer2	ds	13,0
-textbuffer3	ds	33,0
-databuffer3	ds	13,0
-textbuffer4	ds	33,0
-databuffer4	ds	13,0
-labelbuffer	ds	9,0
+tab_memtabel: 
+textbuffer1: 	ds	33,0
+databuffer1: 	ds	13,0
+textbuffer2: 	ds	33,0
+databuffer2: 	ds	13,0
+textbuffer3: 	ds	33,0
+databuffer3: 	ds	13,0
+textbuffer4: 	ds	33,0
+databuffer4: 	ds	13,0
+labelbuffer: 	ds	9,0
 
 ;Non-zero if on success load or save operation disk menu must close
 disk_must_back: db 0
@@ -6966,11 +6964,11 @@ last_dos_error: db 0
 ;so that it can be examined by abort handler
 disk_error_handling_errnum: db 0
 
-ABOUT	
+ABOUT: 	
 	ld bc,ABOUTPROG
 	jr call_in_debugger
 
-redefchars:
+redefchars_:
 	ld a,(config_flags)
 	ld bc,REDEFCHARS
 
@@ -6993,19 +6991,19 @@ oldslotsub2:
 ;everything from here will be erased (one time use routines on startup)
 buffer1024:
 
-hook	jr	hookcontinue
+hook: 	jr	hookcontinue
 	jr hook_hoofd
-hook_slot	db	0
-hook_blok	db	0
-cmd_id	db	"KONPASS",0	;ID
-hook_tab_tpa	db	0,0,0,0	;is filled in by start compass
-tab_tpa	equ	hook_tab_tpa-hook+hookadres
-hook_tab_cur	db	0,0,0,0	;idem
-current_p0	equ	hook_tab_cur-hook+hookadres
-current_p1	equ	hook_tab_cur-hook+hookadres+1
-current_p2	equ	hook_tab_cur-hook+hookadres+2
-current_p3	equ	hook_tab_cur-hook+hookadres+3
-hookcontinue	LD	B,A
+hook_slot: 	db	0
+hook_blok: 	db	0
+cmd_id: 	db	"KONPASS",0	;ID
+hook_tab_tpa: 	db	0,0,0,0	;is filled in by start compass
+tab_tpa: 	equ	hook_tab_tpa-hook+hookadres
+hook_tab_cur: 	db	0,0,0,0	;idem
+current_p0: 	equ	hook_tab_cur-hook+hookadres
+current_p1: 	equ	hook_tab_cur-hook+hookadres+1
+current_p2: 	equ	hook_tab_cur-hook+hookadres+2
+current_p3: 	equ	hook_tab_cur-hook+hookadres+3
+hookcontinue: 	LD	B,A
 	LD	A,(matrix+6)
 	AND	#01
 	JR	NZ,hook_notkey
@@ -7015,25 +7013,25 @@ hookcontinue	LD	B,A
 	ld	a,(ctngcode)
 	rrca
 	jr	c,hook_hoofd
-hook_notkey	LD	A,B
-orighookchget	ds	5,0
-hook_hoofd	LD	A,(hook_slot-hook+hookadres)
+hook_notkey: 	LD	A,B
+orighookchget: 	ds	5,0
+hook_hoofd: 	LD	A,(hook_slot-hook+hookadres)
 	PUSH	AF
 	LD	H,#80
 	CALL	#0024
 	LD	A,(hook_blok-hook+hookadres)
-	call	SETPAGE2_DOS2	;correct block number
-	call	SETPAGE0_DOS2
+	call	SETPAGE2_DOS2_	;correct block number
+	call	SETPAGE0_DOS2_
 	POP	AF
 	CALL	#8000+set_slot_p0
 	JP	shellentry
-cmd	PUSH	AF
+cmd: 	PUSH	AF
 	PUSH	BC
 	PUSH	DE
 	PUSH	HL
 	DEC	HL
 	LD	DE,cmd_id-hook+hookadres
-test_cmd	LD	A,(DE)
+test_cmd: 	LD	A,(DE)
 	INC	DE
 	OR	A
 	JR	Z,end_test
@@ -7042,17 +7040,17 @@ test_cmd	LD	A,(DE)
 	AND	#DF	;change lowercase to uppercase.
 	CP	B
 	JR	Z,test_cmd
-end_test	POP	HL
+end_test: 	POP	HL
 	POP	DE
 	POP	BC
 	JR	Z,hook_hoofd	;why isn't it picked up anymore???
 	POP	AF	;answer: stack doesn't matter anymore, and so as not to mess flags
-orighookcmd	ds	5,0
-hook_back	LD	A,(#FCC1)
+orighookcmd: 	ds	5,0
+hook_back: 	LD	A,(#FCC1)
 	LD	H,#00
 	CALL	#0024
 	LD	A,(tab_tpa+0)
-	call	SETPAGE0_DOS2
+	call	SETPAGE0_DOS2_
 	LD	HL,hook_feda-hook+hookadres
 	LD	(#FEDB),HL
 	LD	A,#C3
@@ -7060,58 +7058,58 @@ hook_back	LD	A,(#FCC1)
 	LD	IY,(#F347)
 	LD	IX,#4022	;jump to basic
 	JP	#001C
-hook_feda	LD	A,#C9
+hook_feda: 	LD	A,#C9
 	LD	(#FEDA),A
-disable_feda	PUSH	HL
+disable_feda: 	PUSH	HL
 	PUSH	BC
 	LD	HL,hook_text-hook+hookadres
-_hook_feda2	LD	A,(HL)
+_hook_feda2: 	LD	A,(HL)
 	INC	HL
 	OR	A
 	JR	Z,_hook_feda1
 	CALL	#00A2	;chput
 	JR	_hook_feda2
-_hook_feda1	POP	BC
+_hook_feda1: 	POP	BC
 	POP	HL
 	RET
-hook_text	db	10,"Press [SHIFT] + [ESC] or type CMD KONPASS "
+hook_text: 	db	10,"Press [SHIFT] + [ESC] or type CMD KONPASS "
 	db	"to return.",10,0
 
 getpage0_dos2:
 	ld a,(current_p0)
 	RET
-GETPAGE0_DOS2	equ	getpage0_dos2-hook+hookadres
+GETPAGE0_DOS2_: 	equ	getpage0_dos2-hook+hookadres
 
 getpage1_dos2:
 	ld a,(current_p1)
 	RET
-GETPAGE1_DOS2	equ	getpage1_dos2-hook+hookadres
+GETPAGE1_DOS2_: 	equ	getpage1_dos2-hook+hookadres
 
 getpage2_dos2:
 	ld a,(current_p2)
 	RET
-GETPAGE2_DOS2	equ	getpage2_dos2-hook+hookadres
+GETPAGE2_DOS2_: 	equ	getpage2_dos2-hook+hookadres
 
 setpage0_dos2:
 	ld (current_p0),a
 	OUT	(#FC),A
 	RET
-SETPAGE0_DOS2	equ	setpage0_dos2-hook+hookadres
+SETPAGE0_DOS2_: 	equ	setpage0_dos2-hook+hookadres
 
 setpage1_dos2:
 	ld (current_p1),a
 	OUT	(#FD),A
 	RET
-SETPAGE1_DOS2	equ	setpage1_dos2-hook+hookadres
+SETPAGE1_DOS2_: 	equ	setpage1_dos2-hook+hookadres
 
 setpage2_dos2:
 	ld (current_p2),a
 	OUT	(#FE),A
 	RET
-SETPAGE2_DOS2	equ	setpage2_dos2-hook+hookadres
-hook_end
+SETPAGE2_DOS2_: 	equ	setpage2_dos2-hook+hookadres
+hook_end: 
 
-fill_inst	LD	A,(kbuf)	;virgin version?
+fill_inst: 	LD	A,(kbuf)	;virgin version?
 	OR	A
 	RET	Z
 	LD	A,(kbuf+#104)	;no, get configuration
@@ -7123,7 +7121,7 @@ fill_inst	LD	A,(kbuf)	;virgin version?
 	LD	DE,tab_memory	;the default is filled in by
 	LD	BC,8	;starting compass
 	LDIR
-work_default	LD	HL,(kbuf+#ec)	;palettebytes color 0,(0)
+work_default: 	LD	HL,(kbuf+#ec)	;palettebytes color 0,(0)
 	LD	(color),HL
 	LD	HL,(kbuf+#ee)	;palettebytes color 1,(15)
 	LD	(color+30),HL
@@ -7144,7 +7142,7 @@ work_default	LD	HL,(kbuf+#ec)	;palettebytes color 0,(0)
 	CALL	zetslot
 	JP	SETDEBPARS
 
-bios	JP	SETVRAMWRITE	;080
+bios: 	JP	SETVRAMWRITE	;080
 	JP	SETVRAMREAD	;083
 	JP	RAMTOVRAM	;086
 	JP	FILLVRAM	;089
@@ -7198,15 +7196,15 @@ bios	JP	SETVRAMWRITE	;080
 	JP	GETPAGES	;119
 	JP	DOINCLUDE	;11c
 	JP	SAVECONFIG	;11f
-	JP	GETPAGE0_DOS2
-	JP	SETPAGE0_DOS2
-	JP	GETPAGE1_DOS2
-	JP	SETPAGE1_DOS2
-	JP	GETPAGE2_DOS2
-	JP	SETPAGE2_DOS2
+	JP	GETPAGE0_DOS2_
+	JP	SETPAGE0_DOS2_
+	JP	GETPAGE1_DOS2_
+	JP	SETPAGE1_DOS2_
+	JP	GETPAGE2_DOS2_
+	JP	SETPAGE2_DOS2_
 	JP	GETKEY2
 	JP  ABOUT ;137
-endbios
+endbios: 
 
 startcompass:
 	di
@@ -7313,7 +7311,7 @@ secure_interrupts_done:
 	ld	hl,#fcc4
 	ld	b,4
 	xor	a
-_startcompass	or	(hl)	;create special byte for debugger
+_startcompass: 	or	(hl)	;create special byte for debugger
 	rlca		;bit0-3: 1 if corresponding slot is exp
 	dec	hl
 	djnz	_startcompass

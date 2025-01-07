@@ -1,78 +1,76 @@
 ;Konpass #1.3 - Debugger
 
-	.label	15
+matrix: 	equ	#fbe5
+comline: 	equ	12
+temp2: 	equ	1
+select: 	equ	24
+return: 	equ	13
+escape: 	equ	27
+right: 	equ	28
+left: 	equ	29
+up: 	equ	30
+down: 	equ	31
+stop: 	equ	250	; specially patched by getkey
 
-matrix	equ	#fbe5
-comline	equ	12
-temp2	equ	1
-select	equ	24
-return	equ	13
-escape	equ	27
-right	equ	28
-left	equ	29
-up	equ	30
-down	equ	31
-stop	equ	250	; specially patched by getkey
+startcursorad: 	equ	#0000
+startmonadres: 	equ	#c000
+startpcadres: 	equ	#0010
 
-startcursorad	equ	#0000
-startmonadres	equ	#c000
-startpcadres	equ	#0010
-
-SLTTBL	equ	#fcc5
-CURSORONOFF	equ	#fca9
-CURSORY_X	equ	#f3dc
-kbuf	equ	#f41f
-PUTTORAM	EQU	#B3
-PRINTTEKST	EQU	#92
-GETFROMRAM	EQU	#B0
-SETBALK	equ	#A4
-KIESOPTIE	equ	#C8
-GETKEY	equ	#fb
-SETVRAMWRITE	EQU	#80
-MEMVIEW	EQU	#D4
-CALCULATOR	EQU	#D7
-MEMORY	EQU	#DA
-FILLVRAM	EQU	#89
-GODISKDRIVE	EQU	#B6
-INPUTTEXT	equ	#bf
-PRINTMENU	equ	#c5
-WISOUDMENU	equ	#cb
-MAINCONFIG	equ	#116
-GETPAGES	equ	#119
-BEREKENGETAL	equ	#D1
-PRINTHEXADEC	equ	#9E
-STARTPROGRAM	equ	#E0
-PRINTINI	equ	#107
-GETREGISTERS	equ	#110
-LINETOASSEMB	equ	#10D
-SAVECONFIG	equ	#11f
-PRINTBLOKKLE	equ	#dd
-TEXTTOBLOK	equ	#bc
-SETPAGE2	equ	#131
-RAMTOVRAM	equ	#86
-VRAMTORAM	equ	#e3
-SLOT	equ	#f8
-WISBALK	equ	#A7
-WAITFORKEY	equ	#10a
+SLTTBL: 	equ	#fcc5
+CURSORONOFF: 	equ	#fca9
+CURSORY_X: 	equ	#f3dc
+kbuf: 	equ	#f41f
+PUTTORAM: 	EQU	#B3
+PRINTTEKST: 	EQU	#92
+GETFROMRAM: 	EQU	#B0
+SETBALK: 	equ	#A4
+KIESOPTIE: 	equ	#C8
+GETKEY: 	equ	#fb
+SETVRAMWRITE: 	EQU	#80
+MEMVIEW: 	EQU	#D4
+CALCULATOR: 	EQU	#D7
+MEMORY: 	EQU	#DA
+FILLVRAM: 	EQU	#89
+GODISKDRIVE: 	EQU	#B6
+INPUTTEXT: 	equ	#bf
+PRINTMENU: 	equ	#c5
+WISOUDMENU: 	equ	#cb
+MAINCONFIG: 	equ	#116
+GETPAGES: 	equ	#119
+BEREKENGETAL: 	equ	#D1
+PRINTHEXADEC: 	equ	#9E
+STARTPROGRAM: 	equ	#E0
+PRINTINI: 	equ	#107
+GETREGISTERS: 	equ	#110
+LINETOASSEMB: 	equ	#10D
+SAVECONFIG: 	equ	#11f
+PRINTBLOKKLE: 	equ	#dd
+TEXTTOBLOK: 	equ	#bc
+SETPAGE2: 	equ	#131
+RAMTOVRAM: 	equ	#86
+VRAMTORAM: 	equ	#e3
+SLOT: 	equ	#f8
+WISBALK: 	equ	#A7
+WAITFORKEY: 	equ	#10a
 
 	org	#4000
 
-STARTDEBUGGER	jp	init
-WISBREAK	jp	wisbreak
-INSERTBREAK	jp	insertbreak
-MAININSTPROG	jp	mainconfig
-SETDEBPARS	jp	loadconfig
+STARTDEBUGGER: 	jp	init
+WISBREAK: 	jp	wisbreak_
+INSERTBREAK: 	jp	insertbreak_
+MAININSTPROG: 	jp	mainconfig_
+SETDEBPARS: 	jp	loadconfig
 SETGETPATH: jp filenames
-SETGETADRES	jp	setgetadres
-ABOUTPROG jp doabout
-REDEFCHARS jp doredefchars
-PRINTDISKLINES jp print_disk_lines
+SETGETADRES: 	jp	setgetadres_
+ABOUTPROG:  jp doabout
+REDEFCHARS:  jp doredefchars
+PRINTDISKLINES:  jp print_disk_lines
 
-wisbreak	ld	hl,breakbuf
+wisbreak_: 	ld	hl,breakbuf
 	ld	(breakbufpoint),hl
 	ret
 
-saveconfig:
+saveconfig_:
 	ld	a,(msxrst)
 	ld	(kbuf+261),a
 	ld	a,(rstonscreen)
@@ -138,9 +136,9 @@ _filenames2:
 filbuf_asm:	ds	4*(64+11),0
 filbuf_asc:	ds	4*(64+11),0
 
-realfkeys	ds	10
+realfkeys: 	ds	10
 
-setgetadres	add	a,a
+setgetadres_: 	add	a,a
 	ld	e,a
 	ex	af,af'
 	ld	d,0
@@ -152,7 +150,7 @@ setgetadres	add	a,a
 	inc	hl
 	ld	b,(hl)
 	ret
-setgetwrite	ld	(hl),c
+setgetwrite: 	ld	(hl),c
 	inc	hl
 	ld	(hl),b
 	cp	6
@@ -165,7 +163,7 @@ setgetwrite	ld	(hl),c
 	ld	(aanduiddisam),a
 	ret
 
-init	ld	(intreesp),sp
+init: 	ld	(intreesp),sp
 	ld	(bufferhoofdpr),ix
 	ld	a,l
 	ld	(welkismetsub),a
@@ -192,11 +190,11 @@ init	ld	(intreesp),sp
 	ld	(subslotregs),hl
 	ld	hl,(SLTTBL+2)
 	ld	(subslotregs+2),hl
-nospload	call	updatesubslot
+nospload: 	call	updatesubslot
 	ld	hl,realfkeys
 	ld	de,#f87f	; address where function keys storage begins
 	ld	bc,5*256	; c just before adjust route
-_adjustfkey	dec	c
+_adjustfkey: 	dec	c
 	ld	a,(de)
 	ld	(hl),a
 	inc	hl
@@ -223,16 +221,16 @@ _adjustfkey	dec	c
 	ld	a,0
 	jr	c,init1
 	inc	a
-init1	ld	(turbor),a
+init1: 	ld	(turbor),a
 	ei
 
 	call	scherminit
 	jp	hoofdlus
 
-eerstekeer	db	0	;0=first time
-reg_sp_init	dw	0
+eerstekeer: 	db	0	;0=first time
+reg_sp_init: 	dw	0
 
-scherminit	call	stackinit
+scherminit: 	call	stackinit
 	call	initdis
 	ld	hl,2*80
 	ld	bc,hoofdbalk
@@ -260,7 +258,7 @@ scherminit	call	stackinit
 	out	(#98),a
 	ld	a,23
 	ld	b,33
-scherminit1	out	(#98),a
+scherminit1: 	out	(#98),a
 	djnz	scherminit1
 	ld	a,19
 	out	(#98),a
@@ -272,17 +270,17 @@ scherminit1	out	(#98),a
 	ret	z
 	jp	setpcbalk
 
-hoofdbalk	db	23,23,23,23,23," SYSTEM ",23,23,23,23
+hoofdbalk: 	db	23,23,23,23,23," SYSTEM ",23,23,23,23
 	db	23," CONFIGURATION ",23,23
 	db	23,23," OPTIONS ",23
 	db	23,23," I/O-LIST ",23,23
 	db	23,23," BREAKPOINTS ",23,23,23,23,0
 
-titelbalk	db	"Disassembler/Debugger",0
+titelbalk: 	db	"Disassembler/Debugger",0
 ; function keys produce code ff,fe,fd,fc,fd
-hoofdlus	call	regafbeeld
+hoofdlus: 	call	regafbeeld
 	call	slotmonitor
-hoofdlusbis	call	monitor
+hoofdlusbis: 	call	monitor
 	call	stackvupdate
 
 	ld	b,2
@@ -296,7 +294,7 @@ hoofdlusbis	call	monitor
 	jr	c,noshift
 	cp	escape
 	jp	z,shiftesc
-noshift	cp	up
+noshift: 	cp	up
 	jr	z,hoofdlus2
 	cp	down
 	jr	z,hoofdlus2
@@ -307,21 +305,21 @@ noshift	cp	up
 	call	respcbalk
 	call	wismonbalk
 	pop	af
-hoofdlus2	call	hoofdlusactie
+hoofdlus2: 	call	hoofdlusactie
 	call	ispconmon
 	ld	a,(aanduidtrace)
 	or	a
 	jr	z,hoofdlus
 	call	setpcbalk
 	jr	hoofdlus
-intreesp	dw	0
+intreesp: 	dw	0
 
-hoofdlusactie	cp	123
+hoofdlusactie: 	cp	123
 	jr	nc,hoofdlusactie2
 	cp	97
 	jr	c,hoofdlusactie2
 	xor	32
-hoofdlusactie2	ld	hl,hfdlusactitab-3
+hoofdlusactie2: 	ld	hl,hfdlusactitab-3
 	ld	b,a
 	ld	a,(matrix+6)
 	and	%10
@@ -331,7 +329,7 @@ hoofdlusactie2	ld	hl,hfdlusactitab-3
 	jp	z,gopulldown
 	dec	a
 	jp	z,gopulldown
-hoofdlusactie3	inc	hl
+hoofdlusactie3: 	inc	hl
 	inc	hl
 	inc	hl
 	ld	a,(hl)
@@ -346,7 +344,7 @@ hoofdlusactie3	inc	hl
 	ex	de,hl
 	jp	(hl)
 
-MKLIST	macro	@toets,@routine
+MKLIST: 	macro	@toets,@routine
 	db	@toets
 	dw	@routine
 	db	@toets-64	;for CTRL
@@ -355,7 +353,7 @@ MKLIST	macro	@toets,@routine
 
 ; comment replace " with ' here and we get errors
 ; GEN80 loses quotes on parameter binding
-hfdlusactitab	MKLIST	'A',getdisamadres
+hfdlusactitab: 	MKLIST	'A',getdisamadres
 	MKLIST	'B',routnewbreak
 	MKLIST	'C',CALCULATOR
 	MKLIST	'D',diskscherm
@@ -404,10 +402,10 @@ tomonlink1:
 	call	tomonlink2
 	jp	scherminit
 
-initsp	ld	hl,(reg_sp_init)
+initsp: 	ld	hl,(reg_sp_init)
 	ld	(reg_sp),hl
 	ret
-gopulldown
+gopulldown: 
 	ld	a,(Pulldown)
 	ld	l,a
 	ld	h,0
@@ -426,12 +424,12 @@ Pulldown:	db	1
 puldwn1optie:	db	1
 puldwn1blink:	dw	#0204
 
-pulldown1	ld	a,1
+pulldown1: 	ld	a,1
 	ld	(Pulldown),a
 	ld	ix,puldown1menu
 	ld	hl,3*80
 	call	PRINTMENU
-_puldown1	ld	a,(puldwn1optie)
+_puldown1: 	ld	a,(puldwn1optie)
 	ld	c,a
 	ld	hl,(puldwn1blink)
 	ld	ix,puldown1menu
@@ -450,17 +448,17 @@ _puldown1	ld	a,(puldwn1optie)
 	cp	28
 	jr	nz,_puldown12
 	ld	a,254
-_puldown11	push	af
+_puldown11: 	push	af
 	call	WISOUDMENU
 	pop	af
 	jp	hoofdlusactie2
-_puldown12	cp	1
+_puldown12: 	cp	1
 	jp	z,WISOUDMENU
 	cp	escape
 	jr	nz,_puldown13
 	JP	WISOUDMENU
 
-_puldown13	and	255-32
+_puldown13: 	and	255-32
 	jr	nz,_puldown1
 	push	bc
 	call	WISOUDMENU
@@ -482,11 +480,11 @@ _puldown13	and	255-32
 	dec c
 	jr z,toquit
 
-toabout
+toabout: 
 	call doabout
 	jp scherminit
 
-toquit	call	zetkader
+toquit: 	call	zetkader
 	ld	bc,txt_quit
 	ld	hl,comline*80+27
 	call	PRINTTEKST
@@ -497,12 +495,12 @@ toquit	call	zetkader
 	jp	buf2screen
 shiftesc:	ld	a,4
 	jr	restorefkey
-toquit6	xor	a
-restorefkey	push	af
+toquit6: 	xor	a
+restorefkey: 	push	af
 	ld	de,realfkeys
 	ld	hl,#f87f	; address where function keys storage begins
 	ld	b,5
-restorefkey1	ld	a,(de)
+restorefkey1: 	ld	a,(de)
 	ld	(hl),a
 	inc	hl
 	inc	de
@@ -517,12 +515,12 @@ restorefkey1	ld	a,(de)
 	pop	af
 	ld	sp,(intreesp)
 	ret
-toassembler	ld	a,1
+toassembler: 	ld	a,1
 	jp	restorefkey
-tomonitor	ld	a,3
+tomonitor: 	ld	a,3
 	jp	restorefkey
 
-tomemory	ld	a,32
+tomemory: 	ld	a,32
 	ld	hl,3*80
 	ld	bc,23*80
 	call	FILLVRAM
@@ -530,16 +528,16 @@ tomemory	ld	a,32
 	call	updatesubslot
 	JP	scherminit
 
-txt_quit	db	"Quit: are you sure ? (y/n)",0
+txt_quit: 	db	"Quit: are you sure ? (y/n)",0
 
-tomemview	ld	a,32
+tomemview: 	ld	a,32
 	ld	hl,3*80
 	ld	bc,23*80
 	call	FILLVRAM
 	call	MEMVIEW
 	jp	scherminit
 
-diskscherm	ld	a,2
+diskscherm: 	ld	a,2
 	ld	b,0
 	call	GODISKDRIVE
 	jp	scherminit
@@ -547,14 +545,14 @@ diskscherm	ld	a,2
 puldwn2optie:	db	1
 puldwn2blink:	dw	#1204
 
-pulldown2	ld	a,2
+pulldown2: 	ld	a,2
 	ld	(Pulldown),a
 	xor	a
 	ld	(rstonscreen),a
 	ld	ix,puldown2menu
 	ld	hl,3*80+16
 	call	PRINTMENU
-adjustpulmen2	ld	a,(turbor)
+adjustpulmen2: 	ld	a,(turbor)
 	or	a
 	jr	z,adjustpulmen21
 	ld	ix,#183
@@ -564,19 +562,19 @@ adjustpulmen2	ld	a,(turbor)
 	ld	b,a
 	ld	de,10
 	ld	hl,txtr800-10
-adjustpulmen20	add	hl,de
+adjustpulmen20: 	add	hl,de
 	djnz	adjustpulmen20
 	ld	b,h
 	ld	c,l
 	ld	hl,80*4+24
 	call	PRINTTEKST
 
-adjustpulmen21	ld	a,(monlinkyesno)
+adjustpulmen21: 	ld	a,(monlinkyesno)
 	inc	a
 	ld	b,a
 	ld	hl,linktekst-19
 	ld	de,19
-adjustpulmen22	add	hl,de
+adjustpulmen22: 	add	hl,de
 	djnz	adjustpulmen22
 	ld	b,h
 	ld	c,l
@@ -597,7 +595,7 @@ adjustpulmen22	add	hl,de
 	ld	hl,80*7+19
 	call	PRINTTEKST
 
-_puldown2	ld	a,(puldwn2optie)
+_puldown2: 	ld	a,(puldwn2optie)
 	ld	c,a
 	ld	hl,(puldwn2blink)
 	ld	ix,puldown2menu
@@ -614,19 +612,19 @@ _puldown2	ld	a,(puldwn2optie)
 	cp	right
 	jr	nz,_puldown22
 	ld	a,253
-_puldown21	push	af
+_puldown21: 	push	af
 	call	pulldwn2exit
 	pop	af
 	jp	hoofdlusactie2
-_puldown22	cp	left
+_puldown22: 	cp	left
 	jr	nz,_puldown23
 	ld	a,255
 	jr	_puldown21
-_puldown23	cp	1
+_puldown23: 	cp	1
 	jp	z,pulldwn2exit
 	cp	escape
 	jp	z,pulldwn2exit
-_puldown24	and	255-32
+_puldown24: 	and	255-32
 	jr	nz,_puldown2
 	dec	c
 	jr	z,tor800
@@ -639,10 +637,10 @@ _puldown24	and	255-32
 	call	MAINCONFIG
 	jp	scherminit
 
-tomonlink	call	tomonlink2
+tomonlink: 	call	tomonlink2
 	jp	adjustpulmen2
 
-tomonlink2	ld	a,(monlinkyesno)
+tomonlink2: 	ld	a,(monlinkyesno)
 	inc	a
 	ld	(monlinkyesno),a
 	cp	3
@@ -651,13 +649,13 @@ tomonlink2	ld	a,(monlinkyesno)
 	ld	(monlinkyesno),a
 	ret
 
-tomsxrst	ld	a,(msxrst)
+tomsxrst: 	ld	a,(msxrst)
 	xor	4
 	ld	(msxrst),a
 	ld	hl,disbuffer+disopwrmnomic
 	ld	de,lglnlngh
 	ld	b,disopaantlijn
-tomsxrst1	ld	a,(hl)
+tomsxrst1: 	ld	a,(hl)
 	cp	"R"
 	jr	nz,tomsxrst2
 	inc	hl
@@ -665,14 +663,14 @@ tomsxrst1	ld	a,(hl)
 	cp	"S"
 	jr	z,tomsxrst3
 	dec	hl
-tomsxrst2	add	hl,de
+tomsxrst2: 	add	hl,de
 	djnz	tomsxrst1
 	jp	adjustpulmen2
-tomsxrst3	ld	a,1
+tomsxrst3: 	ld	a,1
 	ld	(rstonscreen),a
 	jp	adjustpulmen2
 
-tor800	ld	a,(turbor)
+tor800: 	ld	a,(turbor)
 	or	a
 	jp	z,adjustpulmen2
 	ld	ix,#183
@@ -682,12 +680,12 @@ tor800	ld	a,(turbor)
 	cp	3
 	jr	c,tor800r
 	xor	a
-tor800r	ld	ix,#180
+tor800r: 	ld	ix,#180
 	ld	iy,(#FCC0)
 	or	128
 	call	#1c
 	jp	adjustpulmen2
-pulldwn2exit	call	WISOUDMENU
+pulldwn2exit: 	call	WISOUDMENU
 	ld	a,(rstonscreen)
 	or	a
 	ret	z
@@ -695,17 +693,17 @@ pulldwn2exit	call	WISOUDMENU
 	ld	(reg_pcvdis),hl
 	jp	disameenscherm
 
-rstonscreen	db	0
+rstonscreen: 	db	0
 
 puldwn3optie:	db	1
 puldwn3blink:	dw	#2004
 
-pulldown3	ld	a,3
+pulldown3: 	ld	a,3
 	ld	(Pulldown),a
 	ld	ix,puldown3menu
 	ld	hl,3*80+30
 	call	PRINTMENU
-_puldown3	ld	a,(puldwn3optie)
+_puldown3: 	ld	a,(puldwn3optie)
 	ld	c,a
 	ld	hl,(puldwn3blink)
 	ld	ix,puldown3menu
@@ -723,20 +721,20 @@ _puldown3	ld	a,(puldwn3optie)
 	jr	nz,_puldown31
 	ld	a,254
 	jr	_puldown32
-_puldown31	cp	right
+_puldown31: 	cp	right
 	jr	nz,_puldown33
 	ld	a,252
-_puldown32	push	af
+_puldown32: 	push	af
 	call	WISOUDMENU
 	pop	af
 	jp	hoofdlusactie2
-_puldown33	cp	1
+_puldown33: 	cp	1
 	jp	z,WISOUDMENU
 	cp	27
 	jr	nz,_puldown34
 	jp	WISOUDMENU
 
-_puldown34	and	255-32
+_puldown34: 	and	255-32
 	jr	nz,_puldown3
 	push	bc
 	call	WISOUDMENU
@@ -757,13 +755,13 @@ _puldown34	and	255-32
 	jp	z,routprint
 	jp	routtotxtbuf
 
-getslotmenu	db	1,17,0
-getslotindtxt1	db	"  Memory page X  ",0
-getslotindtxt2	db	"   Main slot X ",0
-getslotindtxt3	db	"    Sub slot X",0
-getslotindtxt4	db	"Mapper Page      ",0
-getslotpag	db	0
-getslotindeel	ld	ix,getslotmenu
+getslotmenu: 	db	1,17,0
+getslotindtxt1: 	db	"  Memory page X  ",0
+getslotindtxt2: 	db	"   Main slot X ",0
+getslotindtxt3: 	db	"    Sub slot X",0
+getslotindtxt4: 	db	"Mapper Page      ",0
+getslotpag: 	db	0
+getslotindeel: 	ld	ix,getslotmenu
 	ld	hl,29+9*80
 	ld	a,(getslotpag)
 	add	a,"0"
@@ -795,13 +793,13 @@ getslotindeel	ld	ix,getslotmenu
 	push	bc
 	inc	b
 	ld	a,(welkismetsub)
-getslotindeel1	rrca
+getslotindeel1: 	rrca
 	djnz	getslotindeel1
 	jr	c,getslotindeel2
 	pop	bc
 	ld	a,b
 	jp	getslotinddeel4	; a save in hl
-getslotindeel2	ld	a,(hl)	; request subslot here
+getslotindeel2: 	ld	a,(hl)	; request subslot here
 	rra
 	rra
 	and	3
@@ -814,13 +812,13 @@ getslotindeel2	ld	a,(hl)	; request subslot here
 	jr	nc,getslotinddeel3
 	pop	hl
 	jr	getslotend0
-getslotinddeel3	pop	bc
+getslotinddeel3: 	pop	bc
 	ld	c,a
 	add	a,a
 	add	a,a
 	or	b
 	or	128
-getslotinddeel4	pop	hl
+getslotinddeel4: 	pop	hl
 	ld	(hl),a
 ; adjust subslot register if necessary
 	bit	7,a
@@ -837,7 +835,7 @@ getslotinddeel4	pop	hl
 	add	a,a
 	ld	b,a
 	ld	a,252
-getslotinddeel5	rrca
+getslotinddeel5: 	rrca
 	rrc	c
 	djnz	getslotinddeel5
 	and	(hl)
@@ -845,7 +843,7 @@ getslotinddeel5	rrca
 	ld	(hl),a
 	pop	hl
 ; still picking up the memmappage
-getslotsubniet	inc	hl
+getslotsubniet: 	inc	hl
 	push	hl
 	ld	bc,getslotindtxt4
 	ld	hl,30+10*80
@@ -866,16 +864,16 @@ getslotsubniet	inc	hl
 	pop	hl
 	jr	c,getslotexit
 	ld	(hl),e
-getslotexit	jp	routtotxtend2
+getslotexit: 	jp	routtotxtend2
 
-getslotend0	ld	ix,getslotmenu
+getslotend0: 	ld	ix,getslotmenu
 	ld	hl,29+9*80
 	jp	WISOUDMENU
 
-getbetween03	ld	e,a
+getbetween03: 	ld	e,a
 	ld	hl,31+10*80
 	call	PRINTTEKST
-getbetween030	call	CHRGET
+getbetween030: 	call	CHRGET
 	cp	1
 	scf
 	ret	z
@@ -886,23 +884,23 @@ getbetween030	call	CHRGET
 	jr	nz,getbetween032
 	ld	a,e
 	ret
-getbetween032	cp	"0"
+getbetween032: 	cp	"0"
 	jr	c,getbetween030
 	cp	"4"
 	jr	nc,getbetween030
 	sub	"0"
 	ret
 
-printnotready	call	zetkader
+printnotready: 	call	zetkader
 	ld	bc,txt_prtnotrdy
 	ld	hl,comline*80+30
 	call	PRINTTEKST
 	call	GETKEY
 	jp	buf2screen
-txt_prtnotrdy	db	"Printer not ready !",0
-txt_print	db	"Print",0
+txt_prtnotrdy: 	db	"Printer not ready !",0
+txt_print: 	db	"Print",0
 
-routprint	ld	ix,#a8
+routprint: 	ld	ix,#a8
 	ld	iy,(#FCC0)
 	call	#1C
 	jr	z,printnotready
@@ -932,7 +930,7 @@ routprint	ld	ix,#a8
 
 	call	PRINTINI
 
-routprint1	ld	hl,(bufferhoofdpr)
+routprint1: 	ld	hl,(bufferhoofdpr)
 	ld	e,l
 	ld	d,h
 	inc	de
@@ -971,30 +969,30 @@ routprint1	ld	hl,(bufferhoofdpr)
 	ld	a,(lenghtcode)
 	ld	c,a
 	ld	b,4
-routprint2	ld	a,c
+routprint2: 	ld	a,c
 	or	a
 	jr	nz,routprint3
 	ld	a,32
 	call	ascitobuffer
 	call	ascitobuffer
 	jr	routprint4
-routprint3	dec	c
+routprint3: 	dec	c
 	ld	a,(hl)
 	call	atobuffer
 	inc	hl
-routprint4	djnz	routprint2
+routprint4: 	djnz	routprint2
 
 	ld	a,9
 	call	ascitobuffer
 	ld	a,(lenghtcode)
 	ld	b,a
 	ld	hl,codebuffer
-routprint5	ld	a,(hl)
+routprint5: 	ld	a,(hl)
 	inc	hl
 	cp	32
 	jr	nc,routprint6
 	ld	a,'.'
-routprint6	djnz	routprint5
+routprint6: 	djnz	routprint5
 	ld	a,13
 	call	ascitobuffer
 	ld	a,10
@@ -1005,13 +1003,13 @@ routprint6	djnz	routprint5
 	jr	c,routprintend
 	call	escpressed
 	jr	z,routprintend
-routprint7	ld	de,(printstop)
+routprint7: 	ld	de,(printstop)
 	ld	hl,(reg_pcvdis)
 	call	hlgelijkde
 	jp	c,routprint1
 	jp	scherminit
 
-escpressed	in	a,(#aa)
+escpressed: 	in	a,(#aa)
 	and	#f0
 	or	%0111
 	out	(#aa),a
@@ -1019,16 +1017,16 @@ escpressed	in	a,(#aa)
 	and	4
 	ret
 
-routprintend	jp	scherminit
+routprintend: 	jp	scherminit
 
-txt_nowprt	db	"Now printing address 0000",0
-txt_press	db	"press <esc> to stop",0
+txt_nowprt: 	db	"Now printing address 0000",0
+txt_press: 	db	"press <esc> to stop",0
 
-printstart	dw	0
-printstop	dw	0
+printstart: 	dw	0
+printstop: 	dw	0
 
-printecht	ld	hl,(bufferhoofdpr)
-printecht1	ld	a,(hl)
+printecht: 	ld	hl,(bufferhoofdpr)
+printecht1: 	ld	a,(hl)
 	inc	hl
 	or	a
 	ret	z
@@ -1043,7 +1041,7 @@ printecht1	ld	a,(hl)
 puldwn4optie:	db	1
 puldwn4blink:	dw	#3204
 
-pulldown4	ld	a,4
+pulldown4: 	ld	a,4
 	ld	(Pulldown),a
 	ld	a,(verbodenouts)
 	or	a
@@ -1051,12 +1049,12 @@ pulldown4	ld	a,4
 	add	a,3
 	ld	c,2
 	jr	pulldown42
-pulldown41	ld	a,1
+pulldown41: 	ld	a,1
 	ld	c,a
 	ld	hl,#3304
 	ld	(puldwn4blink),hl
 	ld	(puldwn4optie),a
-pulldown42	ld	(puldown4menu),a
+pulldown42: 	ld	(puldown4menu),a
 	ld	a,c
 	ld	(puldown4ch1),a
 	ld	ix,puldown4menu
@@ -1072,7 +1070,7 @@ pulldown42	ld	(puldown4menu),a
 	ld	b,(hl)
 	inc	hl
 	ex	de,hl
-pulldown43	ld	a,(de)
+pulldown43: 	ld	a,(de)
 	inc	de
 	push	de
 	ld	de,puldown4menu1+2
@@ -1088,7 +1086,7 @@ pulldown43	ld	a,(de)
 	add	hl,de
 	pop	de
 	djnz	pulldown43
-_puldown4	ld	a,(puldwn4optie)
+_puldown4: 	ld	a,(puldwn4optie)
 	ld	c,a
 	ld	hl,(puldwn4blink)
 	ld	ix,puldown4ch1
@@ -1105,21 +1103,21 @@ _puldown4	ld	a,(puldwn4optie)
 	cp	28
 	jr	nz,_puldown42
 	ld	a,251
-_puldown41	push	af
+_puldown41: 	push	af
 	call	WISOUDMENU
 	pop	af
 	jp	hoofdlusactie2
-_puldown42	cp	left
+_puldown42: 	cp	left
 	jr	nz,_puldown43
 	ld	a,253
 	jr	_puldown41
-_puldown43	cp	1
+_puldown43: 	cp	1
 	jp	z,WISOUDMENU
 	cp	escape
 	jr	nz,_puldown44
 	jp	WISOUDMENU
 
-_puldown44	and	255-32
+_puldown44: 	and	255-32
 	jr	nz,_puldown4
 	; if c=1 -> add i/o , c=2 -> select + delete
 	ld	a,c
@@ -1154,7 +1152,7 @@ _puldown44	and	255-32
 	call	WISOUDMENU
 	jp	pulldown4
 
-puldown4inv	ld	a,(verbodenouts)
+puldown4inv: 	ld	a,(verbodenouts)
 	cp	maxvbouts
 	jp	z,_puldown4
 	call	WISOUDMENU
@@ -1173,12 +1171,12 @@ puldown4inv	ld	a,(verbodenouts)
 	or	a
 	jr	z,puldown4inv2
 	ld	b,a
-puldown4inv1	inc	hl
+puldown4inv1: 	inc	hl
 	ld	a,(hl)
 	cp	c
 	jp	z,_pulldown4
 	djnz	puldown4inv1
-puldown4inv2	ld	hl,verbodenouts
+puldown4inv2: 	ld	hl,verbodenouts
 	ld	d,0
 	ld	a,(hl)
 	inc	a
@@ -1186,11 +1184,11 @@ puldown4inv2	ld	hl,verbodenouts
 	ld	e,a
 	add	hl,de
 	ld	(hl),c
-pulldown4sort	ld	hl,verbodenouts
+pulldown4sort: 	ld	hl,verbodenouts
 	ld	b,(hl)
 	inc	hl
 	ld	de,0
-puldw4sort1	ld	a,(hl)
+puldw4sort1: 	ld	a,(hl)
 	cp	e
 	jr	nc,puldw4sort2
 	inc	d
@@ -1198,34 +1196,34 @@ puldw4sort1	ld	a,(hl)
 	dec	hl
 	ld	(hl),a
 	inc	hl
-puldw4sort2	ld	e,(hl)
+puldw4sort2: 	ld	e,(hl)
 	inc	hl
 	djnz	puldw4sort1
 	ld	a,d
 	or	a
 	jr	nz,pulldown4sort
-_pulldown4	call	buf2screen
+_pulldown4: 	call	buf2screen
 	jp	pulldown4
 
-puldown4ch1	db	0,6	; limited info table needed for Select option
-puldown4menu	db	3,6,0
+puldown4ch1: 	db	0,6	; limited info table needed for Select option
+puldown4menu: 	db	3,6,0
 	db	"insert"
 	db	"delete"
 	db	"------"
-puldown4menu1	db	" #89  ",0
+puldown4menu1: 	db	" #89  ",0
 
-txt_insport	db	"  Insert port   "
-txt_port	db	"Port:",0
+txt_insport: 	db	"  Insert port   "
+txt_port: 	db	"Port:",0
 
 puldwn5optie:	db	1
 puldwn5blink:	dw	#3704
 
-pulldown5	ld	a,5
+pulldown5: 	ld	a,5
 	ld	(Pulldown),a
 	ld	ix,puldown5menu
 	ld	hl,3*80+53
 	call	PRINTMENU
-_puldown5	ld	a,(puldwn5optie)
+_puldown5: 	ld	a,(puldwn5optie)
 	ld	c,a
 	ld	hl,(puldwn5blink)
 	ld	ix,puldown5menu
@@ -1241,21 +1239,21 @@ _puldown5	ld	a,(puldwn5optie)
 	jr	nc,_puldown52
 	cp	right
 	jr	z,_puldown5
-_puldown51	cp	left
+_puldown51: 	cp	left
 	jr	nz,_puldown53
 	ld	a,252
-_puldown52	push	af
+_puldown52: 	push	af
 	call	WISOUDMENU
 	pop	af
 	jp	hoofdlusactie2
 
-_puldown53	cp	1
+_puldown53: 	cp	1
 	jp	z,WISOUDMENU
 	cp	escape
 	jr	nz,_puldown54
 	JP	WISOUDMENU
 
-_puldown54	and	255-32
+_puldown54: 	and	255-32
 	jr	nz,_puldown5
 	push	bc
 	call	WISOUDMENU
@@ -1270,7 +1268,7 @@ _puldown54	and	255-32
 	jp	z,viewbreak
 	jp	specialtrace
 
-puldown1menu	db	9,15,0
+puldown1menu: 	db	9,15,0
 	db	"Assembler    ST"
 	db	"Monitor      SL"
 	db	"Disk         ^D"
@@ -1281,39 +1279,39 @@ puldown1menu	db	9,15,0
 	db	"Quit         ^Q"
 	db  "About          "
 
-puldown2menu	db	4,18,0
+puldown2menu: 	db	4,18,0
 	db	"CPU: Z80          "	; off,rom,dram in order
 	db	"MSX rst: yes      "
-linktekst	db	"Linking off     ^L",0
+linktekst: 	db	"Linking off     ^L",0
 	db	"Linked: cursor  ^L",0
 	db	"Linked: PC reg. ^L",0
-configtekst	db	"Main config       ",0
+configtekst: 	db	"Main config       ",0
 
-turbor	db	0
-monlinkyesno	db	0
-txtyesno	db	"no ",0,"yes",0
-txtr800	db	"Z80      ",0
+turbor: 	db	0
+monlinkyesno: 	db	0
+txtyesno: 	db	"no ",0,"yes",0
+txtr800: 	db	"Z80      ",0
 	db	"R800 rom ",0
 	db	"R800 dram",0
 
-puldown3menu	db	8,19,0
-puldown3menu4	db	"Debugger address ^A"
-puldown3menu3	db	"Monitor address  ^M"
-puldown3menu1	db	"Go               ^G"	; see also: goadres
+puldown3menu: 	db	8,19,0
+puldown3menu4: 	db	"Debugger address ^A"
+puldown3menu3: 	db	"Monitor address  ^M"
+puldown3menu1: 	db	"Go               ^G"	; see also: goadres
 	db	"Registers        ^R"
-puldown3menu2	db	"Temporary        ^O"
+puldown3menu2: 	db	"Temporary        ^O"
 	db	"Return           ^U"
 	db	"Print              "
 	db	"Dis > source       "
 
-puldown5menu	db	5,19,0
-puldown3menu5	db	"Set breakpoint   ^B"
-puldown3menu6	db	"Reset breakpoint ^W"
+puldown5menu: 	db	5,19,0
+puldown3menu5: 	db	"Set breakpoint   ^B"
+puldown3menu6: 	db	"Reset breakpoint ^W"
 	db	"Execute till bp  ^E"
 	db	"View breakpoints ^V"
 	db	"Special trace    ^Y"
 
-specialtrace	ld	hl,(bufferhoofdpr)
+specialtrace: 	ld	hl,(bufferhoofdpr)
 	ld	(waarbuffer),hl
 	ld	hl,(reg_pc)
 	ld	(reg_pcvdis),hl
@@ -1331,23 +1329,23 @@ specialtrace	ld	hl,(bufferhoofdpr)
 	ret	nc	;!!!!!
 	jp	_delbreak2
 
-specialtrcfout	ld	ix,spcstepfoutmenu
+specialtrcfout: 	ld	ix,spcstepfoutmenu
 	ld	hl,11*80+25
 	jp	PUTMENU
-spcstepfoutmenu	db	temp2,31,0
+spcstepfoutmenu: 	db	temp2,31,0
 	db	" Can't create extra breakpoint "
-showcounter	db	0
+showcounter: 	db	0
 
-exectillbp	ld	a,(breakbufpoint)
+exectillbp: 	ld	a,(breakbufpoint)
 	cp	((breakbuf) and #ff)
 	jr	z,exectillbp2
-exectillbp1	ld	a,(showcounter)
+exectillbp1: 	ld	a,(showcounter)
 	dec	a
 	jr	nz,exectillbp3
 	call	regafbeeld
 	call	stackvupdate
 	xor	a
-exectillbp3	ld	(showcounter),a
+exectillbp3: 	ld	(showcounter),a
 	call	routtrace
 	call	escpressed
 	ret	z
@@ -1356,13 +1354,13 @@ exectillbp3	ld	(showcounter),a
 	jr	c,exectillbp1
 	ret
 
-exectillbp2	call	zetkader
+exectillbp2: 	call	zetkader
 	ld	bc,txt_nodef
 	ld	hl,comline*80+28
 	jp	_noreturnadres
-txt_nodef	db	"No breakpoints defined !",0
+txt_nodef: 	db	"No breakpoints defined !",0
 
-routgo	ld	de,bckup_space
+routgo: 	ld	de,bckup_space
 	ld	bc,puldown3menu1
 	scf
 	call	adresinvoer
@@ -1375,11 +1373,11 @@ routgo	ld	de,bckup_space
 	ld	(codebuffer),a
 	call	buf2screen
 	jp	executesimpl
-bckup_space	ds	29,0
+bckup_space: 	ds	29,0
 
-txt_transfer	db	"Transfer",0
+txt_transfer: 	db	"Transfer",0
 
-routtotxtbuf	call	zet_start_end
+routtotxtbuf: 	call	zet_start_end
 	ld	hl,11*80+36
 	ld	bc,txt_transfer
 	call	PRINTTEKST
@@ -1405,7 +1403,7 @@ routtotxtbuf	call	zet_start_end
 ; hl storage : 0 no 16bits printed otherwise yes
 ; labelpoint :BEGIN POINTS TO LAST BYTE PROGRAM TO MAX #8000
 ;
-totxtlabel	call	knipper
+totxtlabel: 	call	knipper
 	xor	a	; reset byte or 16bit is inserted
 	ld	(hlopslag),a
 	ld	de,(bufferhoofdpr)
@@ -1425,7 +1423,7 @@ totxtlabel	call	knipper
 	call	hlgelijkde
 	jr	z,totxtlabel1
 	jp	nc,totxtlabel9
-totxtlabel1	call	ishllabel
+totxtlabel1: 	call	ishllabel
 	jp	nc,totxtlabel3
 	ld	hl,(labelpoint)
 
@@ -1437,7 +1435,7 @@ totxtlabel1	call	ishllabel
 	ld	a,(labbufsegs)
 	cp	b
 	jr	z,totxtlabela
-totxtlabel2	ld	a,(totxt_labblok)
+totxtlabel2: 	ld	a,(totxt_labblok)
 	call	zetlabbufA
 	call	labelid
 	ld	de,(labelpoint)
@@ -1455,7 +1453,7 @@ totxtlabel2	ld	a,(totxt_labblok)
 	ld	(labelcount),hl
 	jr	totxtlabel9
 
-totxtlabel3	call	labelid
+totxtlabel3: 	call	labelid
 	ld	c,a
 	ld	a,(ix+0)
 	cp	"J"
@@ -1465,18 +1463,18 @@ totxtlabel3	call	labelid
 	ld	a,c
 	cp	"J"
 	jp	nz,totxtlabel9
-totxtlabel4	ld	a,(savelabbufnr)
+totxtlabel4: 	ld	a,(savelabbufnr)
 	call	zetlabbufA
 	ld	de,(savelabbufad)
 	ld	a,c
 	ld	(de),a
 
-totxtlabel9	ld	de,(printstop)
+totxtlabel9: 	ld	de,(printstop)
 	ld	hl,(reg_pcvdis)
 	call	hlgelijkde
 	jp	c,totxtlabel
 
-totxtlabela	ld	de,(bufferhoofdpr)
+totxtlabela: 	ld	de,(bufferhoofdpr)
 	ld	hl,txtorg
 	ld	bc,5
 	ldir
@@ -1492,7 +1490,7 @@ totxtlabela	ld	de,(bufferhoofdpr)
 	ld	hl,tolabelhl
 	ld	(hltobuffer+1),hl
 
-routtotxt1	call	knipper
+routtotxt1: 	call	knipper
 	ld	de,(bufferhoofdpr)
 	ld	(waarbuffer),de
 	call	vulbuffer
@@ -1507,7 +1505,7 @@ routtotxt1	call	knipper
 	call	plaatslabel
 	ld	a,":"
 	call	ascitobuffer
-routtotxt10	ld	a," "
+routtotxt10: 	ld	a," "
 	call	ascitobuffer
 	call	disassem
 	ld	hl,(waarbuffer)
@@ -1558,14 +1556,14 @@ routtotxt10	ld	a," "
 	ld	(hl)," "
 	pop	de
 
-routtotxt18	ex	de,hl
+routtotxt18: 	ex	de,hl
 	ld	a,1
 	call	LINETOASSEMB
 	jr	routtotxt41
 
-routtotxt19	ld	a,'>'	; check if there is an arrow to address ;*
+routtotxt19: 	ld	a,'>'	; check if there is an arrow to address ;*
 	ld	b,40
-routtotxt2	inc	hl
+routtotxt2: 	inc	hl
 	cp	(hl)
 	jr	nz,routtotxt3
 ;        dec hl                                         ;*
@@ -1582,9 +1580,9 @@ routtotxt2	inc	hl
 	jr	routtotxt4
 
 
-routtotxt3	djnz	routtotxt2
-routtotxt4	call	transferline
-routtotxt41	jr	c,routtotxt6
+routtotxt3: 	djnz	routtotxt2
+routtotxt4: 	call	transferline
+routtotxt41: 	jr	c,routtotxt6
 	ld	a,(codebuffer)
 	cp	#c9
 	call	z,transferempty
@@ -1596,13 +1594,13 @@ routtotxt41	jr	c,routtotxt6
 	call	hlgelijkde
 	jp	c,routtotxt1
 	jr	routtotxtend
-routtotxt5	call	CHRGET
-routtotxt6	ld	hl,80*9+25
+routtotxt5: 	call	CHRGET
+routtotxt6: 	ld	hl,80*9+25
 	ld	ix,transferermenu
 	call	PUTMENU
 
 ; end: fix deflections
-routtotxtend	call	transferempty
+routtotxtend: 	call	transferempty
 	ld	de,(bufferhoofdpr)
 	ld	hl,txt_end
 	ld	bc,5
@@ -1614,24 +1612,24 @@ routtotxtend	call	transferempty
 	ld	(atobuffer+1),hl
 	ld	(hltobuffer),hl
 	ld	(hltobuffer+1),hl
-routtotxtend2	ld	hl,(disoptabpc)
+routtotxtend2: 	ld	hl,(disoptabpc)
 	ld	(reg_pcvdis),hl
 	call	disameenscherm
 	jp	scherminit
 
-transferempty	ld	hl,(bufferhoofdpr)
+transferempty: 	ld	hl,(bufferhoofdpr)
 	ld	(hl),0
 	jp	transferline
 
-txtorg	db	" ORG "
-txt_end	db	" END",0
-transferermenu	db	temp2,34,0
+txtorg: 	db	" ORG "
+txt_end: 	db	" END",0
+transferermenu: 	db	temp2,34,0
 	db	" Error occurred! Transfer stopped "
 
-hlopslag	db	0
+hlopslag: 	db	0
 	dw	0
 
-knipper	ld	a,(vorigpos)
+knipper: 	ld	a,(vorigpos)
 	ld	b,a
 	ld	a,(reg_pcvdis)
 	and	#40
@@ -1646,10 +1644,10 @@ knipper	ld	a,(vorigpos)
 	out	(#98),a
 	ret
 
-tekentje	db	"-"
-vorigpos	db	0
+tekentje: 	db	"-"
+vorigpos: 	db	0
 
-totxthl	ld	(hlopslag+1),hl
+totxthl: 	ld	(hlopslag+1),hl
 	ld	a,1
 	ld	(hlopslag),a
 	call	idhexvoor
@@ -1658,15 +1656,15 @@ totxthl	ld	(hlopslag+1),hl
 	ld	a,l
 	jp	atobuffer1
 
-totxta	push	af
+totxta: 	push	af
 	call	idhexvoor
 	pop	af
 	jp	atobuffer1
 
-idhexvoor	ld	a,"#"
+idhexvoor: 	ld	a,"#"
 	jp	ascitobuffer
 
-tolabelhl	push	ix	; deflect to print labels if it has one
+tolabelhl: 	push	ix	; deflect to print labels if it has one
 	push	de
 	call	ishllabel
 	pop	de
@@ -1674,32 +1672,32 @@ tolabelhl	push	ix	; deflect to print labels if it has one
 	call	plaatslabel
 	pop	ix
 	ret
-tolabelhl1	pop	ix
+tolabelhl1: 	pop	ix
 	jr	totxthl
 
-plaatslabel	ld	a,(ix+0)
+plaatslabel: 	ld	a,(ix+0)
 	call	ascitobuffer
 	ld	a,(ix+2)
 	call	atobuffer1
 	ld	a,(ix+1)
 	jp	atobuffer1
 
-transferline	ld	a,1
-transfer	ld	hl,(bufferhoofdpr)
+transferline: 	ld	a,1
+transfer: 	ld	hl,(bufferhoofdpr)
 	jp	LINETOASSEMB
 
-labelpoint	dw	0
-totxt_labblok	db	0
-labelcount	dw	0
-labeldummycnt	dw	0
+labelpoint: 	dw	0
+totxt_labblok: 	db	0
+labelcount: 	dw	0
+labeldummycnt: 	dw	0
 
-ishllabel	ld	(ishllabel_hl),hl
+ishllabel: 	ld	(ishllabel_hl),hl
 	ld	a,1
 	call	zetlabbufA
 	ld	bc,0
 	ld	de,#8000
 	ld	ix,ishllab_data
-_ishllabel1	ld	hl,(labelcount)
+_ishllabel1: 	ld	hl,(labelcount)
 	or	a
 	sbc	hl,bc
 	ld	a,h
@@ -1709,7 +1707,7 @@ _ishllabel1	ld	hl,(labelcount)
 	scf
 	ret
 
-_ishllabel2	inc	bc
+_ishllabel2: 	inc	bc
 	ld	(labeldummycnt),bc
 	ld	a,(labelbufnr)
 	ld	(savelabbufnr),a
@@ -1730,18 +1728,18 @@ _ishllabel2	inc	bc
 	or	a
 	ret
 
-_ishllabel3	ld	bc,(labeldummycnt)
+_ishllabel3: 	ld	bc,(labeldummycnt)
 	jr	_ishllabel1
 
-ishllab_data	db	0,0,0
-ishllabel_hl	dw	0
-savelabbufnr	db	0
-savelabbufad	dw	0
+ishllab_data: 	db	0,0,0
+ishllabel_hl: 	dw	0
+savelabbufnr: 	db	0
+savelabbufad: 	dw	0
 
 ;returns label id. J,C or D (in order of importance)
 ; back A contains ascii v/d ID
 ; changes : af
-labelid	ld	a,(codebuffer)
+labelid: 	ld	a,(codebuffer)
 	cp	#c3	; jp
 	jp	z,labelidj
 	cp	#18	; jr
@@ -1755,9 +1753,9 @@ labelid	ld	a,(codebuffer)
 	and	%11100111
 	cp	%00100000
 	jp	nz,labelid1
-labelidj	ld	a,"J"
+labelidj: 	ld	a,"J"
 	ret
-labelid1	ld	a,(codebuffer)
+labelid1: 	ld	a,(codebuffer)
 	cp	#cd
 	jp	z,labelidc
 	and	%11000111	; call cc
@@ -1765,15 +1763,15 @@ labelid1	ld	a,(codebuffer)
 	jp	z,labelidc
 	ld	a,"D"
 	ret
-labelidc	ld	a,"C"
+labelidc: 	ld	a,"C"
 	ret
 
-vramadresmenu	equ	830
-callbufpoint	dw	callbuf-1
-callbuf	ds	3*9
-callbufend	equ	$
+vramadresmenu: 	equ	830
+callbufpoint: 	dw	callbuf-1
+callbuf: 	ds	3*9
+callbufend: 	equ	$
 
-getadres	push	ix	; input [c] then hexprinthl
+getadres: 	push	ix	; input [c] then hexprinthl
 	push	hl
 	push	af
 	ld	hl,80*5+30
@@ -1789,8 +1787,8 @@ getadres	push	ix	; input [c] then hexprinthl
 	call	PRINTHEXADEC
 	ld	c,1
 	jr	getadres1
-getadres0	ld	c,2
-getadres1	push	af
+getadres0: 	ld	c,2
+getadres1: 	push	af
 	ld	ix,getadresmenu
 	ld	hl,12*80+26
 	call	WISOUDMENU
@@ -1802,7 +1800,7 @@ getadres1	push	af
 	pop	af
 	ret	c
 
-getadres2	ld	hl,kbuf
+getadres2: 	ld	hl,kbuf
 	call	BEREKENGETAL
 	jr	nc,getadres9
 	push	af
@@ -1822,31 +1820,31 @@ getadres2	ld	hl,kbuf
 	call	PUTMENU
 	pop	de
 	pop	af
-getadres9	ex	de,hl
+getadres9: 	ex	de,hl
 	ret
 
-getadresmenu	db	temp2,28,1
+getadresmenu: 	db	temp2,28,1
 	db	"Address :                   "
 
-foutenmenus	dw	foutmenu0
+foutenmenus: 	dw	foutmenu0
 	dw	foutmenu1
 	dw	foutmenu0
 	dw	foutmenu3
-foutmenu0	db	temp2,12,0
+foutmenu0: 	db	temp2,12,0
 	db	"Syntax error"
-foutmenu1	db	temp2,12,0
+foutmenu1: 	db	temp2,12,0
 	db	"Bad mnemonic"
-foutmenu3	db	temp2,15,0
+foutmenu3: 	db	temp2,15,0
 	db	"Divide by zero "
 
-hlgelijkde	ld	a,h
+hlgelijkde: 	ld	a,h
 	cp	d
 	ret	nz
 	ld	a,l
 	cp	e
 	ret
 
-getreturnadres	ld	hl,(callbufpoint)
+getreturnadres: 	ld	hl,(callbufpoint)
 	ld	de,callbuf-1
 	call	hlgelijkde
 	jp	z,noreturnadres
@@ -1862,8 +1860,8 @@ getreturnadres	ld	hl,(callbufpoint)
 	call	hlgelijkde
 	jr	nz,getreturnadr2
 	dec	hl
-getreturnadr2	ld	(callbufpoint),hl
-aanpasmonlink	call	updcursordis
+getreturnadr2: 	ld	(callbufpoint),hl
+aanpasmonlink: 	call	updcursordis
 	ld	a,(monlinkyesno)
 	dec	a
 	ret	nz
@@ -1871,16 +1869,16 @@ aanpasmonlink	call	updcursordis
 	ld	(monadres),hl
 	ret
 
-noreturnadres	call	zetkader
+noreturnadres: 	call	zetkader
 	ld	bc,txt_noreturn
 	ld	hl,comline*80+26
-_noreturnadres	call	PRINTTEKST
+_noreturnadres: 	call	PRINTTEKST
 	call	GETKEY
 	jp	buf2screen
 
-txt_noreturn	db	"Call-buffer already empty !",0
+txt_noreturn: 	db	"Call-buffer already empty !",0
 
-getcalladres	ld	hl,(callbufpoint)
+getcalladres: 	ld	hl,(callbufpoint)
 	ld	de,callbufend
 	call	hlgelijkde
 	jr	z,_calladresmax
@@ -1888,7 +1886,7 @@ getcalladres	ld	hl,(callbufpoint)
 	call	hlgelijkde
 	jr	nz,_getcalladres
 	ld	hl,callbuf
-_getcalladres	ld	de,(disoptabpc)
+_getcalladres: 	ld	de,(disoptabpc)
 	ld	(hl),e
 	inc	hl
 	ld	(hl),d
@@ -1897,7 +1895,7 @@ _getcalladres	ld	de,(disoptabpc)
 	or	a
 	jr	nz,_getcalladres1
 	inc	a
-_getcalladres1	ld	(hl),a
+_getcalladres1: 	ld	(hl),a
 	inc	hl
 	ld	(callbufpoint),hl
 
@@ -1907,19 +1905,19 @@ _getcalladres1	ld	(hl),a
 	jr	nc,invoerokee
 	call	buf2screen
 	jp	getreturnadres
-invoerokee	ld	(reg_pcvdis),de
+invoerokee: 	ld	(reg_pcvdis),de
 	ld	a,1
 	ld	(aanduiddisam),a
 	call	buf2screen
 	jp	aanpasmonlink
-_calladresmax	call	zetkader
+_calladresmax: 	call	zetkader
 	ld	bc,txt_filled
 	ld	hl,comline*80+26
 	jr	_noreturnadres
-txt_filled	db	"Call-buffer already filled !",0
-txt_adres	db	"Address:",0
+txt_filled: 	db	"Call-buffer already filled !",0
+txt_adres: 	db	"Address:",0
 
-getmonitoradres	xor	a
+getmonitoradres: 	xor	a
 	ld	bc,puldown3menu3
 	call	adresinvoer
 	jp	c,buf2screen
@@ -1930,7 +1928,7 @@ getmonitoradres	xor	a
 	call	monitor
 	jp	ispconmon
 
-getdisamadres	xor	a
+getdisamadres: 	xor	a
 	ld	bc,puldown3menu4
 	call	adresinvoer
 	jp	c,buf2screen
@@ -1942,17 +1940,17 @@ getdisamadres	xor	a
 	ld	(aanduiddisam),a
 	jp	aanpasmonlink
 
-txt_bfull	db	"Breakpoint-memory full !",0
-txt_already	db	"Already defined as breakpoint !",0
+txt_bfull: 	db	"Breakpoint-memory full !",0
+txt_already: 	db	"Already defined as breakpoint !",0
 
-routnewbreak	call	mainbreakfulq
+routnewbreak: 	call	mainbreakfulq
 	jr	nc,_routnewbreak
 	call	zetkader
 	ld	bc,txt_bfull
 	ld	hl,comline*80+28
 	jp	_noreturnadres
 
-_routnewbreak	xor	a
+_routnewbreak: 	xor	a
 	ld	bc,puldown3menu5
 	call	kadermettxtBC
 	ld	hl,13*80+22
@@ -1977,17 +1975,17 @@ _routnewbreak	xor	a
 	ld	hl,comline*80+24
 	jp	_noreturnadres
 
-mainbreakfulq	ld	a,(breakbufpoint)
+mainbreakfulq: 	ld	a,(breakbufpoint)
 	sub	((breakbufend) and 255)
 	or	a
 	ret	nz
 	scf
 	ret
 
-insertbreak	call	mainbreakfulq	;add bkp, in HL
+insertbreak_: 	call	mainbreakfulq	;add bkp, in HL
 	ret	c
 
-mainbreaknew	call	ishlbreakpoint
+mainbreaknew: 	call	ishlbreakpoint
 	ret	nc
 	ex	de,hl
 	ld	hl,(breakbufpoint)
@@ -1999,20 +1997,20 @@ mainbreaknew	call	ishlbreakpoint
 	scf
 	ret
 
-txt_nobdel	db	"No breakpoints to delete !",0
-txt_nobadr	db	"   No breakpoint at that address !   ",0
+txt_nobdel: 	db	"No breakpoints to delete !",0
+txt_nobadr: 	db	"   No breakpoint at that address !   ",0
 
-routdelbreak	ld	a,(breakbufpoint)
+routdelbreak: 	ld	a,(breakbufpoint)
 	cp	((breakbuf) and #ff)
 	jr	nz,routdelbreak0
 	call	zetkader
 	ld	bc,txt_nobdel
 	ld	hl,comline*80+27
 	jp	_noreturnadres
-routdelbreak0	ld	hl,(reg_pc)
+routdelbreak0: 	ld	hl,(reg_pc)
 	call	ishlbreakpoint
 
-routdelbreak1	push	af
+routdelbreak1: 	push	af
 	push	hl
 	ld	bc,puldown3menu6
 	CALL	kadermettxtBC
@@ -2025,7 +2023,7 @@ routdelbreak1	push	af
 	ld	b,4
 	ld	hl,13*80+31
 	call	PRINTHEXADEC
-_routdelbr1	ld	hl,13*80+31
+_routdelbr1: 	ld	hl,13*80+31
 	call	input_adres
 	jp	c,buf2screen
 	ex	de,hl
@@ -2036,18 +2034,18 @@ _routdelbr1	ld	hl,13*80+31
 	ld	bc,txt_nobadr
 	ld	hl,comline*80+22
 	jp	_noreturnadres
-_routdelbr2	push	hl
+_routdelbr2: 	push	hl
 	call	buf2screen
 	pop	hl
 
-_delbreak2	ld	de,breakbuf
-_delbreak3	ld	a,(de)
+_delbreak2: 	ld	de,breakbuf
+_delbreak3: 	ld	a,(de)
 	inc	de
 	cp	l
 	jr	z,_delbreak4
 	inc	de
 	jr	_delbreak3
-_delbreak4	ld	a,(de)
+_delbreak4: 	ld	a,(de)
 	inc	de
 	cp	h
 	jr	nz,_delbreak3
@@ -2066,10 +2064,10 @@ _delbreak4	ld	a,(de)
 	dec	(hl)
 	dec	(hl)
 
-bpverandert	ld	ix,disoptabpc
+bpverandert: 	ld	ix,disoptabpc
 	ld	de,disbuffer+disopwrmnomic-2
 	ld	b,disopaantlijn
-bpverandert1	ld	l,(ix+0)
+bpverandert1: 	ld	l,(ix+0)
 	ld	h,(ix+1)
 	inc	ix
 	inc	ix
@@ -2079,7 +2077,7 @@ bpverandert1	ld	l,(ix+0)
 	ld	a,32
 	jr	c,bpverandert2
 	ld	a,"$"
-bpverandert2	ld	(de),a
+bpverandert2: 	ld	(de),a
 	ld	hl,lglnlngh
 	add	hl,de
 	ex	de,hl
@@ -2087,10 +2085,10 @@ bpverandert2	ld	(de),a
 	jp	distoscr
 
 ; IN :HL  OUT:NC=hl no breakpoint Changes:C,DE,AF
-ishlbreakpoint	ld	de,breakbuf
+ishlbreakpoint: 	ld	de,breakbuf
 	ld	a,(breakbufpoint)
 	ld	c,a
-_ishlbreak1	ld	a,c
+_ishlbreak1: 	ld	a,c
 	cp	e
 	scf
 	ret	z	;end reached
@@ -2100,24 +2098,24 @@ _ishlbreak1	ld	a,c
 	jr	z,_ishlbreak2
 	inc	de
 	jr	_ishlbreak1
-_ishlbreak2	ld	a,(de)
+_ishlbreak2: 	ld	a,(de)
 	cp	h
 	ret	z	;found it!
 	inc	de
 	jr	_ishlbreak1
 
-viewbreakx	equ	43
-viewbreaky	equ	3
-viewtekst1	db	18,23,23,23,23,25,0
-viewtekst2	db	12,32,32,32,32,22,0
-viewtekst3	db	17,23,23,23,23,27,0
-viewbrpijl	db	0
-viewbrnumber	db	0
+viewbreakx: 	equ	43
+viewbreaky: 	equ	3
+viewtekst1: 	db	18,23,23,23,23,25,0
+viewtekst2: 	db	12,32,32,32,32,22,0
+viewtekst3: 	db	17,23,23,23,23,27,0
+viewbrpijl: 	db	0
+viewbrnumber: 	db	0
 
-viewbreak	ld	a,(breakbufpoint)
+viewbreak: 	ld	a,(breakbufpoint)
 	cp	((breakbuf) and #ff)
 	jp	z,exectillbp2
-	ld	hl,(2+viewbreakx)*256+viewbreaky+1
+	ld	hl,+(2+viewbreakx)*256+viewbreaky+1
 	ld	(breakvalsbalk),hl
 	ld	a,1
 	ld	(breakvalsopt),a
@@ -2125,7 +2123,7 @@ viewbreak	ld	a,(breakbufpoint)
 	ld	ix,breakbuf
 	ld	hl,breakvalsmenu+3
 	ld	(waarbuffer),hl
-viewbreak1	ld	h,(ix+1)
+viewbreak1: 	ld	h,(ix+1)
 	ld	l,(ix+0)
 	call	hltobuffer
 	inc	ix
@@ -2140,10 +2138,10 @@ viewbreak1	ld	h,(ix+1)
 	ld	hl,breakvalsmenu
 	inc	(hl)
 	jr	viewbreak1
-viewbreak0	ld	ix,breakvalsmenu
+viewbreak0: 	ld	ix,breakvalsmenu
 	ld	hl,80*viewbreaky+viewbreakx
 	call	PRINTMENU
-viewbreak2	ld	a,(breakvalsopt)
+viewbreak2: 	ld	a,(breakvalsopt)
 	ld	c,a
 	ld	hl,(breakvalsbalk)
 	ld	ix,breakvalsmenu
@@ -2158,10 +2156,10 @@ viewbreak2	ld	a,(breakvalsopt)
 	pop	af
 	cp	" "
 	ret	nz
-viewbreak3	ld	a,(breakvalsopt)
+viewbreak3: 	ld	a,(breakvalsopt)
 	ld	b,a
 	ld	hl,breakbuf-2
-viewbreak4	inc	hl
+viewbreak4: 	inc	hl
 	inc	hl
 	djnz	viewbreak4
 	ex	de,hl
@@ -2173,19 +2171,19 @@ viewbreak4	inc	hl
 	xor	a
 	jp	routdelbreak1
 
-breakbufpoint	dw	breakbuf	;reference to first FREE entry
-breakbuf	ds	2*15
-breakbufend	equ	$
-breakvalsopt	db	0
-breakvalsbalk	dw	0
-breakvalsmenu	db	0,4,0
+breakbufpoint: 	dw	breakbuf	;reference to first FREE entry
+breakbuf: 	ds	2*15
+breakbufend: 	equ	$
+breakvalsopt: 	db	0
+breakvalsbalk: 	dw	0
+breakvalsmenu: 	db	0,4,0
 	ds	15*4
 
-stackviewx	equ	73
-stackviewy	equ	3
-stackaantlijn	equ	19
+stackviewx: 	equ	73
+stackviewy: 	equ	3
+stackaantlijn: 	equ	19
 	; init routine to put frame on screen
-stackinit	ld	hl,stackviewy*80+stackviewx	; first structure screen frame
+stackinit: 	ld	hl,stackviewy*80+stackviewx	; first structure screen frame
 	ld	bc,stackuplijn1
 	call	PRINTTEKST	; top line
 	ld	hl,stackviewy*80+stackviewx+80
@@ -2199,7 +2197,7 @@ stackinit	ld	hl,stackviewy*80+stackviewx	; first structure screen frame
 	exx
 	ld	b,stackaantlijn
 
-_stackinit1	exx
+_stackinit1: 	exx
 	ld	bc,stackleeglijn
 	call	PRINTTEKST
 	add	hl,de
@@ -2209,21 +2207,21 @@ _stackinit1	exx
 	inc	bc	;=ld bc,stackdown line
 	jp	PRINTTEKST	; bottom line
 
-stackuplijn1	db	18,23,23,23,23,23,25,0
-stackuplijn2	db	22,83,84,65,67,75,22,0
-stackuplijn3	db	20,23,23,23,23,23,19,0
-stackleeglijn	db	22,32,32,32,32,32,22,0
-stackdownlijn	db	17,23,23,23,23,23,27,0
+stackuplijn1: 	db	18,23,23,23,23,23,25,0
+stackuplijn2: 	db	22,83,84,65,67,75,22,0
+stackuplijn3: 	db	20,23,23,23,23,23,19,0
+stackleeglijn: 	db	22,32,32,32,32,32,22,0
+stackdownlijn: 	db	17,23,23,23,23,23,27,0
 
 ; following routine is needed to keep the frame up to date
-stackvupdate	ld	hl,(reg_sp)
+stackvupdate: 	ld	hl,(reg_sp)
 	ld	bc,stackaantlijn*2
 	call	GETFROMRAM
 	ld	de,(bufferhoofdpr)
 	ld	b,stackaantlijn
 	ld	hl,stacktxtbuffer
 	ld	(waarbuffer),hl
-_stackvupd1	ld	a,(de)
+_stackvupd1: 	ld	a,(de)
 	inc	de
 	ld	l,a
 	ld	a,(de)
@@ -2240,16 +2238,16 @@ _stackvupd1	ld	a,(de)
 	ld	b,stackaantlijn
 	jp	_toscr
 
-stacktxtbuffer	ds	5*stackaantlijn
+stacktxtbuffer: 	ds	5*stackaantlijn
 
-regafbeeld	ld	a,i
+regafbeeld: 	ld	a,i
 	ld	h,a
 	ld	a,r
 	ld	l,a
 	ld	(reg_ir),hl
 	ld	hl,regscrpoint
 	ld	b,13
-_regtoscr	ld	e,(hl)
+_regtoscr: 	ld	e,(hl)
 	inc	hl
 	ld	d,(hl)
 	inc	hl
@@ -2308,9 +2306,9 @@ _regtoscr	ld	e,(hl)
 	add	a,68
 	ld	(regeiflag),a
 
-regviewx	equ	40
-regviewy	equ	3
-scrreg	equ	regviewx*16+regviewy
+regviewx: 	equ	40
+regviewy: 	equ	3
+scrreg: 	equ	regviewx*16+regviewy
 
 	ld	hl,regviewy*80+regviewx
 	ld	bc,regscreen
@@ -2318,13 +2316,13 @@ scrreg	equ	regviewx*16+regviewy
 	ld	b,9
 	jp	_toscr
 
-_regflag	ld	a,c	; NC then reg to c show else b
+_regflag: 	ld	a,c	; NC then reg to c show else b
 	jr	nc,_regflag1
 	ld	a,b
-_regflag1	ld	(hl),a
+_regflag1: 	ld	(hl),a
 	ret
 
-regscrpoint	; first where buffer then which register then vram address
+regscrpoint: 	; first where buffer then which register then vram address
 	dw	regscraf+5,reg_af,(1+regviewx)*256+regviewy+1
 	dw	regscraf+16,reg_bc,(12+regviewx)*256+regviewy+1
 	dw	regscraf+28,reg_de,(24+regviewx)*256+regviewy+1
@@ -2343,25 +2341,25 @@ regscrpoint	; first where buffer then which register then vram address
 
 	dw	regscrir+5,reg_ir,(1+regviewx)*256+regviewy+5
 
-regscreen	db	23,23,23,23,23,23,23,23,23,23,23,23
+regscreen: 	db	23,23,23,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23,0
 
-regscraf	db	" AF :3455   BC :5445    DE :4323 ",0
-regscrafac	db	" AF':7866   BC':3434    DE':3434 ",0
-regscrhl	db	" HL :2342   IX :3434    IY :     ",0
-regscrhlac	db	" HL':4344   PC :        SP :     ",0
-regscrir	db	" IR :4534   "
-regeiflag	db	"EI                   ",0
+regscraf: 	db	" AF :3455   BC :5445    DE :4323 ",0
+regscrafac: 	db	" AF':7866   BC':3434    DE':3434 ",0
+regscrhl: 	db	" HL :2342   IX :3434    IY :     ",0
+regscrhlac: 	db	" HL':4344   PC :        SP :     ",0
+regscrir: 	db	" IR :4534   "
+regeiflag: 	db	"EI                   ",0
 	db	"                                 ",0
 	db	"   "
-regzflag	db	"NZ   "
-regcflag	db	"NC  N:"
-regnflag	db	"1   P"
-regpflag	db	"O  H:"
-reghflag	db	"1    "
-regsflag	db	"S   ",0
-regend	db	23,23,23,23,23,23,23,23,23,23,23,23
+regzflag: 	db	"NZ   "
+regcflag: 	db	"NC  N:"
+regnflag: 	db	"1   P"
+regpflag: 	db	"O  H:"
+reghflag: 	db	"1    "
+regsflag: 	db	"S   ",0
+regend: 	db	23,23,23,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23,0
 
@@ -2437,10 +2435,10 @@ RegShortcuts:
 	db 0
 
 
-regaanpas	ld	c,1	; c=pointer which reg(max 12, IR+diei=13)
+regaanpas: 	ld	c,1	; c=pointer which reg(max 12, IR+diei=13)
 	ld	a,29
 	jr	regaanpas1
-regaanpas0	call	CHRGET
+regaanpas0: 	call	CHRGET
 	ld d,a
 	ld e,c
 	call CheckRegSortcut
@@ -2454,47 +2452,47 @@ regaanpas0	call	CHRGET
 	jr	nz,regaanpas1
 	inc	c
 	jr	regaanpas5
-regaanpas1	cp	left
+regaanpas1: 	cp	left
 	jr	nz,regaanpas2
 	dec	c
 	jr	regaanpas5
-regaanpas2	cp	up
+regaanpas2: 	cp	up
 	jr	nz,regaanpas3
 	dec	c
 	dec	c
 	dec	c
 	jr	regaanpas5
-regaanpas3	cp	down
+regaanpas3: 	cp	down
 	jr	nz,regaanpas4
 	inc	c
 	inc	c
 	inc	c
-regaanpas5	call	resregaanpas
+regaanpas5: 	call	resregaanpas
 	ld	a,c
 	cp	13
 	jp	z,regaanpaseiblk
 	jp	nc,flagaanpas
-regaanpas50	ld	hl,regscrpoint-2
+regaanpas50: 	ld	hl,regscrpoint-2
 	ld	de,6
 	ld	b,c
 	inc	b
-regaanpas51	add	hl,de
+regaanpas51: 	add	hl,de
 	djnz	regaanpas51
 	ld	a,(hl)
 	inc	hl
 	ld	h,(hl)
 	ld	l,a
 	ld	b,8
-regaanpas52	push	bc
+regaanpas52: 	push	bc
 	call	SETBALK
 	pop	bc
 	jr	regaanpas0
 
-regaanpaseiblk	ld	b,2
-	ld	hl,(12+regviewx)*256+regviewy+5
+regaanpaseiblk: 	ld	b,2
+	ld	hl,+(12+regviewx)*256+regviewy+5
 	jr	regaanpas52
 
-regaanpas4	cp	32
+regaanpas4: 	cp	32
 	jr	nz,regaanpas0
 regaanpas_space:	
 	ld	a,c
@@ -2508,7 +2506,7 @@ regaanpas_space:
 	pop	bc
 	jp	regaanpas0
 
-regaanpas6	ld	hl,regviewy+6+256*regviewx
+regaanpas6: 	ld	hl,regviewy+6+256*regviewx
 	ld	b,33
 	push	bc
 	call	SETBALK
@@ -2517,7 +2515,7 @@ regaanpas6	ld	hl,regviewy+6+256*regviewx
 	ld	de,6
 	ld	b,c
 	inc	b
-regaanpas61	add	hl,de
+regaanpas61: 	add	hl,de
 	djnz	regaanpas61
 	ld	a,(hl)
 	inc	hl
@@ -2534,7 +2532,7 @@ regaanpas61	add	hl,de
 	call	SETVRAMWRITE
 	pop	hl
 	ld	b,4
-regaanpas62	ld	a,(hl)
+regaanpas62: 	ld	a,(hl)
 	inc	hl
 	out	(#98),a
 	djnz	regaanpas62
@@ -2573,7 +2571,7 @@ regaanpas62	ld	a,(hl)
 	ld	(hl),d
 	ld	a,(reg_ir+1)
 	ld	i,a
-regaanpas63	ld	hl,80*(6+regviewy)+regviewx
+regaanpas63: 	ld	hl,80*(6+regviewy)+regviewx
 	push	bc
 	ld	bc,33
 	ld	a,32
@@ -2582,9 +2580,9 @@ regaanpas63	ld	hl,80*(6+regviewy)+regviewx
 	pop	bc
 	jp	regaanpas50
 
-flagaanpas	ld	c,0
+flagaanpas: 	ld	c,0
 	jr	flagaanpas5
-flagaanpas0	call	CHRGET
+flagaanpas0: 	call	CHRGET
 	ld d,a
 	ld e,c
 	call CheckRegSortcut
@@ -2594,34 +2592,34 @@ flagaanpas0	call	CHRGET
 	jr	nz,flagaanpas1
 	ld	c,12
 	jp	regaanpas5
-flagaanpas1	cp	down
+flagaanpas1: 	cp	down
 	jr	nz,flagaanpas2
 	ld	c,0
 	jp	regaanpas5
-flagaanpas2	cp	right
+flagaanpas2: 	cp	right
 	jr	nz,flagaanpas3
 	inc	c
 	jr	flagaanpas5
-flagaanpas3	cp	left
+flagaanpas3: 	cp	left
 	jr	nz,flagaanpas4
 	dec	c
 	jr	flagaanpas5
-flagaanpas4	cp	escape
+flagaanpas4: 	cp	escape
 	jr	z,regaanpasex
 	cp	1
 	jr	z,regaanpasex
 	cp	32
 	jr	nz,flagaanpas0
 	jr	flagaanpas8
-flagaanpas5	ld	a,c
+flagaanpas5: 	ld	a,c
 	cp	255
 	jr	nz,flagaanpas6
 	ld	a,5
 	jr	flagaanpas7
-flagaanpas6	cp	6
+flagaanpas6: 	cp	6
 	jr	nz,flagaanpas7
 	ld	a,0
-flagaanpas7	ld	c,a
+flagaanpas7: 	ld	c,a
 	call	resregaanpas
 	ld	a,c
 	add	a,a
@@ -2637,7 +2635,7 @@ flagaanpas7	ld	c,a
 	pop	bc
 	jr	flagaanpas0
 
-flagaanpas8	ld	b,0
+flagaanpas8: 	ld	b,0
 	ld	hl,flagtab
 	add	hl,bc
 	ld	a,(reg_af)
@@ -2648,7 +2646,7 @@ flagaanpas8	ld	b,0
 	pop	bc
 	jp	flagaanpas0
 
-flagtab	db	%01000000	; zero
+flagtab: 	db	%01000000	; zero
 	db	%00000001	; carry
 	db	%00000010	; n
 	db	%00000100	; po
@@ -2656,9 +2654,9 @@ flagtab	db	%01000000	; zero
 	db	%10000000	; s
 ; order of flag tab in same order as display on screen
 
-resregaanpas	push	bc
+resregaanpas: 	push	bc
 	ld	b,7
-resregaanpas1	ld	a,3
+resregaanpas1: 	ld	a,3
 	add	a,b
 	push	bc
 	ld	b,34
@@ -2670,7 +2668,7 @@ resregaanpas1	ld	a,3
 	pop	bc
 	ret
 
-regaanpasex	call	resregaanpas
+regaanpasex: 	call	resregaanpas
 	call	ispconscr
 	CALL	ispconmon
 	ld	a,(monlinkyesno)
@@ -2679,12 +2677,12 @@ regaanpasex	call	resregaanpas
 	ld	hl,(reg_pc)
 	ld	(monadres),hl
 
-ispconmon	ld	b,0
+ispconmon: 	ld	b,0
 	ld	de,(monadres)
 	ld	hl,(reg_pc)
 	call	hlgelijkde
 	rl	b	; if monadres<=reg_pc then b=0 else b=1
-	ld	hl,(aantalmonlijn-1)*8
+	ld	hl,+(aantalmonlijn-1)*8
 ; ADD HL,DE IS SPLIT TO NOTICE WALK AROUND
 	ld	a,l
 	add	a,e
@@ -2703,10 +2701,10 @@ ispconmon	ld	b,0
 	cp	%11
 	jp	z,wismonbalk
 	jr	ispconmon3
-ispconmon0	or	a	; will zero as pc within limits
+ispconmon0: 	or	a	; will zero as pc within limits
 	jp	nz,wismonbalk
 
-ispconmon3	call	wismonbalk
+ispconmon3: 	call	wismonbalk
 	ld	hl,(reg_pc)
 	ld	de,(monadres)
 	or	a
@@ -2730,19 +2728,19 @@ ispconmon3	call	wismonbalk
 	pop	af
 	add	a,40+25
 	ld	b,1
-ispconmon1	ld	h,a
+ispconmon1: 	ld	h,a
 	ld	a,(monybalk)
 	ld	l,a
 	jp	SETBALK
 
-wismonbalk	ld	a,(monybalk)
+wismonbalk: 	ld	a,(monybalk)
 	ld	l,a
 	ld	h,40	; clears bar on monitor
 	ld	b,33
 	jp	WISBALK
 
 
-monitor	ld	a,(monlinkyesno)
+monitor: 	ld	a,(monlinkyesno)
 	cp	1
 	jr	c,monitor7
 	jr	nz,monitor0
@@ -2751,21 +2749,21 @@ monitor	ld	a,(monlinkyesno)
 	jr	z,monitor7	; at zero no arrow visible
 	call	adresnapijl
 	jr	monitor1
-monitor0	ld	a,(aanduidtrace)
+monitor0: 	ld	a,(aanduidtrace)
 	or	a
 	jr	z,monitor7	; at zero no bar visible
 	ld	de,(reg_pc)
-monitor1	ld	hl,7
+monitor1: 	ld	hl,7
 	call	hlgelijkde
 	jr	c,monitor2
 	jr	monitor4
-monitor2	ld	hl,#fff7
+monitor2: 	ld	hl,#fff7
 	call	hlgelijkde
 	jr	nc,monitor5
-monitor4	ld	hl,0
+monitor4: 	ld	hl,0
 	ld	(monadres),hl
 	jr	monitor65
-monitor5	ld	hl,(monadres)
+monitor5: 	ld	hl,(monadres)
 	ld	bc,8
 	add	hl,bc
 	call	hlgelijkde
@@ -2779,11 +2777,11 @@ monitor5	ld	hl,(monadres)
 	call	hlgelijkde	; C=> monaddress-1<disop
 	jr	c,monitor65
 	add	hl,bc
-monitor6	ld	(monadres),hl
+monitor6: 	ld	(monadres),hl
 	jr	monitor
 
-monitor65	call	ispconmon
-monitor7	ld	hl,monitorbuf+27
+monitor65: 	call	ispconmon
+monitor7: 	ld	hl,monitorbuf+27
 	ld	(waarbuffer),hl
 	ld	hl,(monadres)
 	call	hltobuffer
@@ -2792,10 +2790,10 @@ monitor7	ld	hl,monitorbuf+27
 	ld	hl,monitorbuf+34
 	ld	de,(bufferhoofdpr)
 	ld	b,aantalmonlijn-1
-monitor8	ld	c,b
+monitor8: 	ld	c,b
 	push	de
 	ld	b,8
-monitor9	ld	(waarbuffer),hl
+monitor9: 	ld	(waarbuffer),hl
 	ld	a,(de)
 	call	atobuffer
 	inc	hl
@@ -2806,11 +2804,11 @@ monitor9	ld	(waarbuffer),hl
 	pop	de
 	inc	hl
 	ld	b,8
-monitora	ld	a,(de)
+monitora: 	ld	a,(de)
 	or	a
 	jr	nz,monitorb
 	ld	a,32
-monitorb	ld	(hl),a
+monitorb: 	ld	(hl),a
 	inc	de
 	inc	hl
 	djnz	monitora
@@ -2825,7 +2823,7 @@ monitorb	ld	(hl),a
 	ld	b,aantalmonlijn
 	jp	_toscr
 
-slot0	db	%10000111
+slot0: 	db	%10000111
 	db	54
 	db	%00000111
 	db	105
@@ -2834,11 +2832,11 @@ slot0	db	%10000111
 	db	%10001001
 	db	254
 
-slotmonitor	call	GETPAGES
+slotmonitor: 	call	GETPAGES
 	push	hl
 	ld	de,slotkader+43
 	ld	b,4
-slotmonitor1	ld	a,(hl)
+slotmonitor1: 	ld	a,(hl)
 	and	3
 	add	a,"0"
 	ld	(de),a
@@ -2853,8 +2851,8 @@ slotmonitor1	ld	a,(hl)
 	and	3
 	add	a,"0"
 	jr	slotmonitor3
-slotmonitor2	ld	a,"X"
-slotmonitor3	ld	(de),a
+slotmonitor2: 	ld	a,"X"
+slotmonitor3: 	ld	(de),a
 	inc	de
 	inc	de
 	inc	hl
@@ -2865,7 +2863,7 @@ slotmonitor3	ld	(de),a
 	ld	(waarbuffer),hl
 	inc	de
 	ld	b,4
-slotmonitor4	ld	a,(de)
+slotmonitor4: 	ld	a,(de)
 	inc	de
 	inc	de
 	call	atobuffer
@@ -2876,7 +2874,7 @@ slotmonitor4	ld	a,(de)
 	ld	hl,slotkadergeg+6	;place subslot regs
 	ld	de,subslotregs+3
 	ld	a,8
-slotmonitor5	ld	b,a
+slotmonitor5: 	ld	b,a
 	ex	af,af'
 	ld	a,(welkismetsub)
 	and	b
@@ -2888,7 +2886,7 @@ slotmonitor5	ld	b,a
 	ld	(waarbuffer),bc
 	ld	a,(de)
 	call	atobuffer
-slotmonitor6	dec	hl
+slotmonitor6: 	dec	hl
 	dec	hl
 	dec	de
 	ex	af,af'
@@ -2901,42 +2899,42 @@ slotmonitor6	dec	hl
 	ld	b,3
 	jp	_toscr
 
-slotkader	db	" PAGE     0   1   2   3          ",0
+slotkader: 	db	" PAGE     0   1   2   3          ",0
 	db	" SLOT     -   -   -   -    ",28,29,"  ",28,29,0
 	db	" MAPPER                    ",28,29,"  ",28,29,0
 
-slotkadergeg	dw	slotkader+1*34+27
+slotkadergeg: 	dw	slotkader+1*34+27
 	dw	slotkader+1*34+31
 	dw	slotkader+2*34+27
 	dw	slotkader+2*34+31
 
-disopaantlijn	equ	21
-disopwradres	equ	1
-disopwrmnomic	equ	9
-disopwrhex	equ	29
+disopaantlijn: 	equ	21
+disopwradres: 	equ	1
+disopwrmnomic: 	equ	9
+disopwrhex: 	equ	29
 
-uplijn	db	24,23,23,23,23,23,23,18,23,23,23,23,23,23,23,23,23
+uplijn: 	db	24,23,23,23,23,23,23,18,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23,23,23,23,18,23,23,23,23,23
 	db	23,23,23,23,23,18,0
 
 	db	22
-leeglijndb	db	"      ",22,"                    ",22
+leeglijndb: 	db	"      ",22,"                    ",22
 	db	"         "
-leeglijnend2	db	" "
-leeglijnend	db	22,0
-lglnlngh	equ	leeglijnend-leeglijndb
+leeglijnend2: 	db	" "
+leeglijnend: 	db	22,0
+lglnlngh: 	equ	leeglijnend-leeglijndb
 
-downlijn	db	26,23,23,23,23,23,23,17,23,23,23,23,23,23,23,23,23
+downlijn: 	db	26,23,23,23,23,23,23,17,23,23,23,23,23,23,23,23,23
 	db	23,23,23,23,23,23,23,23,23,23,23,17,23,23,23,23,23
 	db	23,23,23,23,23,17,0
 
-bufferhoofdpr	dw	0	;because of GETFROMRAM
+bufferhoofdpr: 	dw	0	;because of GETFROMRAM
 
-reg_pcvdis	dw	0	; pc register for next instr
+reg_pcvdis: 	dw	0	; pc register for next instr
 
 ;disoppoint      db 0 ;GIVES MANY POINTER OF DISOPTAB not used?*********
 
-monitorbuf	db	"   Minimonitor-address :   ADAD  ",0
+monitorbuf: 	db	"   Minimonitor-address :   ADAD  ",0
 	db	"                                 ",0
 	db	"                                 ",0
 	db	"                                 ",0
@@ -2946,19 +2944,19 @@ monitorbuf	db	"   Minimonitor-address :   ADAD  ",0
 	db	"                                 ",0
 	db	"                                 ",0
 	db	"                                 ",0
-monybalk	db	7	; not to zero otherwise damage main bar
+monybalk: 	db	7	; not to zero otherwise damage main bar
 	;on first call erase bar in main loop
-aantalmonlijn	equ	9
-monadres	dw	startmonadres
-reg_pc	dw	startpcadres
-cursoradres	dw	startcursorad
-disoptabpc	dw	startcursorad
+aantalmonlijn: 	equ	9
+monadres: 	dw	startmonadres
+reg_pc: 	dw	startpcadres
+cursoradres: 	dw	startcursorad
+disoptabpc: 	dw	startcursorad
 	ds	(disopaantlijn*2)-2	; corresponding address per line
-disbuffer	ds	disopaantlijn*lglnlngh	;LINES END=0
+disbuffer: 	ds	disopaantlijn*lglnlngh	;LINES END=0
 ;
 ; Init takes care of overall initialization data+building the
 ; frames on the screen
-initdis	ld	hl,3*80	; first construction screen frame disam
+initdis: 	ld	hl,3*80	; first construction screen frame disam
 	ld	bc,uplijn
 	call	PRINTTEKST	; top line
 	ld	a," "
@@ -2967,7 +2965,7 @@ initdis	ld	hl,3*80	; first construction screen frame disam
 	ld	de,80
 	exx
 	ld	b,disopaantlijn
-_initdis1	exx
+_initdis1: 	exx
 	ld	bc,leeglijndb-1
 	call	PRINTTEKST	; each time an empty line with stripes
 	add	hl,de
@@ -2980,7 +2978,7 @@ _initdis1	exx
 	ld	(leeglijnend2),a
 	ld	a,disopaantlijn
 	ld	de,disbuffer
-_initdis2	ld	bc,lglnlngh	; fill buffer with empty lines
+_initdis2: 	ld	bc,lglnlngh	; fill buffer with empty lines
 	ld	hl,leeglijndb
 	ldir
 	dec	a
@@ -2992,11 +2990,11 @@ _initdis2	ld	bc,lglnlngh	; fill buffer with empty lines
 	ld	d,(hl)
 	ld	(reg_pcvdis),de
 
-disameenscherm	ld	b,disopaantlijn	;creates a screen
+disameenscherm: 	ld	b,disopaantlijn	;creates a screen
 	ld	hl,disbuffer
 	ld	(waarbuffer),hl
 	ld	hl,disoptabpc
-_disam1scherm1	push	bc
+_disam1scherm1: 	push	bc
 	ld	de,(reg_pcvdis)
 	ld	(hl),e
 	inc	hl
@@ -3019,24 +3017,24 @@ _disam1scherm1	push	bc
 	ld	b,a
 	ld	hl,disopwrmnomic-1+disbuffer-lglnlngh
 	ld	de,lglnlngh
-_disam1scherm2	add	hl,de
+_disam1scherm2: 	add	hl,de
 	djnz	_disam1scherm2
 	ld	a,">"
 	ld	(hl),a
 
-_disam1scherm3	ld	a,(aanduidtrace)
+_disam1scherm3: 	ld	a,(aanduidtrace)
 	call	respcbalk
 	call	ispconscr
 ;
 ; the routine puts all the lines on the screen
-distoscr	ld	hl,80*4+1
+distoscr: 	ld	hl,80*4+1
 	ld	bc,disbuffer
 	exx
 	ld	b,disopaantlijn
-_toscr	exx
+_toscr: 	exx
 	ld	de,80
 	exx
-_toscrloop	exx
+_toscrloop: 	exx
 	call	PRINTTEKST
 	inc	bc
 	add	hl,de
@@ -3044,34 +3042,34 @@ _toscrloop	exx
 	djnz	_toscrloop
 	ret
 
-ispconscr	xor	a
+ispconscr: 	xor	a
 	ld	(aanduidtrace),a
 	ld	de,(reg_pc)
 	ld	hl,disoptabpc
 	ld	b,disopaantlijn
 
-ispconscr1	ld	a,(hl)
+ispconscr1: 	ld	a,(hl)
 	inc	hl
 	cp	e
 	jr	z,ispconscr3	;jr not usually performed w: 7cks
 	inc	hl	;(is the fastest)
 	djnz	ispconscr1
 	ret
-ispconscr3	ld	a,(hl)
+ispconscr3: 	ld	a,(hl)
 	inc	hl
 	cp	d
 	jr	z,ispconscr2
 	djnz	ispconscr1
 	ret
-ispconscr2	ld	a,disopaantlijn+1
+ispconscr2: 	ld	a,disopaantlijn+1
 	sub	b
 	ld	(aanduidtrace),a
 	ret
 
-aanduiddisam	db	1
-aanduidtrace	db	1
+aanduiddisam: 	db	1
+aanduidtrace: 	db	1
 
-shiftpushed	in	a,(#aa)
+shiftpushed: 	in	a,(#aa)
 	and	#f0
 	or	%0110
 	out	(#aa),a
@@ -3079,15 +3077,15 @@ shiftpushed	in	a,(#aa)
 	rra
 	ret
 
-ctrlpushed	call	shiftpushed
+ctrlpushed: 	call	shiftpushed
 	rra
 	ret
 
-bigupdwn	ld	hl,(disoptabpc)
+bigupdwn: 	ld	hl,(disoptabpc)
 	add	hl,de
 	ld	(reg_pcvdis),hl
 	ld	b,5
-bigupdwn1	ld	hl,(bufferhoofdpr)
+bigupdwn1: 	ld	hl,(bufferhoofdpr)
 	ld	(waarbuffer),hl
 	push	bc
 	call	vulbuffer
@@ -3095,11 +3093,11 @@ bigupdwn1	ld	hl,(bufferhoofdpr)
 	pop	bc
 	djnz	bigupdwn1
 
-updcursordis	call	disameenscherm
-updcursoradr	ld	a,(aanduiddisam)
+updcursordis: 	call	disameenscherm
+updcursoradr: 	ld	a,(aanduiddisam)
 	or	a
 	ret	z
-getadrnapijl	add	a,a
+getadrnapijl: 	add	a,a
 	ld	c,a
 	ld	b,0
 	ld	hl,disoptabpc-2
@@ -3110,11 +3108,11 @@ getadrnapijl	add	a,a
 	ld	(cursoradres),de
 	ret
 
-routcursup	call	shiftpushed
+routcursup: 	call	shiftpushed
 	jr	c,routcursup0
 	ld	de,-220
 	jr	bigupdwn
-routcursup0
+routcursup0: 
 	call	ctrlpushed
 	jr	c,routcursup1
 	ld	hl,(disoptabpc)
@@ -3122,7 +3120,7 @@ routcursup0
 	ld	(reg_pcvdis),hl
 	jr	updcursordis
 
-routcursup1	ld	a,(aanduiddisam)
+routcursup1: 	ld	a,(aanduiddisam)
 	or	a
 	jp	z,pijlonscrback
 	dec	a
@@ -3131,7 +3129,7 @@ routcursup1	ld	a,(aanduiddisam)
 	ld	b,a
 	ld	hl,disopwrmnomic-1+disbuffer-lglnlngh
 	ld	de,lglnlngh
-routcursup2	add	hl,de
+routcursup2: 	add	hl,de
 	djnz	routcursup2
 	ld	a,">"
 	ld	(hl),a
@@ -3141,25 +3139,25 @@ routcursup2	add	hl,de
 	call	distoscr
 	jr	updcursoradr
 
-eenlijnup	ld	hl,(disoptabpc)
+eenlijnup: 	ld	hl,(disoptabpc)
 	ld	de,20
 	call	hlgelijkde
 	ld	de,-20
 	jr	c,eenlijnup2
 	add	hl,de
 	ld	(reg_pcvdis),hl
-eenlijnup1	ld	(eenlijnuptmp),hl
+eenlijnup1: 	ld	(eenlijnuptmp),hl
 	call	eenlijnup0	; hl=hl+ lengthcode on (hl)
 	ld	de,(disoptabpc)
 	call	hlgelijkde
 	jr	c,eenlijnup1
-eenlijnup4	ld	hl,(eenlijnuptmp)
+eenlijnup4: 	ld	hl,(eenlijnuptmp)
 	ld	(reg_pcvdis),hl
 	jr	updcursordis
 
-eenlijnup2	add	hl,de
+eenlijnup2: 	add	hl,de
 	ld	(reg_pcvdis),hl
-eenlijnup3	ld	(eenlijnuptmp),hl
+eenlijnup3: 	ld	(eenlijnuptmp),hl
 	call	eenlijnup0
 	ld	de,400
 	call	hlgelijkde
@@ -3169,19 +3167,19 @@ eenlijnup3	ld	(eenlijnuptmp),hl
 	jr	c,eenlijnup3
 	jr	eenlijnup4
 
-eenlijnuptmp	dw	0
-eenlijnup0	call	vulbuffer
+eenlijnuptmp: 	dw	0
+eenlijnup0: 	call	vulbuffer
 	ld	hl,(bufferhoofdpr)
 	ld	(waarbuffer),hl
 	call	disassem
 	ld	hl,(reg_pcvdis)
 	ret
 
-routcursdown	call	shiftpushed
+routcursdown: 	call	shiftpushed
 	jr	c,routcursdown0
 	ld	de,180
 	jp	bigupdwn
-routcursdown0
+routcursdown0: 
 	call	ctrlpushed
 	jr	c,routcursdown1
 	ld	hl,(disoptabpc)
@@ -3189,7 +3187,7 @@ routcursdown0
 	ld	(reg_pcvdis),hl
 	jp	updcursordis
 
-routcursdown1	ld	a,(aanduiddisam)
+routcursdown1: 	ld	a,(aanduiddisam)
 	or	a
 	jp	z,pijlonscrback
 	inc	a
@@ -3200,7 +3198,7 @@ routcursdown1	ld	a,(aanduiddisam)
 	ld	b,a
 	ld	hl,disopwrmnomic-1+disbuffer-lglnlngh
 	ld	de,lglnlngh
-routcursdown2	add	hl,de
+routcursdown2: 	add	hl,de
 	djnz	routcursdown2
 	ld	a,32
 	ld	(hl),a
@@ -3211,9 +3209,9 @@ routcursdown2	add	hl,de
 	jp	updcursoradr
 
 ; ALLOW SCREEN TO GO AHEAD ONE INSTRUCTION
-eenlijndown	ld	hl,disbuffer+lglnlngh
+eenlijndown: 	ld	hl,disbuffer+lglnlngh
 	ld	de,disbuffer
-	ld	bc,(disopaantlijn-1)*lglnlngh
+	ld	bc,+(disopaantlijn-1)*lglnlngh
 	ldir
 	ld	hl,disoptabpc+2
 	ld	de,disoptabpc
@@ -3240,16 +3238,16 @@ eenlijndown	ld	hl,disbuffer+lglnlngh
 	ld	(aanduidtrace),a
 	jr	eenlijndown5
 
-eenlijndown1	ld	hl,(reg_pc)
+eenlijndown1: 	ld	hl,(reg_pc)
 	ld	de,(disoptabpc+disopaantlijn*2-2)
 	call	hlgelijkde
 	jr	nz,eenlijndown5
 	ld	a,disopaantlijn
 	ld	(aanduidtrace),a
-eenlijndown5	call	distoscr
+eenlijndown5: 	call	distoscr
 	jp	updcursoradr
 
-routhere	ld	a,(aanduiddisam)
+routhere: 	ld	a,(aanduiddisam)
 	or	a
 	call	z,pijlonscrback
 	call	adresnapijl
@@ -3257,7 +3255,7 @@ routhere	ld	a,(aanduiddisam)
 	call	ispconscr
 	jp	ispconmon
 
-routandback	ld	a,(aanduidtrace)
+routandback: 	ld	a,(aanduidtrace)
 	or	a
 	jr	nz,routandback5
 	ld	a,1
@@ -3266,11 +3264,11 @@ routandback	ld	a,(aanduidtrace)
 	ld	(reg_pcvdis),hl
 	jp	disameenscherm
 
-routandback5	ld	a,(aanduiddisam)
+routandback5: 	ld	a,(aanduiddisam)
 	ld	b,a
 	ld	hl,disopwrmnomic-1+disbuffer-lglnlngh
 	ld	de,lglnlngh
-routandback6	add	hl,de
+routandback6: 	add	hl,de
 	djnz	routandback6
 	ld	a," "
 	ld	(hl),a
@@ -3279,13 +3277,13 @@ routandback6	add	hl,de
 	ld	b,a
 	ld	hl,disopwrmnomic-1+disbuffer-lglnlngh
 	ld	de,lglnlngh
-routandback7	add	hl,de
+routandback7: 	add	hl,de
 	djnz	routandback7
 	ld	a,">"
 	ld	(hl),a
 	jp	distoscr
 
-setpcbalk	add	a,3	; in: a contains y-coordinate for bar
+setpcbalk: 	add	a,3	; in: a contains y-coordinate for bar
 	ld	l,a
 	push	hl
 	ld	h,disopwradres
@@ -3301,7 +3299,7 @@ setpcbalk	add	a,3	; in: a contains y-coordinate for bar
 	ld	b,10
 	jp	SETBALK
 
-respcbalk	add	a,3
+respcbalk: 	add	a,3
 	ld	l,a
 	ld	h,0
 	ld	b,39
@@ -3310,7 +3308,7 @@ respcbalk	add	a,3
 ; create a line in the disassembler frames
 ; waarbuffer must point to the beginning of the line
 ; adjusting the address tab must be done outside this route.
-disameenlijn	call	vulbuffer	;provides places 4 bytes
+disameenlijn: 	call	vulbuffer	;provides places 4 bytes
 	ld	de,(waarbuffer)
 	ld	hl,leeglijndb
 	ld	bc,lglnlngh-1	; number of characters per empty line
@@ -3328,7 +3326,7 @@ disameenlijn	call	vulbuffer	;provides places 4 bytes
 	jr	c,_eenlijn1
 	ld	a,"$"
 
-_eenlijn1	pop	hl
+_eenlijn1: 	pop	hl
 	push	hl
 	ld	de,disopwrmnomic-2
 	add	hl,de
@@ -3344,14 +3342,14 @@ _eenlijn1	pop	hl
 	ld	hl,codebuffer	;the four-byte buffer
 	ld	a,(lenghtcode)
 	ld	b,a
-_eenlijn2	ld	a,(hl)
+_eenlijn2: 	ld	a,(hl)
 	call	atobuffer
 	inc	hl
 	djnz	_eenlijn2
 	ret
 
-vulbuffer	ld	hl,(reg_pcvdis)
-vulbuffer1	ld	bc,4
+vulbuffer: 	ld	hl,(reg_pcvdis)
+vulbuffer1: 	ld	bc,4
 	call	GETFROMRAM
 	ld	hl,(bufferhoofdpr)
 	ld	de,codebuffer
@@ -3361,7 +3359,7 @@ vulbuffer1	ld	bc,4
 	ldi
 	ret
 ; this is the real routine
-disassem	LD	HL,codebuffer
+disassem: 	LD	HL,codebuffer
 	LD	(waarbufcode),HL
 	LD	HL,(waarbuffer)
 	LD	(orgwaarbuf),HL
@@ -3380,7 +3378,7 @@ disassem	LD	HL,codebuffer
 	ld	(reg_pcvdis),hl
 	ret
 
-disassem1	call	leescodebyte
+disassem1: 	call	leescodebyte
 	bit	7,a
 	jp	nz,disassemb71
 	and	%01000000
@@ -3390,15 +3388,15 @@ disassem1	call	leescodebyte
 	ld	hl,txtldnormaal
 	jp	codtxttobuf
 
-txtldnormaal	DB	"LD ",9,",",1+128
+txtldnormaal: 	DB	"LD ",9,",",1+128
 
-disassemb7060	LD	HL,txtuitz7060
+disassemb7060: 	LD	HL,txtuitz7060
 	CALL	uitzondering
 	LD	HL,tabel7060
-tabelcontrol	CALL	leescodebyte
+tabelcontrol: 	CALL	leescodebyte
 	AND	#F
-tabelcontrol1	ADD	A,A
-tabelcontrol2	LD	B,0
+tabelcontrol1: 	ADD	A,A
+tabelcontrol2: 	LD	B,0
 	LD	C,A
 	ADD	HL,BC
 	LD	A,(HL)
@@ -3407,7 +3405,7 @@ tabelcontrol2	LD	B,0
 	LD	L,A
 	JP	codtxttobuf
 
-disassemb71	CP	#CB
+disassemb71: 	CP	#CB
 	JP	Z,disassemCB
 	CP	#ED
 	JP	Z,disassemED
@@ -3422,16 +3420,16 @@ disassemb71	CP	#CB
 	LD	HL,tabel7161
 	JP	tabelcontrol
 
-disassemb7160	LD	HL,txtadd
+disassemb7160: 	LD	HL,txtadd
 	JP	codtxttobuf
 
-txtadd	DB	5,1+128
+txtadd: 	DB	5,1+128
 
-alixiy	LD	A,(hlixiy)
+alixiy: 	LD	A,(hlixiy)
 	OR	A
 	RET	Z
 	POP	HL
-notexist	LD	DE,(orgwaarbuf)
+notexist: 	LD	DE,(orgwaarbuf)
 	LD	A,1
 	LD	(lenghtcode),A
 	LD	HL,txtdb
@@ -3448,38 +3446,38 @@ notexist	LD	DE,(orgwaarbuf)
 	LD	A,(codebuffer)
 	JP	atobuffer
 
-txtdb	DB	"DB                "
+txtdb: 	DB	"DB                "
 
-disassemCB	LD	A,(hlixiy)
+disassemCB: 	LD	A,(hlixiy)
 	OR	A
 	JR	Z,disassemCB0
 	LD	HL,(waarbufcode)
 	INC	HL
 	LD	(waarbufcode),HL
-disassemCB0	CALL	verhoogenlees
-disassemcb2	AND	%11000000
+disassemCB0: 	CALL	verhoogenlees
+disassemcb2: 	AND	%11000000
 	JR	NZ,disassemcb3
 	LD	HL,txtrlc
 	JR	disassemcb6
-disassemcb3	CP	%01000000
+disassemcb3: 	CP	%01000000
 	JR	NZ,disassemcb4
 	LD	HL,txtbit
 	JR	disassemcb6
-disassemcb4	CP	%10000000
+disassemcb4: 	CP	%10000000
 	JR	NZ,disassemcb5
 	LD	HL,txtres
 	JR	disassemcb6
-disassemcb5	LD	HL,txtset
-disassemcb6	JP	codtxttobuf
+disassemcb5: 	LD	HL,txtset
+disassemcb6: 	JP	codtxttobuf
 
 
-txtrlc	db	10," ",1+128
-txtbit	db	"BIT ",11,",",1+128
-txtres	db	"RES ",11,",",1+128
-txtset	db	"SET ",11,",",1+128
+txtrlc: 	db	10," ",1+128
+txtbit: 	db	"BIT ",11,",",1+128
+txtres: 	db	"RES ",11,",",1+128
+txtset: 	db	"SET ",11,",",1+128
 
 
-disassemED	CALL	alixiy
+disassemED: 	CALL	alixiy
 	CALL	verhoogenlees
 	LD	HL,txtuitzED
 	CALL	uitzondering
@@ -3493,25 +3491,25 @@ disassemED	CALL	alixiy
 	JR	Z,disassemED10
 	JP	notexist
 
-disassemED01	LD	HL,tabel7061
+disassemED01: 	LD	HL,tabel7061
 	JP	tabelcontrol
 
-disassemED10	LD	HL,txtin
+disassemED10: 	LD	HL,txtin
 	JP	codtxttobuf
 
-txtin	DB	19,20+128
+txtin: 	DB	19,20+128
 
-disassemIX	CALL	alixiy
+disassemIX: 	CALL	alixiy
 	LD	A,4
-disassemIX1	LD	(hlixiy),A
+disassemIX1: 	LD	(hlixiy),A
 	CALL	verhoogleesbyte
 	JP	disassem1
-disassemIY	CALL	alixiy
+disassemIY: 	CALL	alixiy
 	LD	A,6
 	JR	disassemIX1
 
 ; from hl text to buffer
-codtxttobuf	LD	A,(HL)
+codtxttobuf: 	LD	A,(HL)
 	AND	127
 	CP	32
 	JR	NC,stcdtxttobuf1
@@ -3519,15 +3517,15 @@ codtxttobuf	LD	A,(HL)
 	CALL	stuurcode
 	LD	HL,(bewaarhl)
 	JR	stcdtxttobuf2
-stcdtxttobuf1	CALL	ascitobuffer
-stcdtxttobuf2	LD	A,(HL)
+stcdtxttobuf1: 	CALL	ascitobuffer
+stcdtxttobuf2: 	LD	A,(HL)
 	BIT	7,A
 	JP	NZ,all_ok_met_IXIY
 	INC	HL
 	JR	codtxttobuf
-bewaarhl	dw	0
+bewaarhl: 	dw	0
 
-all_ok_met_IXIY	LD	A,(hlixiy)
+all_ok_met_IXIY: 	LD	A,(hlixiy)
 	OR	A
 	RET	Z
 	LD	A,(usedix)
@@ -3536,8 +3534,8 @@ all_ok_met_IXIY	LD	A,(hlixiy)
 	JP	notexist
 
 ; input a=control code
-stuurcode	LD	HL,stuurcodtab-2
-stuurcode1	ADD	A,A
+stuurcode: 	LD	HL,stuurcodtab-2
+stuurcode1: 	ADD	A,A
 	LD	E,A
 	LD	D,0
 	ADD	HL,DE
@@ -3548,7 +3546,7 @@ stuurcode1	ADD	A,A
 	JP	leescodebyte
 
 
-stuurcodtab	DW	rs1bit02ixpv	;CONTROL CODE 1
+stuurcodtab: 	DW	rs1bit02ixpv	;CONTROL CODE 1
 	DW	rsbit35	;CONTROL CODE 2
 	DW	rp1bit45af	;CONTROL CODE 3
 	DW	rp1bit45	;CONTROL CODE 4
@@ -3572,7 +3570,7 @@ stuurcodtab	DW	rs1bit02ixpv	;CONTROL CODE 1
 
 ; set single register name determined by bit 3-5 in A to buffer
 ; ALSO BEWARE FOR IX
-rsbit35	LD	E,A
+rsbit35: 	LD	E,A
 	AND	%00111000
 	CP	%00110000
 	JR	Z,rsbit35ixpv1
@@ -3583,8 +3581,8 @@ rsbit35	LD	E,A
 
 ;set single register name determined by bit 0-2 in A to buffer
 ;AND CONVERT H,L TO IXH,IYL ETC.
-rsbit02	SLA	A
-rsbit02v	AND	%00001110
+rsbit02: 	SLA	A
+rsbit02v: 	AND	%00001110
 	LD	D,0
 	LD	E,A
 	LD	HL,rstxt
@@ -3598,19 +3596,19 @@ rsbit02v	AND	%00001110
 	CP	%00001010
 	JR	Z,rsbit02ixh
 	JP	regtobuffer
-rsbit02ixh	PUSH	HL
+rsbit02ixh: 	PUSH	HL
 	LD	A,%100
 	CALL	rp1bit351
 	POP	HL
 	JP	regtobuffer
 
 ; set register bit 0-2 in A to buffer with (HL) -> (IX/Y+d)
-rs1bit02ixpv	LD	E,A
+rs1bit02ixpv: 	LD	E,A
 	AND	%00000111
 	CP	%00000110
 	LD	A,E
 	JR	NZ,rsbit02
-rsbit35ixpv1	LD	A,"("
+rsbit35ixpv1: 	LD	A,"("
 	CALL	ascitobuffer
 	LD	A,%00100000
 	CALL	rp1bit45
@@ -3644,21 +3642,21 @@ J678C:	LD	C,A
 	LD	HL,lenghtcode
 	DEC	(HL)
 
-rsbit35ixpv2	LD	A,")"
+rsbit35ixpv2: 	LD	A,")"
 	JP	ascitobuffer
 
 ; set register bit 3-5 in A to buffer with (HL) -> (IX/Y+d)
-rs1bit35ixpv	LD	E,A
+rs1bit35ixpv: 	LD	E,A
 	AND	%00111000
 	CP	%00110000
 	LD	A,E
 	jp	nz,rsbit35
 	JR	rsbit35ixpv1
 
-ldspixy	LD	A,4
+ldspixy: 	LD	A,4
 	JR	rp1bit351
 
-rp1bit45af	LD	E,A
+rp1bit45af: 	LD	E,A
 	AND	%00110000
 	CP	%00110000
 	LD	A,E
@@ -3666,10 +3664,10 @@ rp1bit45af	LD	E,A
 	LD	HL,rp1txtaf
 	JR	regtobuffer
 ; set register pair case1 name determined by bit 4-5 in A to buffer
-rp1bit45	RRA
+rp1bit45: 	RRA
 	RRA
 	RRA
-rp1bit351	AND	%00000110
+rp1bit351: 	AND	%00000110
 	LD	D,0
 	CP	%100
 	LD	E,A
@@ -3678,16 +3676,16 @@ rp1bit351	AND	%00000110
 	LD	(usedix),A
 	ADD	A,E
 	LD	E,A
-rp1bit352	LD	HL,rp1txt
+rp1bit352: 	LD	HL,rp1txt
 	ADD	HL,DE
-regtobuffer	LD	A,(HL)
+regtobuffer: 	LD	A,(HL)
 	INC	HL
 	CALL	ascitobuffer
 	LD	A,(HL)
 	CP	0
 	RET	Z
 
-ascitobuffer	exx
+ascitobuffer: 	exx
 	ld	hl,(waarbuffer)
 	ld	(hl),a
 	inc	hl
@@ -3695,17 +3693,17 @@ ascitobuffer	exx
 	exx
 	ret
 
-hltobuffer	nop
+hltobuffer: 	nop
 	nop
 	nop
-hltobuffer1	ld	a,h
+hltobuffer1: 	ld	a,h
 	call	atobuffer1
 	ld	a,l
 	jr	atobuffer1
-atobuffer	nop
+atobuffer: 	nop
 	nop
 	nop
-atobuffer1	exx
+atobuffer1: 	exx
 	ld	c,a
 	rrca
 	rrca
@@ -3722,36 +3720,36 @@ atobuffer1	exx
 	ld	(waarbuffer),hl
 	exx
 	ret
-atobuasci	and	#0f
+atobuasci: 	and	#0f
 	add	a,"0"
 	cp	"9"+1
 	ret	c
 	add	a,"A"-"9"-1
 	ret
 
-addbit35	RRA
+addbit35: 	RRA
 	RRA
 	RRA
 	AND	%00000111
 	INC	A
 	LD	B,A
 	LD	HL,adbitstxt
-addbit351	LD	A,(HL)
+addbit351: 	LD	A,(HL)
 	OR	A
 	INC	HL
 	JR	NZ,addbit351
 	DJNZ	addbit351
-addbit352	LD	A,(HL)
+addbit352: 	LD	A,(HL)
 	INC	HL
 	OR	A
 	RET	Z
 	CALL	ascitobuffer
 	JR	addbit352
 
-ntobuffer	CALL	verhoogenlees
+ntobuffer: 	CALL	verhoogenlees
 	JP	atobuffer
 
-jradres	CALL	ntobuffer
+jradres: 	CALL	ntobuffer
 	LD	HL,txtpijl
 	CALL	codtxttobuf
 	CALL	leescodebyte
@@ -3763,11 +3761,11 @@ jradres	CALL	ntobuffer
 	LD	D,0
 	JP	P,jradres1
 	DEC	D
-jradres1	ADD	HL,DE
+jradres1: 	ADD	HL,DE
 	JP	hltobuffer
-txtpijl	DB	" -",'>'+128
+txtpijl: 	DB	" -",'>'+128
 
-jpadres	LD	HL,lenghtcode
+jpadres: 	LD	HL,lenghtcode
 	INC	(HL)
 	INC	(HL)
 	LD	HL,(waarbufcode)
@@ -3778,7 +3776,7 @@ jpadres	LD	HL,lenghtcode
 	LD	L,A
 	JP	hltobuffer
 
-rlcrout	LD	HL,rlctxt
+rlcrout: 	LD	HL,rlctxt
 	CALL	leescodebyte
 	RRA
 	RRA
@@ -3790,7 +3788,7 @@ rlcrout	LD	HL,rlctxt
 	ADD	HL,DE
 	ADD	HL,DE
 	LD	B,3
-rlcrout1	LD	A,(HL)
+rlcrout1: 	LD	A,(HL)
 	OR	A
 	RET	Z
 	INC	HL
@@ -3798,37 +3796,37 @@ rlcrout1	LD	A,(HL)
 	DJNZ	rlcrout1
 	RET
 
-bit35nr	RRA
+bit35nr: 	RRA
 	RRA
 	RRA
 	AND	7
 	CALL	atobuasci
 	JP	ascitobuffer
 
-codeonbestaand	POP	HL	; not sure of
+codeonbestaand: 	POP	HL	; not sure of
 	JP	notexist
 
-bcdeofadres	LD	E,A
+bcdeofadres: 	LD	E,A
 	AND	%00110000
 	CP	%00100000
 	JR	NC,bcdeofadres1
 	LD	A,E
 	JP	rp1bit45
-bcdeofadres1	JP	jpadres
+bcdeofadres1: 	JP	jpadres
 
-aofhlixiy	LD	E,A
+aofhlixiy: 	LD	E,A
 	AND	%00110000
 	CP	%00100000
 	JR	NZ,aofhlixiy1
 	LD	A,E
 	JP	rp1bit45
-aofhlixiy1	LD	A,"A"
+aofhlixiy1: 	LD	A,"A"
 	JP	ascitobuffer
 
-hlixiyadd	LD	A,%00100000
+hlixiyadd: 	LD	A,%00100000
 	JP	rp1bit45
 
-condibit35	LD	HL,condititxt
+condibit35: 	LD	HL,condititxt
 	RRA
 	RRA
 	AND	%00001110
@@ -3837,50 +3835,50 @@ condibit35	LD	HL,condititxt
 	ADD	HL,DE
 	JP	regtobuffer
 
-addaen	LD	HL,tabeladdaen
+addaen: 	LD	HL,tabeladdaen
 	RRA
 	RRA
 	AND	%00001110
 	JP	tabelcontrol2
 
-calladres	CALL	verhoogenlees
+calladres: 	CALL	verhoogenlees
 	LD	L,A
 	CALL	verhoogenlees
 	LD	H,A
 	JP	hltobuffer
 
-ldcpinout	AND	3
+ldcpinout: 	AND	3
 	LD	HL,tabelldcpinout
 	JP	tabelcontrol1
 
-tabelldcpinout	DW	txtld1
+tabelldcpinout: 	DW	txtld1
 	DW	txtld2
 	DW	txtld3
 	DW	txtld4
 
-txtld1	DB	"L",'D'+128
-txtld2	DB	"C",'P'+128
-txtld3	DB	"I",'N'+128
-txtld4	DB	"OU",'T'+128
+txtld1: 	DB	"L",'D'+128
+txtld2: 	DB	"C",'P'+128
+txtld3: 	DB	"I",'N'+128
+txtld4: 	DB	"OU",'T'+128
 
-idirdr	RRA
+idirdr: 	RRA
 	RRA
 	RRA
 	AND	3
 	LD	HL,tabelidirdr
 	JP	tabelcontrol1
 
-tabelidirdr	DW	txti1
+tabelidirdr: 	DW	txti1
 	DW	txti2
 	DW	txti3
 	DW	txti4
 
-txti1	DB	'I'+128
-txti2	DB	'D'+128
-txti3	DB	"I",'R'+128
-txti4	DB	"D",'R'+128
+txti1: 	DB	'I'+128
+txti2: 	DB	'D'+128
+txti3: 	DB	"I",'R'+128
+txti4: 	DB	"D",'R'+128
 
-rstrout	AND	%00111000
+rstrout: 	AND	%00111000
 	PUSH	AF
 	CALL	atobuffer
 	LD	A,(msxrst)
@@ -3888,7 +3886,7 @@ rstrout	AND	%00111000
 	JR	NZ,rstrout2
 	POP	AF
 	RET
-rstrout2	POP	AF
+rstrout2: 	POP	AF
 	CP	%00001000
 	JR	Z,rstrout3
 	CP	%00110000
@@ -3897,14 +3895,14 @@ rstrout2	POP	AF
 	LD	A,";"
 	CALL	ascitobuffer
 	JP	jpadres
-rstrout3	LD	HL,rstroutDBtxt
+rstrout3: 	LD	HL,rstroutDBtxt
 	CALL	codtxttobuf
 	JP	ntobuffer
-rstroutDBtxt	DB	" DB",' '+128
+rstroutDBtxt: 	DB	" DB",' '+128
 
-uitzondering	CALL	leescodebyte
+uitzondering: 	CALL	leescodebyte
 	LD	E,A
-uitzondering1	LD	A,(HL)
+uitzondering1: 	LD	A,(HL)
 	CP	E
 	JR	Z,uitzondering2
 	CP	#DD
@@ -3913,7 +3911,7 @@ uitzondering1	LD	A,(HL)
 	INC	HL
 	INC	HL
 	JR	uitzondering1
-uitzondering2	POP	DE
+uitzondering2: 	POP	DE
 	INC	HL
 	LD	E,(HL)
 	INC	HL
@@ -3921,12 +3919,12 @@ uitzondering2	POP	DE
 	LD	L,E
 	JP	codtxttobuf
 
-leescodebyte	exx
+leescodebyte: 	exx
 	ld	hl,(waarbufcode)
 	ld	a,(hl)
 	exx
 	ret
-verhoogleesbyte	exx
+verhoogleesbyte: 	exx
 	ld	hl,(waarbufcode)
 	inc	hl
 	ld	(waarbufcode),hl
@@ -3937,7 +3935,7 @@ verhoogleesbyte	exx
 	ex	af,af'
 	exx
 	ret
-verhoogenlees	exx
+verhoogenlees: 	exx
 	ld	hl,(waarbufcode)
 	inc	hl
 	ld	(waarbufcode),hl
@@ -3948,7 +3946,7 @@ verhoogenlees	exx
 	exx
 	ret
 
-rstxt	DB	"B",0
+rstxt: 	DB	"B",0
 	DB	"C",0
 	DB	"D",0
 	DB	"E",0
@@ -3957,15 +3955,15 @@ rstxt	DB	"B",0
 	DB	"HL"
 	DB	"A",0
 
-rp1txt	DB	"BC"
+rp1txt: 	DB	"BC"
 	DB	"DE"
 	DB	"HL"
 	DB	"SP"
 	DB	"IX"
 	DB	"IY"
-rp1txtaf	DB	"AF"
+rp1txtaf: 	DB	"AF"
 
-adbitstxt	DB	0,"ADD A,",0
+adbitstxt: 	DB	0,"ADD A,",0
 	DB	"ADC A,",0
 	DB	"SUB ",0
 	DB	"SBC A,",0
@@ -3974,7 +3972,7 @@ adbitstxt	DB	0,"ADD A,",0
 	DB	"OR ",0
 	DB	"CP ",0
 
-condititxt	DB	"NZ"
+condititxt: 	DB	"NZ"
 	DB	"Z",0
 	DB	"NC"
 	DB	"C",0
@@ -3983,7 +3981,7 @@ condititxt	DB	"NZ"
 	DB	"P",0
 	DB	"M",0
 
-rlctxt	DB	"RLC"
+rlctxt: 	DB	"RLC"
 	DB	"RRC"
 	DB	"RL",0
 	DB	"RR",0
@@ -3992,7 +3990,7 @@ rlctxt	DB	"RLC"
 	DB	"SLL"
 	DB	"SRL"
 
-tabeladdaen	DW	txtaddaen0
+tabeladdaen: 	DW	txtaddaen0
 	DW	txtaddaen1
 	DW	txtaddaen2
 	DW	txtaddaen3
@@ -4001,16 +3999,16 @@ tabeladdaen	DW	txtaddaen0
 	DW	txtaddaen6
 	DW	txtaddaen7
 
-txtaddaen0	DB	"ADD A",','+128
-txtaddaen1	DB	"ADC A",','+128
-txtaddaen2	DB	"SUB",' '+128
-txtaddaen3	DB	"SBC A",','+128
-txtaddaen4	DB	"AND",' '+128
-txtaddaen5	DB	"XOR",' '+128
-txtaddaen6	DB	"OR",' '+128
-txtaddaen7	DB	"CP",' '+128
+txtaddaen0: 	DB	"ADD A",','+128
+txtaddaen1: 	DB	"ADC A",','+128
+txtaddaen2: 	DB	"SUB",' '+128
+txtaddaen3: 	DB	"SBC A",','+128
+txtaddaen4: 	DB	"AND",' '+128
+txtaddaen5: 	DB	"XOR",' '+128
+txtaddaen6: 	DB	"OR",' '+128
+txtaddaen7: 	DB	"CP",' '+128
 
-tabel7060	DW	tnotexist
+tabel7060: 	DW	tnotexist
 	DW	txttabel0001
 	DW	txttabel0002
 	DW	txttabel0003
@@ -4027,7 +4025,7 @@ tabel7060	DW	tnotexist
 	DW	txttabel0006
 	DW	tnotexist
 
-tabel7161	DW	txttabel1100
+tabel7161: 	DW	txttabel1100
 	DW	txttabel1101
 	DW	txttabel1102
 	DW	tnotexist
@@ -4044,7 +4042,7 @@ tabel7161	DW	txttabel1100
 	DW	txttabel1106
 	DW	txttabel1107
 
-tabel7061	DW	txttabel0100
+tabel7061: 	DW	txttabel0100
 	DW	txttabel0101
 	DW	txttabel0102
 	DW	txttabel0103
@@ -4061,33 +4059,33 @@ tabel7061	DW	txttabel0100
 	DW	tnotexist
 	DW	tnotexist
 
-txttabel0001	DB	"LD ",4,",",8+128
-txttabel0002	DB	"LD (",13,"),",14+128
-txttabel0003	DB	"INC ",4+128
-txttabel0004	DB	"INC ",2+128
-txttabel0005	DB	"DEC ",2+128
-txttabel0006	DB	"LD ",2,",",6+128
-txttabel0009	DB	"ADD ",15,",",4+128
-txttabel000A	DB	"LD ",14,",","(",13,')'+128
-txttabel000B	DB	"DEC ",4+128
+txttabel0001: 	DB	"LD ",4,",",8+128
+txttabel0002: 	DB	"LD (",13,"),",14+128
+txttabel0003: 	DB	"INC ",4+128
+txttabel0004: 	DB	"INC ",2+128
+txttabel0005: 	DB	"DEC ",2+128
+txttabel0006: 	DB	"LD ",2,",",6+128
+txttabel0009: 	DB	"ADD ",15,",",4+128
+txttabel000A: 	DB	"LD ",14,",","(",13,')'+128
+txttabel000B: 	DB	"DEC ",4+128
 
-txttabel1100	DB	"RET ",16+128
-txttabel1101	DB	"POP ",3+128
-txttabel1102	DB	"JP ",16,",",8+128
-txttabel1104	DB	"CALL ",16,",",8+128
-txttabel1105	DB	"PUSH ",3+128
-txttabel1106	DB	17,6+128
-txttabel1107	DB	"RST ",21+128
-txttabel110D	DB	"CALL ",8+128
+txttabel1100: 	DB	"RET ",16+128
+txttabel1101: 	DB	"POP ",3+128
+txttabel1102: 	DB	"JP ",16,",",8+128
+txttabel1104: 	DB	"CALL ",16,",",8+128
+txttabel1105: 	DB	"PUSH ",3+128
+txttabel1106: 	DB	17,6+128
+txttabel1107: 	DB	"RST ",21+128
+txttabel110D: 	DB	"CALL ",8+128
 
-txttabel0100	DB	"IN ",2,",(C",')'+128
-txttabel0101	DB	"OUT (C),",2+128
-txttabel0102	DB	"SBC HL,",4+128
-txttabel0103	DB	"LD (",8,"),",4+128
-txttabel010A	DB	"ADC HL,",4+128
-txttabel010B	DB	"LD ",4,",(",8,')'+128
+txttabel0100: 	DB	"IN ",2,",(C",')'+128
+txttabel0101: 	DB	"OUT (C),",2+128
+txttabel0102: 	DB	"SBC HL,",4+128
+txttabel0103: 	DB	"LD (",8,"),",4+128
+txttabel010A: 	DB	"ADC HL,",4+128
+txttabel010B: 	DB	"LD ",4,",(",8,')'+128
 
-txtuitz7061	DB	#76
+txtuitz7061: 	DB	#76
 	DW	txthalt
 	DB	#66
 	DW	txtldhhl
@@ -4098,14 +4096,14 @@ txtuitz7061	DB	#76
 	DB	#75
 	DW	txtldhll
 	DB	#DD
-txthalt	DB	"HAL",'T'+128
-txtldhhl	DB	"LD H,",1+128
-txtldlhl	DB	"LD L,",1+128
-txtldhlh	DB	"LD ",2,",",'H'+128
-txtldhll	DB	"LD ",2,",",'L'+128
+txthalt: 	DB	"HAL",'T'+128
+txtldhhl: 	DB	"LD H,",1+128
+txtldlhl: 	DB	"LD L,",1+128
+txtldhlh: 	DB	"LD ",2,",",'H'+128
+txtldhll: 	DB	"LD ",2,",",'L'+128
 
 
-txtuitz7060	DB	#00
+txtuitz7060: 	DB	#00
 	DW	txtnop
 	DB	#07
 	DW	txtrlca
@@ -4138,24 +4136,24 @@ txtuitz7060	DB	#00
 	DB	#3F
 	DW	txtccf
 	DB	#DD
-txtnop	DB	"NO",'P'+128
-txtrlca	DB	"RLC",'A'+128
-txtexafaf	DB	"EX AF,AF",39+128
-txtrrca	DB	"RRC",'A'+128
-txtdjnz	DB	"DJNZ"," ",7+128
-txtrla	DB	"RL",'A'+128
-txtjr	DB	"JR ",7+128
-txtrra	DB	"RR",'A'+128
-txtjrnz	DB	"JR NZ,",7+128
-txtdaa	DB	"DA",'A'+128
-txtjrz	DB	"JR Z,",7+128
-txtcpl	DB	"CP",'L'+128
-txtjrnc	DB	"JR NC,",7+128
-txtscf	DB	"SC",'F'+128
-txtjrc	DB	"JR C,",7+128
-txtccf	DB	"CC",'F'+128
+txtnop: 	DB	"NO",'P'+128
+txtrlca: 	DB	"RLC",'A'+128
+txtexafaf: 	DB	"EX AF,AF",39+128
+txtrrca: 	DB	"RRC",'A'+128
+txtdjnz: 	DB	"DJNZ"," ",7+128
+txtrla: 	DB	"RL",'A'+128
+txtjr: 	DB	"JR ",7+128
+txtrra: 	DB	"RR",'A'+128
+txtjrnz: 	DB	"JR NZ,",7+128
+txtdaa: 	DB	"DA",'A'+128
+txtjrz: 	DB	"JR Z,",7+128
+txtcpl: 	DB	"CP",'L'+128
+txtjrnc: 	DB	"JR NC,",7+128
+txtscf: 	DB	"SC",'F'+128
+txtjrc: 	DB	"JR C,",7+128
+txtccf: 	DB	"CC",'F'+128
 
-txtuitz7161	DB	#C3
+txtuitz7161: 	DB	#C3
 	DW	txtjp
 	DB	#C9
 	DW	txtret
@@ -4179,19 +4177,19 @@ txtuitz7161	DB	#C3
 	DW	txtei
 	DB	#DD
 
-txtjp	DB	"JP ",8+128
-txtret	DB	"RE",'T'+128
-txtout	DB	"OUT (",6,"),",'A'+128
-txtexx	DB	"EX",'X'+128
-txtina	DB	"IN A,(",6,')'+128
-txtexsphl	DB	"EX (SP),",4+128
-txtjphl	DB	"JP (",4,')'+128
-txtexdehl	DB	"EX DE,",4+128
-txtdi	DB	"D",'I'+128
-txtldsphl	DB	"LD SP,",18+128
-txtei	DB	"E",'I'+128
+txtjp: 	DB	"JP ",8+128
+txtret: 	DB	"RE",'T'+128
+txtout: 	DB	"OUT (",6,"),",'A'+128
+txtexx: 	DB	"EX",'X'+128
+txtina: 	DB	"IN A,(",6,')'+128
+txtexsphl: 	DB	"EX (SP),",4+128
+txtjphl: 	DB	"JP (",4,')'+128
+txtexdehl: 	DB	"EX DE,",4+128
+txtdi: 	DB	"D",'I'+128
+txtldsphl: 	DB	"LD SP,",18+128
+txtei: 	DB	"E",'I'+128
 
-txtuitzED	DB	#4C
+txtuitzED: 	DB	#4C
 	DW	tnotexist
 	DB	#4E
 	DW	tnotexist
@@ -4289,53 +4287,53 @@ txtuitzED	DB	#4C
 	DW	TOTDR
 	DB	#DD
 
-tnotexist	DB	#12+128
-TINFC	DB	"IN F,(C",')'+128
-TSBCHLSP	DB	"SBC HL,S",'P'+128
-TLDNNSP	DB	"LD (",8,"),S",'P'+128
-TADCHLSP	DB	"ADC HL,S",'P'+128
-TLDSPNN	DB	"LD S","P,(",8,')'+128
-TLDIA	DB	"LD I,",'A'+128
-TLDRA	DB	"LD R,",'A'+128
-TLDAI	DB	"LD A,",'I'+128
-TLDAR	DB	"LD A,",'R'+128
-TRRD	DB	"RR",'D'+128
-TRLD	DB	"RL",'D'+128
-TNEG	DB	"NE",'G'+128
-TRETN	DB	"RET",'N'+128
-TIM0	DB	"IM ",'0'+128
-TRETI	DB	"RET",'I'+128
-TIM1	DB	"IM ",'1'+128
-TIM2	DB	"IM ",'2'+128
-TMULAB	DB	"MULUB A,",'B'+128
-TMULAC	DB	"MULUB A,",'C'+128
-TMULAD	DB	"MULUB A,",'D'+128
-TMULAE	DB	"MULUB A,",'E'+128
-TMULHLBC	DB	"MULUW HL,B",'C'+128
-TMULHLSP	DB	"MULUW HL,S",'P'+128
-TOTIR	DB	"OTI",'R'+128
-TOTDR	DB	"OTD",'R'+128
+tnotexist: 	DB	#12+128
+TINFC: 	DB	"IN F,(C",')'+128
+TSBCHLSP: 	DB	"SBC HL,S",'P'+128
+TLDNNSP: 	DB	"LD (",8,"),S",'P'+128
+TADCHLSP: 	DB	"ADC HL,S",'P'+128
+TLDSPNN: 	DB	"LD S","P,(",8,')'+128
+TLDIA: 	DB	"LD I,",'A'+128
+TLDRA: 	DB	"LD R,",'A'+128
+TLDAI: 	DB	"LD A,",'I'+128
+TLDAR: 	DB	"LD A,",'R'+128
+TRRD: 	DB	"RR",'D'+128
+TRLD: 	DB	"RL",'D'+128
+TNEG: 	DB	"NE",'G'+128
+TRETN: 	DB	"RET",'N'+128
+TIM0: 	DB	"IM ",'0'+128
+TRETI: 	DB	"RET",'I'+128
+TIM1: 	DB	"IM ",'1'+128
+TIM2: 	DB	"IM ",'2'+128
+TMULAB: 	DB	"MULUB A,",'B'+128
+TMULAC: 	DB	"MULUB A,",'C'+128
+TMULAD: 	DB	"MULUB A,",'D'+128
+TMULAE: 	DB	"MULUB A,",'E'+128
+TMULHLBC: 	DB	"MULUW HL,B",'C'+128
+TMULHLSP: 	DB	"MULUW HL,S",'P'+128
+TOTIR: 	DB	"OTI",'R'+128
+TOTDR: 	DB	"OTD",'R'+128
 
-orgwaarbuf	DW	0
-reedsixydebc	DB	0
-hlixiy	DB	0
-usedix	DB	0
-waarbufcode	DW	0
-lenghtcode	DB	0
-msxrst	DB	4
-codebuffer	DB	0
+orgwaarbuf: 	DW	0
+reedsixydebc: 	DB	0
+hlixiy: 	DB	0
+usedix: 	DB	0
+waarbufcode: 	DW	0
+lenghtcode: 	DB	0
+msxrst: 	DB	4
+codebuffer: 	DB	0
 	DB	0
-derdebyte	DB	0
+derdebyte: 	DB	0
 	DB	0
-waarbuffer	DW	buffer
-buffer	DS	30
+waarbuffer: 	DW	buffer
+buffer: 	DS	30
 
-routtrace	ld	hl,(reg_pc)
+routtrace: 	ld	hl,(reg_pc)
 	call	vulbuffer1
 	ld	a,(codebuffer)
 	or	a
 	jp	z,regpcen1
-tracecallcc	cp	#cd
+tracecallcc: 	cp	#cd
 	jr	z,tracecall
 	ld	c,a
 	and	%11000111
@@ -4344,13 +4342,13 @@ tracecallcc	cp	#cd
 	jp	nz,tracerest
 	call	conditvoldaan
 	jp	nz,regpcen3
-tracecall	ld	de,(reg_pc)
+tracecall: 	ld	de,(reg_pc)
 	inc	de
 	inc	de
 	inc	de
 	call	_push
 	jp	tracejp
-tracerest	and	%11000111
+tracerest: 	and	%11000111
 	cp	%11000111
 	ld	a,c
 	jp	nz,routstep1
@@ -4363,13 +4361,13 @@ tracerest	and	%11000111
 	call	_push
 	jp	regpcen0
 
-routstep	ld	hl,(reg_pc)
+routstep: 	ld	hl,(reg_pc)
 	call	vulbuffer1
 	ld	a,(codebuffer)
 	or	a
 	jp	z,regpcen1
 
-routstep1	ld	hl,codebuffer
+routstep1: 	ld	hl,codebuffer
 	ld	(waarbufcode),hl
 	ld	hl,(bufferhoofdpr)
 	ld	(waarbuffer),hl
@@ -4394,13 +4392,13 @@ routstep1	ld	hl,codebuffer
 	jr	nz,_tracedi
 	ld	a,1
 	jr	_tracedi1
-_tracedi	cp	#f3	; check for di
+_tracedi: 	cp	#f3	; check for di
 	jr	nz,_tracehalt
 	xor	a
-_tracedi1	ld	(eiofdi),a
+_tracedi1: 	ld	(eiofdi),a
 	jp	regpcen1
 
-_tracehalt	cp	#76
+_tracehalt: 	cp	#76
 	jp	nz,_tracenog
 	ld	a,(eiofdi)
 	or	a
@@ -4410,14 +4408,14 @@ _tracehalt	cp	#76
 	call	PUTMENU
 	jp	regpcen1
 
-dihalttxt	db	5,20,0
+dihalttxt: 	db	5,20,0
 	db	" ",24,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,25,"  "
 	db	" ",22,"  CRASH ALERT  ",22,"  "
 	db	" ",26,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,27,"  "
 	db	"  HALT during DI    "
 	db	"                    "
 
-_tracenog	cp	#DB
+_tracenog: 	cp	#DB
 	jp	z,traceinan
 	cp	#D3
 	jp	z,traceoutna
@@ -4449,7 +4447,7 @@ _tracenog	cp	#DB
 	jp	z,tracepush
 	cp	#C1
 	jp	z,tracepop
-steprst	and	%11000111
+steprst: 	and	%11000111
 	cp	%11000111
 	ld	a,c
 	jp	z,specialtrace
@@ -4457,7 +4455,7 @@ steprst	and	%11000111
 ; Here deflect subslot registers
 ; only deflected are ld (hl),r;ld r,(hl);
 ;      ld (hl),n;ld a,(#ffff);ld (#ffff),a
-tracesubslot	cp	#3A
+tracesubslot: 	cp	#3A
 	jr	z,tracesubslot1
 	cp	#32
 	jr	z,tracesubslot2
@@ -4478,8 +4476,8 @@ tracesubslot	cp	#3A
 	ld	b,1
 	jr	ldwffff
 
-tracesubslot2	ld	b,1	;LD (#FFFF),A
-tracesubslot3	ld	hl,codebuffer+1
+tracesubslot2: 	ld	b,1	;LD (#FFFF),A
+tracesubslot3: 	ld	hl,codebuffer+1
 	ld	a,(hl)
 	inc	hl
 	and	(hl)
@@ -4492,18 +4490,18 @@ tracesubslot3	ld	hl,codebuffer+1
 	ld	b,3
 	jr	z,ldffffw
 	jr	ldwffff
-tracesubslot1	ld	b,0	;LD A,(#FFFF)
+tracesubslot1: 	ld	b,0	;LD A,(#FFFF)
 	jr	tracesubslot3
-tracesubslot4	call	hlwelffff	;LD (HL),n
+tracesubslot4: 	call	hlwelffff	;LD (HL),n
 	ld	a,(codebuffer+1)
 	ld	b,2
 	jr	ldffffw
-tracesubslot5	call	hlwelffff	;LD (HL),r
+tracesubslot5: 	call	hlwelffff	;LD (HL),r
 	rla
 	call	get8bit0
 	ld	b,1
 
-ldffffw	push	af	; input a contains value
+ldffffw: 	push	af	; input a contains value
 	call	bepaalsubslreg
 	jr	nc,writeffffram	; regular ram (not expanded)
 	pop	af
@@ -4513,7 +4511,7 @@ ldffffw	push	af	; input a contains value
 	ld	e,a
 	call	GETPAGES
 	ld	b,4
-_ldffffw	ld	a,(hl)
+_ldffffw: 	ld	a,(hl)
 	and	#3
 	cp	c	; C loaded by determinesubslreg :)
 	jr	nz,_ldffffw2
@@ -4524,32 +4522,32 @@ _ldffffw	ld	a,(hl)
 	and	#f3
 	or	d
 	ld	(hl),a
-_ldffffw2	rrc	e
+_ldffffw2: 	rrc	e
 	rrc	e
 	inc	hl
 	inc	hl
 	djnz	_ldffffw
 	jp	_outa8g
 
-writeffffram	;for the time being********************************************
+writeffffram: 	;for the time being********************************************
 	;possibly work via traceexecute!
 	pop	af
 	ld	(hl),a	;should go to real ram (#ffff)
 	jp	verzetpcblk
 
-ldwffff	call	bepaalsubslreg	; input de=pointer to register
+ldwffff: 	call	bepaalsubslreg	; input de=pointer to register
 	jr	nc,leesffffram	;just ram on ffff (not expanded)
 	ld	a,(hl)
 	cpl
 	ld	(de),a
 	jp	verzetpcblk
-leesffffram	;for the time being********************************************
+leesffffram: 	;for the time being********************************************
 	;work via traceexecute!
 	ld	a,(hl)	;should come from ram (#ffff)
 	ld	(de),a
 	jp	verzetpcblk
 
-bepaalsubslreg	ld	a,b	; b contains length code
+bepaalsubslreg: 	ld	a,b	; b contains length code
 	ld	(lenghtcode),a
 	call	GETPAGES
 	ld	bc,6
@@ -4562,11 +4560,11 @@ bepaalsubslreg	ld	a,b	; b contains length code
 	inc	a
 	ld	b,a
 	ld	a,(welkismetsub)
-_bepaalsubsl	rrca
+_bepaalsubsl: 	rrca
 	djnz	_bepaalsubsl
 	ret		;whether or not to carry
 
-hlwelffff	ld	hl,(reg_hl)	; routine may only
+hlwelffff: 	ld	hl,(reg_hl)	; routine may only
 	ld	a,h	; return if hl=#ffff
 	and	l	; otherwise routine jumps
 	inc	a	; to traceexecute
@@ -4575,7 +4573,7 @@ hlwelffff	ld	hl,(reg_hl)	; routine may only
 	pop	hl
 	jp	traceexecute
 
-traceedrout	ld	a,(codebuffer+1)
+traceedrout: 	ld	a,(codebuffer+1)
 	cp	#4D
 	jp	z,traceret
 	cp	#45
@@ -4585,11 +4583,11 @@ traceedrout	ld	a,(codebuffer+1)
 	ld	a,i
 	ld	(reg_af+1),a
 	jr	traceedrout2
-traceedrout1	cp	#5F	; LD A,R
+traceedrout1: 	cp	#5F	; LD A,R
 	jp	nz,traceedrout3
 	ld	a,r
 	ld	(reg_af+1),a
-traceedrout2	push	af
+traceedrout2: 	push	af
 	pop	hl
 	ld	a,%11101001
 	and	l
@@ -4604,16 +4602,16 @@ traceedrout2	push	af
 	or	l
 	ld	(reg_af),a
 	jp	verzetpcblk
-traceedrout3	cp	#47	; LD I,A
+traceedrout3: 	cp	#47	; LD I,A
 	jr	nz,traceedrout4
 	ld	a,(reg_af+1)
 	ld	i,a
 	jp	verzetpcblk
-traceedrout4	cp	#4F	; LD R,A
+traceedrout4: 	cp	#4F	; LD R,A
 	jr	nz,traceedrout5
 	jp	verzetpcblk
 
-traceedrout5	cp	#46	; IM 0
+traceedrout5: 	cp	#46	; IM 0
 	jp	z,verzetpcblk
 	cp	#56	; IM 1
 	jp	z,verzetpcblk
@@ -4635,39 +4633,39 @@ traceedrout5	cp	#46	; IM 0
 	jp	z,traceoutrc
 	jp	traceexecute
 
-routotir	ld	a,#A3
+routotir: 	ld	a,#A3
 	ld	(codebuffer+1),a
-routotir1	call	_outi
+routotir1: 	call	_outi
 	ld	a,(reg_af)
 	and	64
 	jr	z,routotir1
 	jr	routoutd2
 
-routotdr	ld	a,#AB
+routotdr: 	ld	a,#AB
 	ld	(codebuffer+1),a
-routotdr1	call	_outd
+routotdr1: 	call	_outd
 	ld	a,(reg_af)
 	and	64
 	jr	z,routotdr1
 	jr	routoutd2
 
-routouti	call	_outi
+routouti: 	call	_outi
 	jr	routoutd2
-routoutd	call	_outd
-routoutd2	jp	verzetpcblk
+routoutd: 	call	_outd
+routoutd2: 	jp	verzetpcblk
 
-_outi	ld	a,(reg_bc)
+_outi: 	ld	a,(reg_bc)
 	call	verbodouttest
 	jp	nc,executesimpl
 	ld	hl,(reg_hl)
 	inc	hl
 	jr	_outd2
-_outd	ld	a,(reg_bc)
+_outd: 	ld	a,(reg_bc)
 	call	verbodouttest
 	jp	nc,executesimpl
 	ld	hl,(reg_hl)
 	dec	hl
-_outd2	ld	(reg_hl),hl
+_outd2: 	ld	(reg_hl),hl
 	ld	a,(reg_bc+1)
 	dec	a
 	ld	(reg_bc+1),a
@@ -4679,8 +4677,8 @@ _outd2	ld	(reg_hl),hl
 	ld	(reg_af),a
 	ret
 
-traceinrca8	call	_ina8
-traceinrcfl	or	a	;very good approximation flags!!
+traceinrca8: 	call	_ina8
+traceinrcfl: 	or	a	;very good approximation flags!!
 	push	af	;H-flag always shines at 0 at IN
 	pop	hl	;to come
 	ld	a,(reg_af)	;other flags are good
@@ -4692,9 +4690,9 @@ traceinrcfl	or	a	;very good approximation flags!!
 	pop	bc	;b refresh
 	push	bc
 	jr	_continrc
-traceinrcfc	call	_inmapper
+traceinrcfc: 	call	_inmapper
 	jr	traceinrcfl
-traceinrc	push	bc
+traceinrc: 	push	bc
 	ld	a,(reg_bc)
 	cp	#a8
 	jr	z,traceinrca8
@@ -4705,7 +4703,7 @@ traceinrc	push	bc
 	push	hl
 	pop	af	; keep trick c-flag
 	in	a,(c)
-_continrc	push	af
+_continrc: 	push	af
 	call	get8bit	;in b from a,de
 	pop	hl
 	pop	bc
@@ -4719,7 +4717,7 @@ _continrc	push	af
 	ld	(de),a
 	jp	verzetpcblk
 
-traceoutrc	call	get8bit
+traceoutrc: 	call	get8bit
 	ld	b,a
 	ld	a,(reg_bc)
 	jp	_outrout
@@ -4728,11 +4726,11 @@ traceoutrc	call	get8bit
 ;OUT :   DE= POINT TO ADDRESS OF REGISTER
 ;        A = CONTENTS OF THIS REGISTER
 ;CHANGES HL
-get8bit	ld	a,b
+get8bit: 	ld	a,b
 	rra
 	rra
-get8bit0	and	%1110
-get8bit1	ld	hl,reg8point
+get8bit0: 	and	%1110
+get8bit1: 	ld	hl,reg8point
 	ld	d,0
 	ld	e,a
 	add	hl,de
@@ -4742,7 +4740,7 @@ get8bit1	ld	hl,reg8point
 	ld	a,(de)
 	ret
 
-reg8point	dw	reg_bc+1
+reg8point: 	dw	reg_bc+1
 	dw	reg_bc
 	dw	reg_de+1
 	dw	reg_de
@@ -4751,64 +4749,64 @@ reg8point	dw	reg_bc+1
 	dw	reg_af
 	dw	reg_af+1
 
-tracefdrout	ld	ix,reg_iy
+tracefdrout: 	ld	ix,reg_iy
 	jr	traceddfd
-traceddrout	ld	ix,reg_ix
-traceddfd	ld	a,(codebuffer+1)
+traceddrout: 	ld	ix,reg_ix
+traceddfd: 	ld	a,(codebuffer+1)
 	cp	#E9
 	jr	nz,traceddfdrout1
 	ld	e,(ix+0)
 	ld	d,(ix+1)
 	ld	(reg_pc),de
 	jp	regpcen0
-traceddfdrout1	cp	#E5
+traceddfdrout1: 	cp	#E5
 	jr	nz,traceddfdrout2
 	ld	e,(ix+0)
 	ld	d,(ix+1)
 	call	_push
 	jp	verzetpcblk
-traceddfdrout2	cp	#E1
+traceddfdrout2: 	cp	#E1
 	jr	nz,traceddfdrout3
 	call	_pop
 	ld	(ix+0),e
 	ld	(ix+1),d
 	jp	verzetpcblk
-traceddfdrout3	jp	traceexecute
+traceddfdrout3: 	jp	traceexecute
 
-regpcen4	ld	a,4
+regpcen4: 	ld	a,4
 	jr	regpcen
-regpcen3	ld	a,3
+regpcen3: 	ld	a,3
 	jr	regpcen
-regpcen2	ld	a,2
+regpcen2: 	ld	a,2
 	jr	regpcen
-regpcen1	ld	a,1
+regpcen1: 	ld	a,1
 	jr	regpcen
-regpcen0	xor	a
-regpcen	ld	(lenghtcode),a
+regpcen0: 	xor	a
+regpcen: 	ld	(lenghtcode),a
 	jp	verzetpcblk
 
-traceinan	ld	a,(codebuffer+1)
+traceinan: 	ld	a,(codebuffer+1)
 	call	_inrout
 	ld	(reg_af+1),a
 	jp	verzetpcblk
 
-traceoutna	ld	a,(reg_af+1)
+traceoutna: 	ld	a,(reg_af+1)
 	ld	b,a
 	ld	a,(codebuffer+1)
 	JP	_outrout
 
 ; in: a contains port number
 ; out: a contains port value
-_inrout	cp	#a8
+_inrout: 	cp	#a8
 	jr	z,_ina8
 	cp	#FC
 	jr	nc,_inmapper
 	ld	c,a
 	in	a,(c)
 	ret
-_ina8	call	GETPAGES
+_ina8: 	call	GETPAGES
 	ld	b,4
-_ina8bug	ld	a,(hl)
+_ina8bug: 	ld	a,(hl)
 	rra
 	rr	c
 	rra
@@ -4818,7 +4816,7 @@ _ina8bug	ld	a,(hl)
 	djnz	_ina8bug
 	ld	a,c
 	ret
-_inmapper	add	a,4
+_inmapper: 	add	a,4
 	add	a,a
 	ld	d,0
 	ld	e,a
@@ -4830,7 +4828,7 @@ _inmapper	add	a,4
 	ret
 
 ; in b contains value , a contains port
-_outrout	cp	#A8
+_outrout: 	cp	#A8
 	jp	z,_outa8
 	cp	#FC
 	jp	nc,_outmapper
@@ -4842,28 +4840,28 @@ _outrout	cp	#A8
 ; test for banned out list
 ; carry if prohibited
 ; in a contains port to test (goes to c), b the value (goes to e)
-verbodouttest	ld	c,a
+verbodouttest: 	ld	c,a
 	ld	e,b
 	ld	hl,verbodenouts
 	ld	b,(hl)
 	ld	a,b
 	or	a
 	ret	z
-verbodouttest1	inc	hl
+verbodouttest1: 	inc	hl
 	ld	a,(hl)
 	cp	c
 	jr	nz,verbodouttest2
 	scf
 	ret
-verbodouttest2	djnz	verbodouttest1
+verbodouttest2: 	djnz	verbodouttest1
 	or	a
 	ret
 
-_outa8	ld	d,b
+_outa8: 	ld	d,b
 	call	GETPAGES
 	ld	b,4
 
-_outa81	push	bc
+_outa81: 	push	bc
 	ld	a,(welkismetsub)
 	ld	e,a
 	rr	d
@@ -4874,7 +4872,7 @@ _outa81	push	bc
 	and	3
 	ld	b,a	;a still contains prim.slot num
 	inc	b
-_outa82	rr	e
+_outa82: 	rr	e
 	djnz	_outa82
 	jr	nc,_outa8f
 	pop	bc	;bug fix : reload B !!
@@ -4890,27 +4888,27 @@ _outa82	rr	e
 	rlca
 	ld	b,a
 	ld	a,(hl)
-_outa83	rrca
+_outa83: 	rrca
 	djnz	_outa83
 	and	%00001100
 	or	128
 	or	e
 	pop	hl
 	pop	de
-_outa8f	pop	bc
+_outa8f: 	pop	bc
 	ld	(hl),a
 	inc	hl
 	inc	hl
 	djnz	_outa81
-_outa8g	call	verzetpcblk
+_outa8g: 	call	verzetpcblk
 	ld	hl,(disoptabpc)
 	ld	(reg_pcvdis),hl
 	jp	disameenscherm
 
-welkismetsub	db	0	; BIT X FOR SLOT X
-subslotregs	db	0,0,0,0	;filled in at first start debugger
+welkismetsub: 	db	0	; BIT X FOR SLOT X
+subslotregs: 	db	0,0,0,0	;filled in at first start debugger
 
-_outmapper	add	a,4
+_outmapper: 	add	a,4
 	add	a,a
 	ld	d,0
 	ld	e,a
@@ -4920,20 +4918,20 @@ _outmapper	add	a,4
 	ld	(hl),b
 	jp	_outa8g
 
-maxvbouts	equ	17
-verbodenouts	db	7	; first byte is number of ports defined
+maxvbouts: 	equ	17
+verbodenouts: 	db	7	; first byte is number of ports defined
 	db	#98,#99
 	db	#A9,#AA,#AB
 	db	#E4,#E5
 	ds	maxvbouts-7
 
-tracepush	ld	a,c
+tracepush: 	ld	a,c
 	call	self
 	call	_push
 	jp	verzetpcblk
 
 ; in :the data
-_push	ld	hl,(bufferhoofdpr)
+_push: 	ld	hl,(bufferhoofdpr)
 	ld	(hl),e
 	inc	hl
 	ld	(hl),d
@@ -4945,7 +4943,7 @@ _push	ld	hl,(bufferhoofdpr)
 	ld	bc,2
 	jp	PUTTORAM
 
-tracepop	ld	a,c
+tracepop: 	ld	a,c
 	push	af
 	call	_pop
 	pop	af
@@ -4958,7 +4956,7 @@ tracepop	ld	a,c
 	jp	verzetpcblk
 
 ; out: DE=popped value
-_pop	ld	hl,(reg_sp)
+_pop: 	ld	hl,(reg_sp)
 	ld	bc,2
 	call	GETFROMRAM
 	ld	hl,(reg_sp)
@@ -4988,47 +4986,47 @@ _pop	ld	hl,(reg_sp)
 ;                 pop     hl
 ;                 ret
 
-tracedjnz	ld	a,(reg_bc+1)
+tracedjnz: 	ld	a,(reg_bc+1)
 	dec	a
 	ld	(reg_bc+1),a
 	jr	nz,tracejr
 	jp	regpcen2
 
-tracejrcc	ld	a,(codebuffer)
+tracejrcc: 	ld	a,(codebuffer)
 	and	%00011000
 	call	conditvoldaan
 	jp	nz,regpcen2
-tracejr	ld	a,(codebuffer+1)
+tracejr: 	ld	a,(codebuffer+1)
 	ld	hl,(reg_pc)
 	ld	d,0
 	bit	7,a
 	jr	z,_tracejr
 	dec	d
-_tracejr	ld	e,a
+_tracejr: 	ld	e,a
 	add	hl,de
 	inc	hl
 	inc	hl
 	jr	tracejp1
 
-tracejpcc	ld	a,(codebuffer)
+tracejpcc: 	ld	a,(codebuffer)
 	call	conditvoldaan
 	jp	nz,regpcen3
-tracejp	ld	hl,(codebuffer+1)
+tracejp: 	ld	hl,(codebuffer+1)
 	jr	tracejp1
 
-tracejphl	ld	hl,(reg_hl)
+tracejphl: 	ld	hl,(reg_hl)
 
-tracejp1	ld	(reg_pc),hl
+tracejp1: 	ld	(reg_pc),hl
 	ld	a,(monlinkyesno)
 	cp	2
 	jr	nz,tracejp2
 	ld	(monadres),hl
-tracejp2	jp	regpcen0
+tracejp2: 	jp	regpcen0
 
-traceretcc	ld	a,(codebuffer)
+traceretcc: 	ld	a,(codebuffer)
 	call	conditvoldaan
 	jp	nz,regpcen1
-traceret	call	_pop
+traceret: 	call	_pop
 	ld	hl,reg_pc
 	ld	(hl),e
 	inc	hl
@@ -5041,7 +5039,7 @@ traceret	call	_pop
 ; in: a contains bit 3,4,5
 ; (SIMPLE WITH AND #38)
 ;
-conditvoldaan	ld	hl,condittab
+conditvoldaan: 	ld	hl,condittab
 	rra
 	rra
 	and	#0e
@@ -5053,7 +5051,7 @@ conditvoldaan	ld	hl,condittab
 	inc	hl
 	xor	(hl)
 	ret
-condittab	db	%01000000,%00000000	;NZ
+condittab: 	db	%01000000,%00000000	;NZ
 	db	%01000000,%01000000	;Z
 	db	%00000001,%00000000	;NC
 	db	%00000001,%00000001	;C
@@ -5062,8 +5060,8 @@ condittab	db	%01000000,%00000000	;NZ
 	db	%10000000,%00000000	;P
 	db	%10000000,%10000000	;M
 
-traceexecute	call	executesimpl
-verzetpcblk	ld	a,(lenghtcode)
+traceexecute: 	call	executesimpl
+verzetpcblk: 	ld	a,(lenghtcode)
 	ld	b,0
 	ld	c,a
 	ld	hl,(reg_pc)
@@ -5082,11 +5080,11 @@ verzetpcblk	ld	a,(lenghtcode)
 	call	adresnapijl
 	xor	a
 	ld	(aanduiddisam),a
-verzetpcblk2	call	disameenscherm
+verzetpcblk2: 	call	disameenscherm
 	ld	b,disopaantlijn
 	ld	de,(verzetpc3)
 	ld	ix,disoptabpc
-verzetpcblk3	ld	l,(ix+0)
+verzetpcblk3: 	ld	l,(ix+0)
 	ld	h,(ix+1)
 	inc	ix
 	inc	ix
@@ -5094,26 +5092,26 @@ verzetpcblk3	ld	l,(ix+0)
 	jr	z,verzetpcblk5
 	djnz	verzetpcblk3
 	ret
-verzetpcblk5	ld	a,disopaantlijn+1
+verzetpcblk5: 	ld	a,disopaantlijn+1
 	sub	b
 	ld	(aanduiddisam),a
 	ld	b,a
 	ld	hl,disopwrmnomic-1+disbuffer-lglnlngh
 	ld	de,lglnlngh
-verzetpcblk6	add	hl,de
+verzetpcblk6: 	add	hl,de
 	djnz	verzetpcblk6
 	ld	a,">"
 	ld	(hl),a
 	jp	distoscr
 
-pijlonscrback	ld	hl,(verzetpc2)
+pijlonscrback: 	ld	hl,(verzetpc2)
 	ld	(reg_pcvdis),hl
 	ld	a,(verzetpc1)
 	ld	(aanduiddisam),a
 	jp	disameenscherm
 
 ; DE contains address behind arrow, it must be on screen
-adresnapijl	ld	a,(aanduiddisam)
+adresnapijl: 	ld	a,(aanduiddisam)
 	call	getadrnapijl
 	ld	a,(aanduiddisam)
 	ld	(verzetpc1),a
@@ -5122,31 +5120,31 @@ adresnapijl	ld	a,(aanduiddisam)
 	ld	(verzetpc3),de
 	ret
 
-verzetpc1	db	0
-verzetpc2	dw	0	; start address of screen
-verzetpc3	dw	0	; address behind arrow
+verzetpc1: 	db	0
+verzetpc2: 	dw	0	; start address of screen
+verzetpc3: 	dw	0	; address behind arrow
 
-reg_ir	dw	0	;lowbyte=r highbyte=i
+reg_ir: 	dw	0	;lowbyte=r highbyte=i
 
-reg_sp	dw	0	;is filled in at init
-reg_iy	dw	0
-reg_ix	dw	0
-reg_bcac	dw	#4947
-reg_deac	dw	#2046
-reg_hlac	dw	0
-reg_afac	dw	#2042
-reg_bc	dw	#5820
-reg_de	dw	#4953
-reg_hl	dw	#554E
-reg_af	dw	#4D53
-eiofdi	db	0
+reg_sp: 	dw	0	;is filled in at init
+reg_iy: 	dw	0
+reg_ix: 	dw	0
+reg_bcac: 	dw	#4947
+reg_deac: 	dw	#2046
+reg_hlac: 	dw	0
+reg_afac: 	dw	#2042
+reg_bc: 	dw	#5820
+reg_de: 	dw	#4953
+reg_hl: 	dw	#554E
+reg_af: 	dw	#4D53
+eiofdi: 	db	0
 
 ; routine that performs non-address-bound
 ; instructions with the exception of certain ones such as halt,ei,di
 ; ensures correct setting of af;bc;de;hl+alternate registers
 ; +ix,iy+sp
-uitvoeradres	DB	0,0,0,0
-executesimpl	ld	hl,0
+uitvoeradres: 	DB	0,0,0,0
+executesimpl: 	ld	hl,0
 	ld	(uitvoeradres),hl
 	ld	(uitvoeradres+2),hl
 	ld	a,(lenghtcode)
@@ -5169,7 +5167,7 @@ executesimpl	ld	hl,0
 ; in a data recognition in bit 4-5
 ; out : de contains data reg_??, hl contains place reg_??
 ; change hl,de,c,af
-self	rra
+self: 	rra
 	rra
 	rra
 	and	6
@@ -5186,12 +5184,12 @@ self	rra
 	ld	d,(hl)	; de contains address in regpair
 	dec	hl
 	ret
-reg16point	dw	reg_bc
+reg16point: 	dw	reg_bc
 	dw	reg_de
 	dw	reg_hl
 	dw	reg_af
 
-CHRGET	ld	a,1
+CHRGET: 	ld	a,1
 	ld	(CURSORONOFF),a
 	ld	a,27
 	ld	(CURSORY_X),a
@@ -5206,9 +5204,9 @@ CHRGET	ld	a,1
 	pop	bc
 	ret
 
-labelbufnr	db	0
+labelbufnr: 	db	0
 
-zetlabbufA	ld	(labelbufnr),a
+zetlabbufA: 	ld	(labelbufnr),a
 	add	a,a
 	push	hl
 	ld	hl,labbufsegs
@@ -5216,7 +5214,7 @@ zetlabbufA	ld	(labelbufnr),a
 	ld	l,a
 	jr	nc,_zetlabbufA
 	inc	h
-_zetlabbufA	ld	a,(hl)
+_zetlabbufA: 	ld	a,(hl)
 	call	SETPAGE2
 	dec	hl
 	ld	a,(hl)
@@ -5225,7 +5223,7 @@ _zetlabbufA	ld	a,(hl)
 	pop	hl
 	ret
 
-writelabbufDE	ld	(de),a
+writelabbufDE: 	ld	(de),a
 	inc	de
 	bit	6,d
 	ret	z
@@ -5238,12 +5236,12 @@ writelabbufDE	ld	(de),a
 	inc	(hl)
 	ld	a,(hl)
 	call	zetlabbufA
-_writelabbuf	pop	hl
+_writelabbuf: 	pop	hl
 	pop	af
 	res	6,d
 	ret
 
-leeslabbufDE	ld	a,(de)
+leeslabbufDE: 	ld	a,(de)
 	inc	de
 	bit	6,d
 	ret	z
@@ -5256,14 +5254,14 @@ leeslabbufDE	ld	a,(de)
 	inc	(hl)
 	ld	a,(hl)
 	call	zetlabbufA
-_leeslabbuf	pop	hl
+_leeslabbuf: 	pop	hl
 	pop	af
 	res	6,d
 	ret
 
-labbufsegs	ds	9
+labbufsegs: 	ds	9
 
-zet_start_end	call	zetgrootkot
+zet_start_end: 	call	zetgrootkot
 	ld	hl,13*80+21
 	ld	bc,txt_start
 	call	PRINTTEKST
@@ -5271,11 +5269,11 @@ zet_start_end	call	zetgrootkot
 	ld	bc,txt_eind
 	jp	PRINTTEKST
 
-zetgrootkot	ld	hl,10*80+19
+zetgrootkot: 	ld	hl,10*80+19
 	ld	de,grootkotdata
 	jp	PRINTBLOKKLE
 
-zetkader	ld	hl,11*80+19
+zetkader: 	ld	hl,11*80+19
 	push	hl
 	LD	BC,3*80-2*19
 	CALL	screen2buf
@@ -5283,7 +5281,7 @@ zetkader	ld	hl,11*80+19
 	ld	de,kaderdata
 	jp	PRINTBLOKKLE
 
-kadermettxtBC	push	bc
+kadermettxtBC: 	push	bc
 	ld	hl,10*80+19
 	push	hl
 	ld	bc,5*80-2*19
@@ -5296,13 +5294,13 @@ kadermettxtBC	push	bc
 	ld	bc,16
 	jp	RAMTOVRAM
 
-txt_start	db	"Start:",0
-txt_eind	db	"End:",0
+txt_start: 	db	"Start:",0
+txt_eind: 	db	"End:",0
 
-input_duo_adr	ld	hl,13*80+28
+input_duo_adr: 	ld	hl,13*80+28
 	call	input_adres
 	ret	c
-_input_duo	push	de
+_input_duo: 	push	de
 	ld	hl,14*80+28
 	call	input_adres
 	pop	hl
@@ -5313,10 +5311,10 @@ _input_duo	push	de
 	ex	de,hl
 	jr	_input_duo
 
-input_adres	ld	de,kbuf
-input_adresDE	ld	(saveramadres),DE
+input_adres: 	ld	de,kbuf
+input_adresDE: 	ld	(saveramadres),DE
 	ld	(savevramadres),HL
-_inputadres	ld	hl,(savevramadres)
+_inputadres: 	ld	hl,(savevramadres)
 	ld	de,(saveramadres)
 	ld	b,28
 	push	de
@@ -5328,7 +5326,7 @@ _inputadres	ld	hl,(savevramadres)
 	jr	c,_inputadres
 	ret
 
-adresinvoer	push	af
+adresinvoer: 	push	af
 	push	de
 	call	kadermettxtBC
 	ld	hl,13*80+22
@@ -5345,28 +5343,28 @@ adresinvoer	push	af
 	pop	hl
 	jr	input_adresDE
 
-saveramadres	dw	0
-savevramadres	dw	0
+saveramadres: 	dw	0
+savevramadres: 	dw	0
 
-grootkotdata	dw	frame1,frame2,frame2,frame2,frame2,frame3,0
-mediumkotdata	dw	frame1,frame2,frame2,frame2,frame3,0
-kaderdata	dw	frame1,frame2,frame3,0
-frame1	db	1,24,40,23,1,25,0
-frame2	db	1,22,40,0,1,22,0
-frame3	db	1,26,40,23,1,27,0
+grootkotdata: 	dw	frame1,frame2,frame2,frame2,frame2,frame3,0
+mediumkotdata: 	dw	frame1,frame2,frame2,frame2,frame3,0
+kaderdata: 	dw	frame1,frame2,frame3,0
+frame1: 	db	1,24,40,23,1,25,0
+frame2: 	db	1,22,40,0,1,22,0
+frame3: 	db	1,26,40,23,1,27,0
 
-screen2buf	ld	(screen2bufad),hl
+screen2buf: 	ld	(screen2bufad),hl
 	ld	(screen2bufln),bc
 	ld	de,(bufferhoofdpr)
 	jp	VRAMTORAM
-screen2bufad	dw	0
-screen2bufln	dw	0
-buf2screen	ld	de,(screen2bufad)
+screen2bufad: 	dw	0
+screen2bufln: 	dw	0
+buf2screen: 	ld	de,(screen2bufad)
 	ld	hl,(bufferhoofdpr)
 	ld	bc,(screen2bufln)
 	jp	RAMTOVRAM
 
-PUTMENU	push	hl
+PUTMENU: 	push	hl
 	push	ix
 	call	PRINTMENU
 	call	CHRGET
@@ -5377,9 +5375,9 @@ PUTMENU	push	hl
 	pop	af
 	ret
 
-updatesubslot	call	GETPAGES
+updatesubslot: 	call	GETPAGES
 	ld	b,4
-adjustsubslot	ld	a,(hl)
+adjustsubslot: 	ld	a,(hl)
 	inc	hl
 	inc	hl
 	bit	7,a
@@ -5397,7 +5395,7 @@ adjustsubslot	ld	a,(hl)
 	ld	d,%11110011
 	ld	a,c
 	and	%1100
-_adjustsub	rrc	d
+_adjustsub: 	rrc	d
 	rrc	d
 	rrca
 	rrca
@@ -5409,7 +5407,7 @@ _adjustsub	rrc	d
 	ld	(hl),a
 	pop	bc
 	pop	hl
-noadjust	djnz	adjustsubslot
+noadjust: 	djnz	adjustsubslot
 	ret
 
 Main_y:	equ	7
@@ -5417,7 +5415,7 @@ Main_y_colors: equ Main_y+10
 Mainoptie:	defb	1
 ConfigLinesCount: equ 12
 
-mainconfig	ld	(Coloradres),de
+mainconfig_: 	ld	(Coloradres),de
 	ld	de,M_config
 	ld	bc,M_configend-M_config
 	ldir
@@ -5486,7 +5484,7 @@ _main_space:
 	ld	a,(iy)
 	dec	a
 	jr	nz,_mainsp2
-	ld	hl,(Main_y+3)*80+41
+	ld	hl,+(Main_y+3)*80+41
 	ld	iy,M_Idhex
 _mainsp1_1:
 	call	newid
@@ -5494,13 +5492,13 @@ _mainsp1_1:
 _mainsp2:
 	dec	a
 	jr	nz,_mainsp3
-	ld	hl,(Main_y+4)*80+41
+	ld	hl,+(Main_y+4)*80+41
 	ld	iy,M_Idbin
 	jr	_mainsp1_1
 _mainsp3:
 	dec	a
 	jr	nz,_mainsp4
-	ld	hl,(Main_y+5)*80+39
+	ld	hl,+(Main_y+5)*80+39
 	ld	de,M_Printerlin
 	ld	b,15
 	ld	a,%10000001
@@ -5629,7 +5627,7 @@ _mainsp11:
 	ld	de,kbuf+211
 	ld	bc,M_configend-M_config
 	ldir
-	call	saveconfig	;already put debuggerpars in kbuf
+	call	saveconfig_	;already put debuggerpars in kbuf
 	call	SAVECONFIG
 	ld hl,MainSaveTxt
 	call TEXTTOBLOK
@@ -5648,49 +5646,49 @@ printmain:
 	ld	(Newidbin+4),hl
 
 	ld	de,Newidhex
-	ld	hl,(Main_y+3)*80+41
+	ld	hl,+(Main_y+3)*80+41
 	ld	ix,M_Idhex
 	call	printmainid
 	ld	de,Newidbin
-	ld	hl,(Main_y+4)*80+41
+	ld	hl,+(Main_y+4)*80+41
 	ld	ix,M_Idbin
 	call	printmainid
-	ld	hl,(Main_y+5)*80+39
+	ld	hl,+(Main_y+5)*80+39
 	ld	bc,M_Printerlin
 	call	PRINTTEKST
-	ld	hl,(Main_y+6)*80+42
+	ld	hl,+(Main_y+6)*80+42
 	ld	a,(M_Flags)
 	and 100b
 	call	printonoff
-	ld	hl,(Main_y+7)*80+45
+	ld	hl,+(Main_y+7)*80+45
 	ld	a,(M_Flags)
 	and 1000b	;Cursor blink on/off
 	call	printonoff
-	ld	hl,(Main_y+8)*80+47
+	ld	hl,+(Main_y+8)*80+47
 	ld	a,(M_Flags)
 	and 10b	;Mouse on/off
 	xor 10b
 	call	printonoff
-	ld	hl,(Main_y+9)*80+47
+	ld	hl,+(Main_y+9)*80+47
 	ld a,(M_Flags)
 	and 1	;Initially Asm or Ascii
 	call printAsmAscii
 _printmain1:
 	ld	ix,(Coloradres)
-	ld	hl,(Main_y_colors)*80+42
+	ld	hl,+(Main_y_colors)*80+42
 	call	printcolor	;color 1 = color num 0
 	ld	de,15*2
 	add	ix,de
-	ld	hl,(Main_y_colors+1)*80+42
+	ld	hl,+(Main_y_colors+1)*80+42
 	call	printcolor	;color 2 = color num 15
 	ld	ix,(Coloradres)
 	ld	de,3*2
 	add	ix,de
-	ld	hl,(Main_y_colors+2)*80+42
+	ld	hl,+(Main_y_colors+2)*80+42
 	call	printcolor	;color 3 = color num 3
 	dec	ix
 	dec	ix
-	ld	hl,(Main_y_colors+3)*80+42
+	ld	hl,+(Main_y_colors+3)*80+42
 	jp	printcolor	;color 4 = color num 2
 printmainid:
 	ld	b,d
@@ -5837,8 +5835,8 @@ printonoff:
 	jp	nz,PRINTTEKST
 	ld	bc,txt_off
 	jp	PRINTTEKST
-txt_on	db	"on ",0
-txt_off	db	"off",0
+txt_on: 	db	"on ",0
+txt_off: 	db	"off",0
 
 printAsmAscii:
 	ld bc,AsmStr
@@ -5971,7 +5969,7 @@ redefchars2:
 backslash:
 	db 0,0,#80,#40,#20,#10,#08,0
 
-vormen	db	#10,#10,#6c,#80,#00,#00,#00,#00	;17
+vormen: 	db	#10,#10,#6c,#80,#00,#00,#00,#00	;17
 	db	#00,#00,#00,#80,#6c,#10,#10,#10	;18
 	db	#10,#10,#60,#80,#60,#10,#10,#10	;19
 	db	#10,#10,#0c,#00,#0c,#10,#10,#10	;20
@@ -5985,7 +5983,7 @@ vormen	db	#10,#10,#6c,#80,#00,#00,#00,#00	;17
 	db	#00,#0f,#1f,#1f,#1f,#1f,#0f,#00	;28
 	db	#00,#c0,#e0,#e0,#e0,#e0,#c0,#00	;29
 
-vormen_sq	db	#10,#10,#10,#ff,#00,#00,#00,#00	;17
+vormen_sq: 	db	#10,#10,#10,#ff,#00,#00,#00,#00	;17
 	db	#00,#00,#00,#ff,#10,#10,#10,#10	;18
 	db	#10,#10,#10,#f0,#10,#10,#10,#10	;19
 	db	#10,#10,#10,#1f,#10,#10,#10,#10	;20
