@@ -417,11 +417,6 @@ load_config_dos2:
 	LD	BC,#FF00+_GENV
 	CALL	bdos	;get env item PROGRAM
 
-	ld hl,8000h
-	ld de,8100h
-	ld bc,128
-	ldir
-
 	ld a,'.'
 	ld (fcb_cfg+1+7),a
 	ld de,8100h
