@@ -5,18 +5,17 @@
 ;either by ds $-free
 
 ;contains patch for the INCLUDE issues in monitor segment
-patchinclmon	equ	#7ff0
+patchinclmon: 	equ	#7ff0
 
-	.label	14
-jon_len_code	equ	127	;earlier at 64, 127=max due to (iy+)
-jon_len_rel	equ	127	;earlier at 64
+jon_len_code: 	equ	127	;earlier at 64, 127=max due to (iy+)
+jon_len_rel: 	equ	127	;earlier at 64
 
 bdos:	equ	#f37d
 Doubleadres:	equ	#3f40
 Kbuf:	equ	#f41f	;318 byte buffer
 
 setvramwrite:	equ	#80
-printtekst	equ	#92
+printtekst: 	equ	#92
 printdecimaa:	equ	#9b
 printhexadec:	equ	#9e
 writevram:	equ	#aa
@@ -27,7 +26,7 @@ closefile:	equ	#c2
 bergetalasm:	equ	#ce
 printblokkle:	equ	#dd
 slot:	equ	#f8
-wiskeybuffer	equ	#101
+wiskeybuffer: 	equ	#101
 gotodebugger:	equ	#113
 doinclude:	equ	#11c
 
@@ -40,13 +39,13 @@ Ext_vram:	equ	#3000
 
 	org	#4000
 
-	jp	assembledisk	;#4000
+	jp	assembledisk_	;#4000
 	jp	assembleren	;#4003
 	jp	labbufvol	;#4006
 	jp	prterrlines	;#4009
 	jp	testlabel1	;#400c
 	jp	geeflabdata	;#400f
-	jp	relocatable	;#4012
+	jp	relocatable_	;#4012
 	jp	asstsr	;#4015
 
 Assembledisk:	defb	0	;leave these 3 in this order
@@ -70,7 +69,7 @@ Tsrpass:	defb	0
 
 ;------ Relocatable assembly
 
-relocatable:
+relocatable_:
 	ld	(Used_fcb),de
 	ld	(Foutadres),iy
 	xor	a
@@ -104,7 +103,7 @@ beep:
 
 ;------ Assemble to disk
 
-assembledisk:
+assembledisk_:
 	ld	(Used_fcb),de
 	ld	(Foutadres),iy
 	xor	a
@@ -207,7 +206,7 @@ _asse1:
 	dec	de
 	ld	b,4
 	call	printhexadec
-_pushkeyback	call	GOpushanykey
+_pushkeyback: 	call	GOpushanykey
 	call	GOwiscommlin
 	jp	GOeditor_con
 
@@ -242,7 +241,7 @@ _errorfoun1:	ld	(Error+6),a	;1 error and 0/2 errors
 	call	GOprintscher	;3F73
 	jp	GOprinterror	;3F7A
 
-ESCtest	DI
+ESCtest: 	DI
 	IN	A,(#AA)
 	AND	#F0
 	ADD	A,#07
@@ -251,7 +250,7 @@ ESCtest	DI
 	IN	A,(#A9)
 	AND	#04
 	RET	NZ
-_ESCtest	IN	A,(#AA)
+_ESCtest: 	IN	A,(#AA)
 	AND	#F0
 	ADD	A,#07
 	OUT	(#AA),A
@@ -276,7 +275,7 @@ _ESCtest	IN	A,(#AA)
 
 Ok:	defb	"Ok",0
 Error:	defb	" errors found !",0
-txt_aborted	db	"Aborted",0
+txt_aborted: 	db	"Aborted",0
 
 Ass_hok:	defw	Hk1,Hk2,Hk2,Hk2,Hk2,Hk2,Hk2,Hk2,Hk3,0
 Hk1:	defb	1,24,30,23,1,25,0
@@ -395,7 +394,7 @@ _nextlabelas:
 	ld	(Labeladrdoel),de
 	ld	a,b
 	ld	(Labelblkdoel),a
-	call	c,labelbestond	;label already existed
+	call	c,labelbestond_	;label already existed
 	ld	a,(Ass_error)
 	or	a
 	jr	nz,_ass_error	;error with labels
@@ -513,7 +512,7 @@ Labeladres:	defw	0
 Labeladrdoel:	defw	0
 Labelblkdoel:	defb	0
 
-includeinit	ld	hl,0
+includeinit: 	ld	hl,0
 	ld	(Bufferopen),hl
 	ld	(Bufferopen+2),hl
 	xor	a
@@ -525,7 +524,7 @@ includeini:
 	call	openadres
 ;                 ld      a,(hl)
 ;                 or      a
-;                 jp      nz,bufferinuse
+;                 jp      nz,bufferinuse_
 	ld	(hl),1
 	ld	hl,1	;LEAVE IT
 	ld	(Assemblregel),hl	;rule 1
@@ -686,7 +685,7 @@ _getpublic:
 	call	putbits	;file name
 	pop	bc
 	ld	a,b
-J455D	cp	7	;********************label used?
+J455D: 	cp	7	;********************label used?
 	jr	c,_vulpublin1
 	ld	b,6
 _vulpublin1:
@@ -776,7 +775,7 @@ _ass_error1:
 	add	hl,bc
 	ld	(Assembladres),hl
 
-skip_inc_adres	ld	a,(Tsr)
+skip_inc_adres: 	ld	a,(Tsr)
 	or	a
 	jr	z,_nocode
 	ld	a,(Tsrpass)
@@ -835,7 +834,7 @@ Teken1:	ld	a,"-"
 	call	writevram
 	jp	_nextcodeass
 
-_ass_error2	ld	hl,(If_adres)
+_ass_error2: 	ld	hl,(If_adres)
 	ld	a,(hl)
 	cp	#80
 	jr	nz,_ass_error1
@@ -1329,7 +1328,7 @@ _textmacro2:
 	ld	(hl),0
 
 	call	macrolabadrs
-	jp	c,labelnotdefi
+	jp	c,labelnotdefi_
 	pop	hl
 _vultxtin3:
 	ld	a,(de)
@@ -1442,8 +1441,8 @@ putlabel1:
 	jr	nc,_putlab1
 	ld	a,b
 	or	a
-	jp	z,badlabel	;wrong
-	jp	labeltoolong
+	jp	z,badlabel_	;wrong
+	jp	labeltoolong_
 _putlab1:
 	ld	a,(Macro)
 	or	a
@@ -1914,7 +1913,7 @@ _splitreg1_1:	ld	a,(de)
 _splitreg1_2:	ld	(hl),a
 	inc	hl
 	jr	_splitreg1_1
-noreg2	ld	(hl),0
+noreg2: 	ld	(hl),0
 	inc	hl
 	ld	(reg2_pointer),hl	;needed for IF ar1>arg2
 	ret
@@ -2032,7 +2031,7 @@ _testmacro:
 	ld	hl,Commando
 	xor	a
 	call	labelexist
-	jp	c,badcommand	;no macro either
+	jp	c,badcommand_	;no macro either
 	call	zetlabblok
 	ex	de,hl
 	call	getlabbuffer
@@ -2046,7 +2045,7 @@ _testmacro1:
 	call	getlabbuffer
 	call	getlabbuffer
 	and	1
-	jp	z,badcommand	;label is not a macro
+	jp	z,badcommand_	;label is not a macro
 
 	push	de
 	ld	hl,Huidigmacro
@@ -2272,7 +2271,7 @@ Huidigmacro:	defb	0
 
 ;----- Test if command exists       OUT: [C]=no, HL=start address
 ;----- length and 1st code entered
-testcommando	ld	a,(Commando)	;normally <128
+testcommando: 	ld	a,(Commando)	;normally <128
 	add	a,a	;times two
 	ld	l,a
 	ld	h,tabcom/256
@@ -2286,11 +2285,11 @@ testcommando	ld	a,(Commando)	;normally <128
 	ret	z	;no commands with this letter
 	inc	hl
 	ld	b,0
-zoekcommand	ex	af,af'
+zoekcommand: 	ex	af,af'
 	ld	c,(hl)
 	inc	hl
 	ld	de,Commando+1
-_zoekcommand	ld	a,(de)
+_zoekcommand: 	ld	a,(de)
 	and	#df
 	cp	(hl)
 	jr	nz,verhooghl
@@ -2300,13 +2299,13 @@ _zoekcommand	ld	a,(de)
 	dec	c
 	inc	de
 	jr	_zoekcommand
-verhooghl	add	hl,bc
+verhooghl: 	add	hl,bc
 	ex	af,af'
 	dec	a
 	jr	nz,zoekcommand
 	scf
 	ret
-comfound	ld	a,(hl)
+comfound: 	ld	a,(hl)
 	ld	(Lengtecode),a
 	inc	hl
 	ld	a,(hl)
@@ -2338,17 +2337,17 @@ _adc:
 	call	test_standa1
 	ret	nc
 	call	test1stregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	b,#4a
 _adc_cont:	cp	12
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	push	bc
 	call	test2ndregis
 	pop	bc
 	cp	10
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	13+1
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 	sub	10
 	add	a,a
 	add	a,a
@@ -2365,14 +2364,14 @@ _add:
 	call	test_standa1
 	ret	nc
 	call	test1stregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	12
 	jr	nz,_add_ix_iy
 	call	test2ndregis	;HL,
 	cp	10
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	13+1
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 _add_cont:	sub	10
 	add	a,a
 	add	a,a
@@ -2386,12 +2385,12 @@ _add_ix_iy:	cp	14
 	jr	z,_add_ix_iy1
 	cp	15
 	ld	(iy),#fd
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 _add_ix_iy1:	push	af
 	inc	(iy-1)
 	call	test2ndregis
 	pop	bc
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	b
 	ld	(iy+1),#29
 	ret	z	;IX,IX and IY,IY
@@ -2402,13 +2401,13 @@ _add_ix_iy1:	push	af
 	jr	z,_add_cont
 	cp	13
 	jr	z,_add_cont
-	jp	badmnemonic
+	jp	badmnemonic_
 
 ;$$$$$ and
 _and:
 	call	test_standa1
 	ret	nc
-	jp	badmnemonic
+	jp	badmnemonic_
 
 ;$$$$$ bit
 _bit:
@@ -2419,9 +2418,9 @@ _bit:
 ;             call    getal8bit 
 	ld	a,(hl)
 	cp	"0"
-	jp	c,getaltegroot
+	jp	c,getaltegroot_
 	cp	"8"
-	jp	nc,getaltegroot
+	jp	nc,getaltegroot_
 	sub	"0"
 	add	a,a
 	add	a,a
@@ -2442,7 +2441,7 @@ _bit_ix_iy:	ld	(iy),#dd
 	jr	z,_bit_ix_iy1
 	set	5,(iy)
 	cp	9
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 _bit_ix_iy1:	ld	a,(iy+1)
 	add	a,6
 	ld	(iy+3),a
@@ -2450,11 +2449,11 @@ _bit_ix_iy1:	ld	a,(iy+1)
 	ex	de,hl
 	ld	(iy-1),4
 	call	getal8bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy+2),a
 	ld	a,(hl)
 	cp	")"
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ret
 
 bit_ix2:	ld	(iy),#dd	;(ix) and (iy)
@@ -2480,7 +2479,7 @@ _call_cont1:	add	a,a
 	ld	(iy),a
 	LD	HL,(reg2_pointer)
 _call_cont:	call	getal16bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy+1),e
 	ld	(iy+2),d
 	ld	a,1
@@ -2490,11 +2489,11 @@ _call1:	ld	(iy),#cd
 	jr	_call_cont
 
 ;$$$$$ ccf
-_ccf	LD	HL,(reg1_pointer)
+_ccf: 	LD	HL,(reg1_pointer)
 	LD	A,(HL)
 	LD	HL,(reg2_pointer)
 	OR	(HL)
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ret
 
 ;$$$$$ cpd
@@ -2508,9 +2507,9 @@ _dec:
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	b,#0b
 	ld	c,#25
 _dec_cont:
@@ -2528,7 +2527,7 @@ _dec_ix:	cp	10	;dec (ix+ (iy+
 	ld	a,(iy)
 	add	a,#30
 	call	test_standa2
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ret
 _dec_ix1:	cp	24	;dec (ix) (iy)
 	jr	c,_dec_bc_de
@@ -2560,9 +2559,9 @@ _dec_ix_iy1:	ld	a,b
 	ld	(iy+1),a
 	ret
 _dec_ixh:	cp	18
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	22
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 	sub	18
 	ld	b,a
 	and	1
@@ -2578,7 +2577,7 @@ _djnz:
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	LD	HL,(reg1_pointer)
 _djnz_cont:	call	getal16bit
 	ex	af,af'
@@ -2586,10 +2585,10 @@ _djnz_cont:	call	getal16bit
 	dec	a
 	ret	z	;At pass1 => back
 	ex	af,af'
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ex	de,hl	;hl=number
 	ld	de,(Assembladres)
-J565D	inc	de	;******************used?
+J565D: 	inc	de	;******************used?
 	inc	de
 	xor	a
 	sbc	hl,de
@@ -2597,20 +2596,20 @@ J565D	inc	de	;******************used?
 	ld	a,d
 	dec	a
 	cp	#fe
-	jp	c,offsettegroo
+	jp	c,offsettegroo_
 	call	testoffset
-	jp	c,offsettegroo
+	jp	c,offsettegroo_
 	ld	(iy+1),e
 	ret
 
 ;$$$$$ ex
 _ex:
 	call	test1stregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	17
 	jr	nz,_ex_de_hl
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy),#e3
 	cp	12
 	ret	z	;(sp),hl
@@ -2622,35 +2621,35 @@ _ex:
 	set	5,(iy)
 	cp	15
 	ret	z	;(sp),iy
-	jp	badmnemonic
+	jp	badmnemonic_
 _ex_de_hl:	cp	11
 	jr	nz,_ex_af_af
 	call	test2ndregis
 	cp	12
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	(iy),#eb
 	ret
 _ex_af_af:	cp	16
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	(iy),#08
 	call	test2ndregis
 	cp	16
 	ret	z	;af,af  
 	cp	30
 	ret	z	;af,af'  
-	jp	badmnemonic
+	jp	badmnemonic_
 
 ;$$$$$ im
-_im	LD	HL,(reg2_pointer)
+_im: 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	LD	HL,(reg1_pointer)
 	call	getal16bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	a,d
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	a,e
 	or	a
 	ld	(iy+1),#46
@@ -2661,30 +2660,30 @@ _im	LD	HL,(reg2_pointer)
 	dec	a
 	set	3,(iy+1)
 	ret	z
-	jp	badmnemonic
+	jp	badmnemonic_
 
 ;$$$$$ in
 _in:	call	test1stregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy),#ed
 	cp	7
 	jr	z,_in_a
 	cp	6
-	jp	z,badmnemonic
+	jp	z,badmnemonic_
 	cp	22
 	jr	z,_in_f
 	cp	8
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 _in_cont:	add	a,a
 	add	a,a
 	add	a,a
 	or	#40
 	ld	(iy+1),a
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	23
 	ret	z
-	jp	badmnemonic
+	jp	badmnemonic_
 _in_f:	sub	22-6
 	ld	hl,(Turborcomm)
 	inc	hl
@@ -2695,19 +2694,19 @@ _in_a:	call	test2ndregis
 	ld	(iy+1),#78
 	cp	23
 	ret	z
-	jp	badmnemonic
+	jp	badmnemonic_
 _in_a_port:	ld	hl,(reg2_pointer)
 	ld	a,(hl)
 	cp	"("
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	inc	hl
 	call	getal8bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy+1),e
 	ld	(iy),#db
 	ld	a,(hl)
 	cp	")"
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ret
 
 ;$$$$$ inc
@@ -2715,9 +2714,9 @@ _inc:
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	b,#03
 	ld	c,#24
 	jp	_dec_cont
@@ -2735,7 +2734,7 @@ _jp2:	ld	b,a
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	a,b
 	ld	(iy),#dd
 	ld	(iy+1),#e9
@@ -2749,14 +2748,14 @@ _jp2:	ld	b,a
 	dec	(iy-1)
 	cp	6
 	ret	z	;(hl)
-	jp	badmnemonic
+	jp	badmnemonic_
 
 ;$$$$$ jr
 _jr:
 	call	voorwaarde
 	jr	c,_jr1
 	cp	4
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 _jr_cont:	add	a,a
 	add	a,a
 	add	a,a
@@ -2805,9 +2804,9 @@ _ld:
 	cp	27
 	jp	z,_ld_i_r
 	cp	18
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	21+1
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 
 _ld_ixh_ixl:	;ld ixh/ixl/iyh/iyl,r1/number
 	ld	hl,(Turborcomm)
@@ -2832,17 +2831,17 @@ _ld_ixh_ixl2:	push	af
 	cp	7
 	jr	z,_ld_ixh_ok
 	cp	18
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	19+1
 	jr	c,_ld_ixh_1
 	cp	21+1
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 _ld_iyh_1:	bit	1,b	;,iyh/iyl
-	jp	z,badmnemonic
+	jp	z,badmnemonic_
 	add	a,#64-20
 	jr	_ld_ixh_3
 _ld_ixh_1:	bit	1,b	;,ixh/ixl
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	add	a,#64-18
 _ld_ixh_3:	ld	(iy+1),a
 	bit	0,b
@@ -2859,16 +2858,16 @@ _ld_ixh_geta:	bit	0,b
 _ld_ixh_get1:	ld	hl,(reg2_pointer)
 	inc	(iy-1)
 	call	getal8bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy+2),a
 	ret
 _ld_i_r:
 	ld	(iy),#ed
 	inc	(iy-1)
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	7
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ret
 _ld1_ix_iy:	;ld ix/iy,
 	ld	(iy-1),4
@@ -2881,7 +2880,7 @@ _ld1_ix_iy:	;ld ix/iy,
 	ld	a,2
 	jp	vuladresin
 _ld1_ix_iy1:	call	getal16bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy+1),#21
 	ld	(iy+2),e
 	ld	(iy+3),d
@@ -2900,7 +2899,7 @@ _ld_bc_de:	;ld bc/de/hl/sp,
 	LD	HL,(reg2_pointer)
 	call	getal16bit
 	pop	bc
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	a,b
 	ld	c,1
 _ld_bc_cont:	sub	10
@@ -2930,7 +2929,7 @@ _ld_hl2:	ld	(iy),#2a
 _ld_sp:	ex	af,af'
 	ld	a,b
 	cp	13
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ex	af,af'
 	dec	(iy-1)
 	ld	(iy+1),#f9
@@ -2944,19 +2943,19 @@ _ld_sp:	ex	af,af'
 	dec	(iy-1)
 	cp	12
 	ret	z
-	jp	badmnemonic
+	jp	badmnemonic_
 _ld_ix_iy:
 	call	test_ix_iy
 	jr	_ld_ix_iy_co
 _ld_ix_iy2:	;ld (ix/(iy,r1
 	call	test_ix_iy2
-_ld_ix_iy_co:	jp	c,badmnemonic
+_ld_ix_iy_co:	jp	c,badmnemonic_
 	call	test2ndregis
 	jr	c,_ld_ix_getal
 	cp	6
-	jp	z,badmnemonic
+	jp	z,badmnemonic_
 	cp	8
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 	add	a,#70
 	ld	(iy+1),a
 	ret
@@ -2965,7 +2964,7 @@ _ld_ix_getal:	;(ix/(iy ,number
 	LD	HL,(reg2_pointer)
 	inc	(iy-1)
 	call	getal8bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy+3),a
 	ret
 _ld_b_c:	;ld r1,r1   (< (HL))
@@ -2976,7 +2975,7 @@ _ld_b_c:	;ld r1,r1   (< (HL))
 	or	#40
 	ld	(iy),a
 	call	test_standa6
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	a,(iy-1)
 	cp	2
 	ret	nz
@@ -2994,7 +2993,7 @@ _ld_b_ixh:	ld	a,(Ld_b_ixh)
 	ret	c
 	cp	7
 	ret	z
-	jp	badmnemonic	;not h/l,ixh etc.
+	jp	badmnemonic_	;not h/l,ixh etc.
 Ld_b_ixh:	defb	0
 _ld_a:	;ld a,r1/number
 	call	test2ndregis
@@ -3030,34 +3029,34 @@ _ld_hl:	;ld (hl),r1/number
 	call	test2ndregis
 	jr	c,_ld_hl1
 	cp	6
-	jp	z,badmnemonic
+	jp	z,badmnemonic_
 	cp	8
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 	or	#70
 	ld	(iy),a
 	ret
 _ld_hl1:	ld	hl,(reg2_pointer)	;ld (hl),number
 	inc	(iy-1)
 	call	getal8bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy+1),a
 	ld	(iy),#36
 	ret
 _ld_bc1_de1:	;ld (bc)/(de),a
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	7
 	ret	z
-	jp	badmnemonic
+	jp	badmnemonic_
 _ld_getal_re:	;ld (number),r1
 	ld	(iy-1),3
 	LD	HL,(reg1_pointer)
 	call	getalhaakjes	;is (number) ? Yes => DE=number
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	push	de	;number
 	call	test2ndregis
 	pop	de
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy),#32
 	cp	7
 	jr	z,_ld_getal_r1	;,a
@@ -3074,9 +3073,9 @@ _ld_getal_re:	;ld (number),r1
 	jr	z,_ld_getal_r0	;,iy
 	ld	(iy),#ed
 	cp	10
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	13+1
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 	sub	10
 	add	a,a
 	add	a,a
@@ -3095,12 +3094,12 @@ _out:
 	call	test1stregis
 	jr	c,_out1
 	cp	23
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	call	test2ndregis
 	cp	8
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 	cp	6
-	jp	z,badmnemonic
+	jp	z,badmnemonic_
 	add	a,a
 	add	a,a
 	add	a,a
@@ -3112,18 +3111,18 @@ _out1:	ld	hl,(reg1_pointer)
 	ld	a,(hl)
 	inc	hl
 	cp	"("
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	call	getal8bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(iy+1),a
 	ld	(iy),#d3
 	ld	a,(hl)
 	cp	")"
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	7
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ret
 
 ;$$$$$ pop + push
@@ -3133,11 +3132,11 @@ _pop:
 	ld	hl,(reg1_pointer)
 	ld	a,(hl)
 	or	a
-	jp	z,badmnemonic
+	jp	z,badmnemonic_
 	push	ix
 	call	_testcont
 	pop	ix
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	call	testpushpop
 	LD	HL,(reg2_pointer)
 _pop1:
@@ -3164,7 +3163,7 @@ _pop2:
 	call	_testcont
 	pop	ix
 	pop	hl
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	call	testpushpop
 	jr	_pop1
 
@@ -3177,9 +3176,9 @@ testpushpop:
 	cp	15
 	jr	z,_pop_iy
 	cp	10
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	12+1
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 	sub	10
 	add	a,a
 	add	a,a
@@ -3209,14 +3208,14 @@ _ret:
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	LD	HL,(reg1_pointer)
 	ld	a,(hl)
 	ld	(iy),#c9
 	or	a
 	ret	z
 	call	voorwaarde
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	add	a,a
 	add	a,a
 	add	a,a
@@ -3229,23 +3228,23 @@ _rl:
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	a,(iy)
 	ld	(iy+1),a
 	ld	(iy),#cb
 	inc	iy
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	18
 	jr	c,_rl1
 	cp	21+1
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 
 _rl1:	ld	b,(iy)
 	push	bc
 	call	test_standa5
 	pop	bc
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	dec	iy
 	ld	a,(iy)
 	cp	3
@@ -3266,16 +3265,16 @@ _rst:
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	LD	HL,(reg1_pointer)
 	call	getal16bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	a,d
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	a,e
 	and	%11000111
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	a,e
 	or	#c7
 	ld	(iy),a
@@ -3286,7 +3285,7 @@ _sbc:
 	call	test_standa1
 	ret	nc
 	call	test1stregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	b,#42
 	jp	_adc_cont
 
@@ -3296,14 +3295,14 @@ _sbc:
 _lablen:
 	LD	HL,(reg1_pointer)
 	call	getal8bit
-	jp	c,badcommand
+	jp	c,badcommand_
 	ex	de,hl
 	ld	de,6
 	call	restart20
-	jp	c,getaltegroot
+	jp	c,getaltegroot_
 	ld	de,21
 	call	restart20
-	jp	nc,getaltegroot
+	jp	nc,getaltegroot_
 	ld	a,l
 	ld	(Labellengte),a
 	ret
@@ -3315,7 +3314,7 @@ _upper:
 	inc	hl
 	and	255-32
 	cp	"O"
-	jp	nz,badcommand
+	jp	nz,badcommand_
 	ld	a,(hl)
 	inc	hl
 	and	255-32
@@ -3324,16 +3323,16 @@ _upper:
 	jr	z,_upperon
 	dec	b
 	cp	"F"
-	jp	nz,badcommand
+	jp	nz,badcommand_
 	ld	a,(hl)
 	inc	hl
 	and	255-32
 	cp	"F"
-	jp	nz,badcommand
+	jp	nz,badcommand_
 _upperon:
 	ld	a,(hl)
 	or	a
-	jp	nz,badcommand
+	jp	nz,badcommand_
 	ld	a,b
 	ld	(Upperonoff),a
 	ret
@@ -3342,7 +3341,7 @@ _upperon:
 _defw:
 	LD	HL,(reg1_pointer)
 	call	getal16bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	call	_defw1
 	LD	HL,(reg2_pointer)
 _defw_cont:	call	getal16bit
@@ -3379,7 +3378,7 @@ _defs:
 	ld	(Pass),a
 	LD	HL,(reg1_pointer)
 	call	getal16bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(Lengte_defs),de
 	ld	(iy-1),#ff	;length=#ff => defs
 	xor	a
@@ -3389,7 +3388,7 @@ _defs:
 	or	a
 	ret	z
 	call	getal8bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(Vul_defs),a
 	ret
 
@@ -3414,7 +3413,7 @@ testdefb:
 	call	_defb_tekst
 	ret	nc
 	call	getal8bit
-	jp	c,badcommand
+	jp	c,badcommand_
 	ld	(iy),a
 	inc	iy
 	ld	de,(Assembladres)
@@ -3438,7 +3437,7 @@ _weltekst:
 	ld	b,a	;" or '
 	cp	(hl)
 	jr	z,_notekst	;two quotes--calculate-->0
-_jon_tekst	ld	a,(hl)
+_jon_tekst: 	ld	a,(hl)
 	or	a
 	jr	z,_notekst	;error!? (quote forgotten)
 	ld	e,a
@@ -3462,7 +3461,7 @@ _notekst:	pop	af
 	scf
 	ret
 
-schakel_8bit	dec	hl
+schakel_8bit: 	dec	hl
 	dec	hl
 	ld	(hl),b	;place quotation mark
 	pop	bc	;clean stack
@@ -3474,14 +3473,14 @@ schakel_8bit	dec	hl
 _defc:
 	ld	hl,(reg1_pointer)
 	call	testdefb	;CHANGED!!!!!!!!!!!!!******
-	jp	c,badcommand
+	jp	c,badcommand_
 	set	7,(iy-1)
 	ld	hl,(reg2_pointer)
 	ld	a,(hl)
 	or	a
 	jr	z,_defc_back
 _defc1:	call	testdefb
-	jp	c,badcommand
+	jp	c,badcommand_
 	set	7,(iy-1)
 	ld	a,(hl)
 	inc	hl
@@ -3504,7 +3503,7 @@ D5DBE:	NOP
 	NOP
 	NOP
 	NOP
-_jonloop	CALL	C666D
+_jonloop: 	CALL	C666D
 	JR	C,J5DE3
 	LD	(D5E45),A
 	CP	#06
@@ -3515,7 +3514,7 @@ _jonloop	CALL	C666D
 	JR	NC,J5DE3
 	SUB	#0A
 	JR	NC,J5E02
-J5DE3:	JP	badmnemonic
+J5DE3:	JP	badmnemonic_
 J5DE6:	RLCA
 	RLCA
 	RLCA
@@ -3548,7 +3547,7 @@ J5E22:	PUSH	HL
 	LD	HL,D5DBD
 	LD	A,(HL)
 	CP	#04
-	JP	Z,toomanyloops
+	JP	Z,toomanyloops_
 	INC	(HL)
 	CALL	C5E3A
 	LD	A,(D5E45)
@@ -3571,10 +3570,10 @@ C5E3A:	LD	L,A
 	RET
 
 D5E45:	NOP
-_jonendloop	LD	HL,D5DBD
+_jonendloop: 	LD	HL,D5DBD
 	LD	A,(HL)
 	OR	A
-	JP	Z,noloopopened
+	JP	Z,noloopopened_
 	DEC	(HL)
 	LD	A,(HL)
 	CALL	C5E3A
@@ -3636,13 +3635,13 @@ _mulub:
 	ld	(iy-1),2
 	ld	(iy),#ed
 	call	test1stregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	7
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	3+1
-	jp	nc,badmnemonic
+	jp	nc,badmnemonic_
 	add	a,a
 	add	a,a
 	add	a,a
@@ -3655,18 +3654,18 @@ _muluw:
 	ld	(iy-1),2
 	ld	(iy),#ed
 	call	test1stregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	12
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	call	test2ndregis
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	cp	10
 	ld	(iy+1),#c3
 	ret	z
 	cp	13
 	ld	(iy+1),#f3
 	ret	z
-	jp	badmnemonic
+	jp	badmnemonic_
 
 ;$$$$$ org
 _org:
@@ -3679,7 +3678,7 @@ _org:
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	a,(Pass)
 	push	af
 	ld	a,2
@@ -3687,7 +3686,7 @@ _org:
 	ld	hl,(reg1_pointer)
 	call	getal16bit
 	pop	bc
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	(Assembladres),de
 	ld	a,b	;pass
 	cp	1
@@ -3708,7 +3707,7 @@ _org:
 _defl:
 	ld	a,(Domacro)
 	or	a
-	jp	z,badcommand	;only on macro call
+	jp	z,badcommand_	;only on macro call
 ;$$$$$ equ
 _equ:
 	ld	a,(Pass)
@@ -3718,21 +3717,21 @@ _equ:
 	ret	c	;no code because of if
 	ld	a,(Label)
 	or	a
-	jp	z,badmnemonic
+	jp	z,badmnemonic_
 	ld	a,(Macro)
 	or	a
 	ret	nz	;don't define macro in the middle
 	LD	HL,(reg2_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 	ld	a,2
 	ld	(Pass),a	;now pass 2
 	xor	a
 	ld	(Equ_segment),a
 	ld	hl,(reg1_pointer)
 	call	getal16bit
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	ld	a,1
 	ld	(Equ_found),a
 	ld	(Equ_adres),de
@@ -3761,7 +3760,7 @@ _breakp:
 	LD	HL,(reg1_pointer)
 	LD	A,(HL)
 	or	a
-	jp	nz,badmnemonic
+	jp	nz,badmnemonic_
 
 	ld	hl,Assembledisk
 	ld	a,(hl)
@@ -3794,7 +3793,7 @@ Firstbp:	defb	0	;0=1st time, 1=2nd..next time
 _tsrhooks:
 	ld	a,(Tsr)
 	or	a
-	jp	z,badcommand
+	jp	z,badcommand_
 	ld	a,1
 	ld	(Tsrhooks),a
 	ret
@@ -3871,7 +3870,7 @@ _public:
 	call	testrel
 	ld	hl,(reg1_pointer)
 	call	testoflabel
-	jp	c,badcommand
+	jp	c,badcommand_
 	call	savepublic
 	ld	hl,(reg2_pointer)
 _publicloop:
@@ -3887,7 +3886,7 @@ _publiccont:
 	ret	z
 	cp	","
 	jr	z,_publicloop
-	jp	badcommand
+	jp	badcommand_
 
 
 savepublic:
@@ -3914,7 +3913,7 @@ _publicpass2:
 	ld	hl,Label
 	call	labelexist
 	pop	hl
-	jp	c,publicnotfou
+	jp	c,publicnotfou_
 	ret
 
 Aantalpublic:	defw	0
@@ -3927,7 +3926,7 @@ _extrn:
 	ret	nz	;only pass 1
 	ld	hl,(reg1_pointer)
 	call	testoflabel
-	jp	c,badcommand
+	jp	c,badcommand_
 	call	extrn1
 	ld	hl,(reg2_pointer)
 	ld	a,(hl)
@@ -3935,7 +3934,7 @@ _extrn:
 	ret	z
 _extrn1:
 	call	testoflabel
-	jp	c,badcommand
+	jp	c,badcommand_
 	push	hl
 	call	extrn1
 	pop	hl
@@ -3943,14 +3942,14 @@ _extrn1:
 	or	a
 	ret	z
 	cp	","
-	jp	nz,badcommand
+	jp	nz,badcommand_
 	inc	hl
 	jr	_extrn1
 
 extrn1:
 	ld	hl,Label
 	call	putlabel1
-	jp	c,labelbestond
+	jp	c,labelbestond_
 	ld	a,b
 	call	zetlabblok
 	xor	a
@@ -4015,7 +4014,7 @@ _phase:
 	call	testrel
 	ld	a,(Phase)
 	or	a
-	jp	nz,badcommand	;phase already open
+	jp	nz,badcommand_	;phase already open
 	inc	a
 	ld	(Phase),a
 	call	saveoldsegm
@@ -4027,7 +4026,7 @@ _phase:
 	ld	(Oldaddress),hl	;easier for dephase
 	ld	hl,(reg1_pointer)
 	call	getal16bit
-	jp	c,badcommand
+	jp	c,badcommand_
 	ld	(Phaseaddress),de
 	ld	(Assembladres),de
 	ret
@@ -4041,7 +4040,7 @@ _dephase:
 	call	testrel
 	ld	a,(Phase)
 	or	a
-	jp	z,badcommand	;phase not open
+	jp	z,badcommand_	;phase not open
 	dec	a
 	ld	(Phase),a
 	ld	hl,(Assembladres)
@@ -4059,12 +4058,12 @@ _dephase:
 testrel:
 	ld	a,(Relocatable)
 	or	a
-	jp	z,onlyrel
+	jp	z,onlyrel_
 	ret
 testrel1:
 	ld	a,(Phase)
 	or	a
-	jp	nz,inphase
+	jp	nz,inphase_
 	ret
 
 ;$$$$$ if
@@ -4110,7 +4109,7 @@ _einde_if:
 	ld	hl,(If_adres)	;#81=assemble, #80=not ass.
 	inc	hl
 	bit	7,(hl)
-	jp	nz,toomanyifs
+	jp	nz,toomanyifs_
 	ld	(hl),a
 	ld	(If_adres),hl
 	xor	a
@@ -4190,7 +4189,7 @@ doif:
 	ld	b,#84	;<>0  
 	jr	z,_if3
 	call	haalteken
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	push	af
 	call	getal16bit
 	jp	c,gotoifstring
@@ -4211,7 +4210,7 @@ ifstring:
 	ld	hl,(reg1_pointer)	;source
 	ld	de,(reg1_pointer)	;target
 	call	teststring
-	jp	c,badcommand
+	jp	c,badcommand_
 	ld	(Lengte1),a
 	xor	a
 	LD	DE,(reg2_pointer)
@@ -4222,11 +4221,11 @@ ifstring:
 	ld	b,#84	;<>0   
 	jr	z,_ifstring3
 	call	haalteken
-	jp	c,badmnemonic
+	jp	c,badmnemonic_
 	push	af
 	ld	de,(reg2_pointer)	;target
 	call	teststring
-	jp	c,badcommand
+	jp	c,badcommand_
 	ld	(Contifadres),hl
 	ld	(Lengte2),a
 	pop	bc
@@ -4467,12 +4466,12 @@ _macro:
 _macropass1:
 	ld	a,(Macro)
 	or	a
-	jp	nz,macroisopen
+	jp	nz,macroisopen_
 	inc	a
 	ld	(Macro),a
 	ld	a,(Label)
 	or	a
-	jp	z,nolabelmacro
+	jp	z,nolabelmacro_
 
 	ld	a,(Labelblkdoel)
 	call	zetlabblok
@@ -4500,10 +4499,10 @@ _macro1:
 	ret
 macrobadcomm:
 	call	_macro1
-	jp	badcommand
+	jp	badcommand_
 macrolabelto:
 	call	_macro1
-	jp	labeltoolong
+	jp	labeltoolong_
 
 Macrobufadr:	defw	0
 Macrobufblk:	defb	0
@@ -4516,7 +4515,7 @@ _macropass2:
 
 
 ;----- read macro label in     OUT: [C]=no label
-haalmacrojon	inc	hl
+haalmacrojon: 	inc	hl
 haalmacrolab:
 	ld	a,(hl)
 	or	a
@@ -4563,7 +4562,7 @@ _endm:
 	ret	nz	;only pass 1
 	ld	a,b
 	or	a
-	jp	z,macronotopen
+	jp	z,macronotopen_
 	ld	a,(Macrobufblk)
 	call	zetlabblok
 	ld	de,(Macrobufadr)
@@ -4592,16 +4591,16 @@ _include:
 	ld	hl,(reg1_pointer)
 	call	getal8bit
 	or	a
-	jp	z,badcommand
+	jp	z,badcommand_
 	cp	5
-	jp	nc,badcommand
+	jp	nc,badcommand_
 	ld	e,a
 	call	openadres
 	bit	0,(hl)
-	jp	nz,bufferinuse
+	jp	nz,bufferinuse_
 	ld	a,e
 	call	GOsetbuf
-	jp	c,bufnotexist
+	jp	c,bufnotexist_
 	ld	hl,(reg2_pointer)
 	ld	a,(hl)
 	or	a
@@ -4631,7 +4630,7 @@ _include5:
 	ld	hl,(reg2_pointer)
 	inc	hl
 	call	doinclude
-	jp	c,incldiskerr
+	jp	c,incldiskerr_
 	ld	a,(Pass)
 	dec	a
 	jr	nz,_include1
@@ -4670,23 +4669,23 @@ openadres:
 	ret
 
 
-free	equ	((($+255)/256)*256)
+free: 	equ	((($+255)/256)*256)
 	ds	free-$,0
 	org	free
 
-vijftabniks	macro
+vijftabniks: 	macro
 	dw	tabniks
 	dw	tabniks
 	dw	tabniks
 	dw	tabniks
 	dw	tabniks
 	endm
-tientabniks	macro
+tientabniks: 	macro
 	vijftabniks
 	vijftabniks
 	endm
 
-tabcom	tientabniks	;0...
+tabcom: 	tientabniks	;0...
 	tientabniks
 	tientabniks
 	tientabniks	;..39
@@ -4753,8 +4752,8 @@ tabcom	tientabniks	;0...
 	dw	tabniks
 	dw	tabniks	;122
 	vijftabniks	;..127
-tabniks	db	0
-tabA	db	4
+tabniks: 	db	0
+tabA: 	db	4
 	defb	7,"DD",0,1,#80
 	defw	_add
 	defb	7,"ND",0,1,#a0
@@ -4763,12 +4762,12 @@ tabA	db	4
 	defw	_adc
 	defb	8,"SEG",0,0,0
 	defw	_aseg
-tabB	db	2
+tabB: 	db	2
 	defb	7,"IT",0,2,#40
 	defw	_bit
 	defb	10,"REAKP",0,0,0
 	defw	_breakp
-tabC	db	10
+tabC: 	db	10
 	defb	8,"ALL",0,3,#c4
 	defw	_call
 	defb	6,"P",0,1,#b8
@@ -4789,7 +4788,7 @@ tabC	db	10
 	defw	_cseg
 	defb	8,"OND",0,0,0
 	defw	_if
-tabD	db	16
+tabD: 	db	16
 	defb	6,"B",0,0,0
 	defw	_defb
 	defb	6,"W",0,0,0
@@ -4822,7 +4821,7 @@ tabD	db	16
 	defw	_defl
 	defb	8,"SEG",0,0,0
 	defw	_dseg
-tabE	db	11
+tabE: 	db	11
 	defb	7,"QU",0,0,0
 	defw	_equ
 	defb	6,"X",0,1,0
@@ -4845,10 +4844,10 @@ tabE	db	11
 	defw	_jonendloop
 	defb	7,"ND",0,0,0
 	defw	_end
-tabH	db	1
+tabH: 	db	1
 	defb	8,"ALT",0,1,#76
 	defw	_ccf
-tabI	db	9
+tabI: 	db	9
 	defb	7,"NC",0,1,#04
 	defw	_inc
 	defb	6,"N",0,2,#40
@@ -4867,12 +4866,12 @@ tabI	db	9
 	defw	_include
 	defb	6,"M",0,2,#ed
 	defw	_im
-tabJ	db	2
+tabJ: 	db	2
 	defb	6,"R",0,2,#20
 	defw	_jr
 	defb	6,"P",0,3,#c2
 	defw	_jp
-tabL	db	6
+tabL: 	db	6
 	defb	6,"D",0,1,0
 	defw	_ld
 	defb	8,"DIR",0,2,#b0
@@ -4885,19 +4884,19 @@ tabL	db	6
 	defw	_cpd
 	defb	8,"OOP",0,0,0
 	defw	_jonloop
-tabM	db	3
+tabM: 	db	3
 	defb	9,"ACRO",0,0,0
 	defw	_macro
 	defb	9,"ULUB",0,0,0
 	defw	_mulub
 	defb	9,"ULUW",0,0,0
 	defw	_muluw
-tabN	db	2
+tabN: 	db	2
 	defb	7,"OP",0,1,#00
 	defw	_ccf
 	defb	7,"EG",0,2,#44
 	defw	_cpd
-tabO	db	7
+tabO: 	db	7
 	defb	7,"UT",0,2,#41
 	defw	_out
 	defb	6,"R",0,1,#b0
@@ -4912,14 +4911,14 @@ tabO	db	7
 	defw	_cpd
 	defb	8,"UTD",0,2,#ab
 	defw	_cpd
-tabP	db	3
+tabP: 	db	3
 	defb	7,"OP",0,0,#c1
 	defw	_pop
 	defb	8,"USH",0,0,#c5
 	defw	_pop
 	defb	10,"UBLIC",0,0,0
 	defw	_public
-tabR	db	15
+tabR: 	db	15
 	defb	7,"ET",0,1,#c0
 	defw	_ret
 	defb	8,"RCA",0,1,#0f
@@ -4950,7 +4949,7 @@ tabR	db	15
 	defw	_cpd
 	defb	8,"ETN",0,2,#45
 	defw	_cpd
-tabS	db	8
+tabS: 	db	8
 	defb	7,"UB",0,1,#90
 	defw	_and
 	defb	7,"BC",0,1,#98
@@ -4967,13 +4966,13 @@ tabS	db	8
 	defw	_rl
 	defb	7,"LL",0,2,#30	;Illegal command!!!!!
 	defw	_rl
-tabT	db	1
+tabT: 	db	1
 	defb	12,"SRHOOKS",0,0,0
 	defw	_tsrhooks
-tabX	db	1
+tabX: 	db	1
 	defb	7,"OR",0,1,#a8
 	defw	_and
-tabpunt	db	4
+tabpunt: 	db	4
 	defb	10,"PHASE",0,0,0
 	defw	_phase
 	defb	12,"DEPHASE",0,0,0
@@ -5041,7 +5040,7 @@ _test_ix_iy1:	ex	de,hl
 	call	getal8bit
 	ret	c
 	call	testoffset
-	jp	c,offsettegroo
+	jp	c,offsettegroo_
 	ld	(iy+2),e
 	ld	a,(hl)
 	cp	")"
@@ -5119,7 +5118,7 @@ test1stregis:
 	ld	a,7
 	ret	z	;no reg. 2 => reg. 1 = A
 
-C666D	ld	hl,(reg1_pointer)
+C666D: 	ld	hl,(reg1_pointer)
 _testcont:	ld	(Testadres1+1),hl
 	ld	hl,Registers
 	ld	ix,Registers
@@ -5247,12 +5246,12 @@ Inphase:	defb	"Phase still active",0
 Bufnotexist:	defb	"Buffer doesn't exist",0
 Bufferinuse:	defb	"Buffer in use",0
 Incldiskerr:	defb	"Load error",0
-Toomanyloops	defb	"Too many loops",0
-Noloopopened	defb	"No loop opened",0
+Toomanyloops: 	defb	"Too many loops",0
+Noloopopened: 	defb	"No loop opened",0
 
 Erroradres:	defw	#1910
 
-badcommand:
+badcommand_:
 	ld	de,Badcommand
 backerror:
 	ld	a,(Macro)
@@ -5298,66 +5297,66 @@ backerror1:
 	ldir
 	ret
 
-getaltegroot:
+getaltegroot_:
 	ld	de,Getaltegroot
 	jr	backerror
-offsettegroo:
+offsettegroo_:
 	ld	de,Offsettegroo
 	jr	backerror
-mishaaksluit:
+mishaaksluit_:
 	ld	de,Mishaaksluit
 	jr	backerror
-delingdoor0:
+delingdoor0_:
 	ld	de,Delingdoor0
 	jr	backerror
-badmnemonic:
+badmnemonic_:
 	ld	de,Badmnemonic
 	jr	backerror
-labelnotdefi:
+labelnotdefi_:
 	ld	de,Labelnotdefi
 	jr	backerror
-labelismacro:
+labelismacro_:
 	ld	de,Labelismacro
 	jr	backerror
 labeltoolon1:
 	ld	de,Labeltoolong
 	jr	backerror
-toomanyifs:
+toomanyifs_:
 	ld	de,Toomanyifs
 	jr	backerror
-macroisopen:
+macroisopen_:
 	ld	de,Macroisopen
 	xor	a
 	jp	backerrormac
-nolabelmacro:
+nolabelmacro_:
 	ld	de,Nolabelmacro
 	jp	backerror
-macronotopen:
+macronotopen_:
 	ld	de,Macronotopen
 	jp	backerror
-onlyrel:
+onlyrel_:
 	ld	de,Onlyrel
 	jp	backerror
-publicnotfou:
+publicnotfou_:
 	ld	de,Publicnotfou
 	jp	backerror
-inphase:
+inphase_:
 	ld	de,Inphase
 	jp	backerror
-bufnotexist:
+bufnotexist_:
 	ld	de,Bufnotexist
 	jp	backerror
 
-toomanyloops	ld	de,Toomanyloops
+toomanyloops_: 	ld	de,Toomanyloops
 	jp	backerror
-noloopopened	ld	de,Noloopopened
+noloopopened_: 	ld	de,Noloopopened
 	jp	backerror
-incldiskerr:
+incldiskerr_:
 	ld	a,(Oudbuffer)
 	ld	(Sourcebuffer),a
 	ld	de,Incldiskerr
 	jr	_bufferinus1
-bufferinuse:
+bufferinuse_:
 	ld	de,Bufferinuse
 _bufferinus1:
 	call	backerror1
@@ -5367,17 +5366,17 @@ _bufferinus1:
 
 ;----- error messages with return
 
-labelbestond:
+labelbestond_:
 	ld	de,Labelbestond
 	call	backerror1
 	ret
-badlabel:
+badlabel_:
 	ld	de,Badlabel
 	jr	_labeltool1
 relcommand:
 	ld	de,Onlyrel
 	jr	_labeltool1
-labeltoolong:
+labeltoolong_:
 	ld	de,Labeltoolong
 _labeltool1:
 	call	backerror1
@@ -5416,7 +5415,7 @@ getal8bit:
 	ld	a,d
 	dec	a
 	cp	#fe
-	jp	c,getaltegroot
+	jp	c,getaltegroot_
 	ld	a,e
 	ret
 
@@ -5462,10 +5461,10 @@ getal16bit:
 	scf
 	ret	z	;no number found
 	dec	a
-	jp	z,badmnemonic	;1 
+	jp	z,badmnemonic_	;1 
 	dec	a
-	jp	z,mishaaksluit	;2 
-	jp	delingdoor0	;3 
+	jp	z,mishaaksluit_	;2 
+	jp	delingdoor0_	;3 
 
 
 ;----- Save entry address with TSR
@@ -5684,7 +5683,7 @@ _testlab3:	xor	a
 	xor	a
 	ld	hl,Label
 	call	labelexist
-	jp	c,labelnotdefi	;does not exist
+	jp	c,labelnotdefi_	;does not exist
 
 	push	de
 	ex	de,hl
@@ -5706,7 +5705,7 @@ _testlab1:	call	getlabbuffer
 ;              ld      b,a
 	ld	(Segmentback+1),a
 	and	1
-	jp	nz,labelismacro
+	jp	nz,labelismacro_
 ;              ld      a,(Equ_segment)
 ;              or      b
 ;              ld      (Equ_segment),a
@@ -5942,7 +5941,7 @@ geefadrregel:
 	add	hl,hl	;never returns carry (line=<32768)
 	add	hl,de	;this is possible (only from around line 22000)
 	jr	c,vulamet1	;is fastest (not with jr nc,_vulamet1)
-_vulamet1	sla	h
+_vulamet1: 	sla	h
 	rla		;                  ;also bit x to CF!
 	rl	h	;bit x to bit 0 of h
 	rla
@@ -5966,7 +5965,7 @@ _vulamet1	sla	h
 	ld	a,c
 	or	a
 	ret
-vulamet1	inc	a
+vulamet1: 	inc	a
 	jr	_vulamet1
 
 ;----- 1 byte of data buffer + increase buffer block if necessary
@@ -6011,9 +6010,9 @@ _gettxtbuff1:	pop	hl
 	res	6,d
 	ret
 
-reg_kweenie	db	0
-reg1_pointer	dw	0
-reg2_pointer	dw	0
+reg_kweenie: 	db	0
+reg1_pointer: 	dw	0
+reg2_pointer: 	dw	0
 
 ;----- Buffers
 
