@@ -6304,7 +6304,7 @@ flush_disk_buffers:
 	ld (flushing_disk_buffers),a
 
 	ld bc,0000h+_FLUSH
-	ld d,0FFh
+	ld d,0
 	call bdos
 flush_disk_buffers_cont:
 	xor a
