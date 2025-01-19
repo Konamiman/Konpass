@@ -384,7 +384,7 @@ setcolors: 	DI
 txt_bovenaan: 	dw	1	;vramaddress
 	db	"Konpass #1.3",0
 	dw	62
-	db	"2022 by Konamiman",0
+	db	"2025 by Konamiman",0
 	dw	0
 txt_menu: 	dw	2*80+4
 	db	" SYSTEM ",0

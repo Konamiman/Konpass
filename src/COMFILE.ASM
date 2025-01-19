@@ -37,7 +37,7 @@ env_item_buffer: equ 3F00h
 
 	jp	skipid
 	db	13,"Konpass #1.3 COMfile",13,10
-    db  "(C) 2022 by Konamiman",13,10
+    db  "(C) 2025 by Konamiman",13,10
     db 10
     db  "Based on Compass #1.2.09 by Compjoetania TNG",13,10,26
 	ds	#0100+headlncom-2-$,0	;reserve bytes
@@ -1658,7 +1658,7 @@ startpalet:	db	#00,#00,#00,#00,#77,#07,#04,#00
 	db	#17,#01,#27,#03,#51,#01,#27,#06
 	db	#71,#01,#73,#03,#61,#06,#63,#06
 	db	#11,#04,#65,#02,#55,#05,#77,#07
-txt_intro:	db	"Konpass #1.3, (C) 2022 by Konamiman",13,10
+txt_intro:	db	"Konpass #1.3, (C) 2025 by Konamiman",13,10
 	db  "Based on Compass #1.2.09, (C)1998 by Compjoetania TNG",13,10,10,"$"
 txt_old:	db	7,"Notice: You are using a version of Memman older "
 	db	"than version 2.40 .",13,10
