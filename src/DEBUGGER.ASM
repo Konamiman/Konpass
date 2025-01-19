@@ -5933,9 +5933,9 @@ abouttxt:
 	defw	(Main_y+1)*80+33
 	defb	"About Konpass",0
 	defw	(Main_y+4)*80+33
-	defb	"Konpass #1.3.0",0
+	defb	"Konpass #1.3.1",0
 	defw	(Main_y+6)*80+29
-	defb	"(C) 2022 by Konamiman",0
+	defb	"(C) 2025 by Konamiman",0
 	defw	(Main_y+8)*80+28
 	defb	"Based on Compass #1.2.09",0
 	defw	(Main_y+9)*80+26
